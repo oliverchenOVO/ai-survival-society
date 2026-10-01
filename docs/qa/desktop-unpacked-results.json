@@ -1,0 +1,9 @@
+{
+  "executablePath": "builds/win-unpacked/AI Survival Society.exe",
+  "title": "AI Survival Society",
+  "rendererErrors": [],
+  "pauseResumeRestartSelection": "PASS",
+  "nodeIntegration": false,
+  "contextIsolation": true,
+  "sandbox": true
+}
