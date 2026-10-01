@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",
-    "electron": "^38.0.0",
+    "electron": "^44.5.1",
     "electron-builder": "^26.0.0",
     "playwright": "^1.55.0",
     "vite": "^7.0.0"
@@ -35,9 +35,23 @@
   "build": {
     "appId": "com.oliver.survivalsociety",
     "productName": "AI Survival Society",
-    "directories": { "output": "builds" },
-    "files": ["dist/**/*", "desktop/**/*", "server/**/*", "core/**/*", "config/**/*", "package.json"],
-    "win": { "target": ["portable"], "artifactName": "AI-Survival-Society-${version}.${ext}" },
+    "directories": {
+      "output": "builds"
+    },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "server/**/*",
+      "core/**/*",
+      "config/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "artifactName": "AI-Survival-Society-${version}.${ext}"
+    },
     "asar": true
   }
 }
