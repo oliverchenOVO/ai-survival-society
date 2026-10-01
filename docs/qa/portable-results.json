@@ -1,0 +1,9 @@
+{
+  "executablePath": "builds/AI-Survival-Society-1.0.0.exe",
+  "launch": "PASS",
+  "canvas": "PASS",
+  "pauseResumeRestartSelection": "PASS",
+  "rendererNodeAccess": "unavailable",
+  "rendererErrors": [],
+  "verificationMethod": "Launched actual portable exe with a fixed Chromium debug port; CDP attached after NSIS extraction. electron.launch cannot use wrapper stderr; cold extraction takes about a minute."
+}

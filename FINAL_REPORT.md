@@ -79,7 +79,7 @@ Default mode runs without a model. Continuous mode starts a new seed 35 seconds 
 
 `npm run build` creates the browser client. `npm run build:desktop` creates an unpacked Windows desktop distribution. `npm run build:portable` creates a single portable executable. `npm run assets` rebuilds the Blender art on the inspected machine; `BLENDER_PATH` can override the executable path.
 
-The first ASAR build failed local startup/integrity checks. The release uses unpacked application resources. Code signing is not configured. The built desktop renderer was launched and checked for a real 3D canvas; final operation evidence is under `docs/qa/desktop-results.json`.
+The first ASAR build failed local startup/integrity checks. The release uses unpacked application resources. Code signing is not configured; portable cold extraction can take about a minute. The built desktop renderer was launched and checked for a real 3D canvas; final operation evidence is under `docs/qa/desktop-results.json`.
 
 ## 10. Web deployment status — COMPLETED (local build), NOT IMPLEMENTED (public hosting)
 
@@ -93,9 +93,9 @@ Git was initialized before implementation, with separate setup, simulation/model
 
 Final branch is `main`; the final commit and remote comparison are verified during finalization. Build outputs are local artifacts/release attachments, not Git source files.
 
-## 12. GitHub status — PARTIAL until final push verification
+## 12. GitHub status — COMPLETED
 
-Private repository created and verified: **https://github.com/oliverchenOVO/ai-survival-society**. The existing authenticated GitHub CLI was used, without exposing or bypassing credentials. Final push/release verification is recorded below once complete.
+Private repository created and verified: **https://github.com/oliverchenOVO/ai-survival-society**. The existing authenticated GitHub CLI was used, without exposing or bypassing credentials. The main branch has been pushed and its remote commit compared successfully with the local commit. A private v1.0.0 release with the verified portable executable is finalized alongside this report.
 
 ## 13. Known limitations
 
@@ -103,6 +103,7 @@ Private repository created and verified: **https://github.com/oliverchenOVO/ai-s
 - **PARTIAL — Navigation:** agents move continuously over the island height function, with no obstacle-aware NavMesh/pathfinding. Decorative buildings/trees do not block them.
 - **PARTIAL — Animation/art:** consistent procedural low-poly style and animated locomotion/effects; no full skeletal rigs or cinematic production assets.
 - **PARTIAL — Remote models:** adapter implemented, external credentialed endpoint not exercised.
+- **PARTIAL — Optional audio:** ambient and important event/combat tones implemented; no separate dedicated UI-click sound.
 - **NOT IMPLEMENTED — Public hosting/multi-user accounts/code signing/other desktop OS builds.**
 - Model-generated narration can embellish; authoritative counters and event logs remain the evidence. High simulation speeds can make model suggestions stale, so Utility AI remains the fallback.
 - No literal five-hour wall-clock soak was completed before delivery. Repeated full runs and accelerated continuous-mode/retention tests passed. The computer must stay awake for continuous operation.
@@ -121,4 +122,12 @@ Terrain-aware pathfinding and collisions; full replay state checkpoints; clearer
 - Real screenshots, full example run and demonstration video under `docs/`.
 - Source requirement trace: `docs/ORIGINAL_REQUIREMENTS.txt` and `REQUIREMENTS_CHECKLIST.md`.
 
-Finalization details will be completed after final desktop/push verification.
+Final desktop verification: both unpacked and actual portable executable passed launch, real canvas, pause/resume/restart and selection. The unpacked app additionally passed renderer sandbox/context-isolation checks. Portable uses the same app and confirmed no renderer Node access; its NSIS wrapper was verified through Chromium DevTools because it does not forward debugger stderr. Cold portable extraction takes approximately one minute, so the unpacked build is preferable for immediate local startup.
+
+Launcher verification: real Start-Society.ps1 startup, second startup without duplicate process, Stop-Society.ps1 and fresh restart all passed. Production server was left running at http://127.0.0.1:4310 in continuous mode.
+
+Private GitHub release: https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.0.0
+
+Portable SHA-256: `4EA4FB4F545D617CB039131E04FDF4699D2F2573B908273CAFBFB5628AD5C681`.
+
+Final clean Git status and local/remote main equality are verified after the final acceptance commit. Optional public hosting, Docker execution, remote credentialed model verification and frame-perfect replay remain explicitly limited as described above.

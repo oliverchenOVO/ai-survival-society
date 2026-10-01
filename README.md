@@ -98,7 +98,7 @@ npm run build:portable
 # Output: builds/AI-Survival-Society-1.0.0.exe
 ```
 
-The build uses Electron and packages the Node server with the app. The unpacked folder is a valid runnable development distribution. Portable builds are unsigned. Close any running copy before replacing its build folder.
+The build uses Electron and packages the Node server with the app. The unpacked folder is a valid runnable development distribution. Portable builds are unsigned. Cold self-extraction can take about a minute; the unpacked executable starts faster. Close any running copy before replacing its build folder.
 
 **Unity version:** Unity 6000.2.0f1 and its WebGL/Windows modules were found on the development machine. This project uses Three.js and Electron, so it has no Unity Editor dependency and does not contain a Unity project or Unity WebGL build.
 

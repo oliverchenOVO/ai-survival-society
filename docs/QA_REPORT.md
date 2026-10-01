@@ -26,7 +26,7 @@ Validation date: 2026-10-02, Asia/Taipei. Tests use actual running simulation, A
 | Model failure | PASS | Deliberately stalled replies time out while simulation advances, illegal actions/targets rejected |
 | Offline model-free run | PASS | All complete-run and UI workflows run with model disabled; runtime font/assets are local |
 
-Packaged desktop operations and release details are in `docs/qa/desktop-results.json` and FINAL_REPORT.md. Screenshots under `docs/images/` show actual rendered screens. `society-demo.mp4` is a 20.28-second H.264 recording of the real app.
+Packaged desktop operations are in `docs/qa/desktop-results.json`, `desktop-unpacked-results.json` and `portable-results.json`. Both real unpacked and portable programs passed launch/canvas/controls/selection. Portable cold extraction takes about a minute; the NSIS wrapper required CDP verification rather than the stderr-dependent Electron launch harness. Launcher start/repeat/stop/restart passed in `launcher-results.json`. Release details are in FINAL_REPORT.md. Screenshots under `docs/images/` show actual rendered screens. `society-demo.mp4` is a 20.28-second H.264 recording of the real app.
 
 ## Browser interaction sequence
 

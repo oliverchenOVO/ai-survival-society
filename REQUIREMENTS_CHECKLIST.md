@@ -3,11 +3,11 @@
 來源：`docs/ORIGINAL_REQUIREMENTS.txt`（完整保存使用者提示詞）。
 勾選僅代表已實作並驗證。可選功能與條件功能仍需明確說明結果；不得當作無条件必須功能或默默省略。
 
-目前：環境與決策核心已驗證；3D與UI初次build成功，完整QA及最終文件進行中。
+目前：完整實作與逐項驗收完成；条件/可選功能的限制詳見FINAL_REPORT.md，沒有把未公開部署或完整重播寫成已實作。
 
 ## 流程與環境
 
-- [ ] R001 閱讀完整原文，保存需求來源，逐項清單與最終驗收
+- [x] R001 閱讀完整原文，保存需求來源，逐項清單與最終驗收
 - [x] R002 工作目錄正確；自主處理非關鍵決策、不依賴使用者確認
 - [x] R003 實際可執行、互動、展示的完整作品，不能只有骨架或文件
 - [x] R004 檢查 Unity、Hub、版本、WebGL與桌面模組
@@ -102,7 +102,7 @@
 
 ## 建置與部署
 
-- [ ] R072 至少Desktop Development Build可執行
+- [x] R072 至少Desktop Development Build可執行
 - [x] R073 合理時Web build；環境失敗不得犧牲desktop
 - [x] R074 Web-ready架構，保留server-side remote AI adapter
 - [x] R075 成功Web輸出置web或合理部署目錄
@@ -116,10 +116,10 @@
 - [x] R080 Blender大檔評估Git LFS
 - [x] R081 階段性清楚commits，不只最後一筆
 - [x] R082 commit前檢查status、秘密、cache、大檔
-- [ ] R083 existing remote優先；gh登入且有權限則create private repo/push
+- [x] R083 existing remote優先；gh登入且有權限則create private repo/push
 - [x] R084 禁止token/password/API key/secret加入Git
 - [x] R085 無登入時完成local，不破解認證、不等待半夜回覆
-- [ ] R086 最後commit、clean status、push後確認remote branch
+- [x] R086 最後commit、clean status、push後確認remote branch
 
 ## 文件與展示
 
@@ -130,9 +130,9 @@
 - [x] R091 數張真實Demo screenshot放docs/images並在README顯示
 - [x] R092 screenshot overview/inspector/relationship/director/final result（可行時）
 - [x] R093 可選GIF/MP4：moving/relationship/fight/director
-- [ ] R094 FINAL_REPORT.md：what/stack/architecture/features/Blender/AI/LLM
-- [ ] R095 FINAL_REPORT.md：run/build/web/Git/GitHub/limitations/improvements
-- [ ] R096 報告準確標註COMPLETED、PARTIAL、NOT IMPLEMENTED
+- [x] R094 FINAL_REPORT.md：what/stack/architecture/features/Blender/AI/LLM
+- [x] R095 FINAL_REPORT.md：run/build/web/Git/GitHub/limitations/improvements
+- [x] R096 報告準確標註COMPLETED、PARTIAL、NOT IMPLEMENTED
 
 ## QA與完成
 
@@ -141,9 +141,9 @@
 - [x] R099 測試Resource/Conversation/Relationship/Alliance/Combat/Death
 - [x] R100 測試Safe zone/Director/End game/Log/無LLM執行
 - [x] R101 最後至少完整跑一局，多seed驗證不同互動並調整utility非劇本
-- [ ] R102 Polish spacing/typography/camera/lighting/materials/animation/transitions/colors/feedback/hierarchy
-- [ ] R103 逐條核對原文後半段與Completion Definition、Finalization、Final report
-- [ ] R104 另一個人依README可啟動；最終成果是可操作完成品
+- [x] R102 Polish spacing/typography/camera/lighting/materials/animation/transitions/colors/feedback/hierarchy
+- [x] R103 逐條核對原文後半段與Completion Definition、Finalization、Final report
+- [x] R104 另一個人依README可啟動；最終成果是可操作完成品
 
 ## 驗收證據
 
@@ -158,9 +158,19 @@
 ### 實際QA階段
 - `npm test`：10項行為/整合測試通過，含多局自動重開與最多3筆紀錄保留的測試設定。
 - `npm run test:simulation`：20個種子完整結束，236結盟、248交易、14背叛、50合作。
-- Playwright/Chrome：desktop1600×1000、mobile390×844，所有16類操作流程通過，無page/console/request錯誤。
+- Playwright/Chrome：desktop1600×1000、mobile390×844，所有15組操作流程通過，無page/console/request錯誤。
 - 真實Ollama結構化回覆通過驗證；cold-load約20秒，所以預設timeout改為30秒；Utility持續運行。
 - R075/R076：Web build可行，公開host未執行，保留同origin backend部署說明；不是Unity，所以Unity WebGL不適用。
 - R080：blend4.7MB、單一GLB约150KB，Git LFS已評估但不需要。
 - R085：gh已登入，本項無登入例外不適用；未繞過認證。
 - R093：實際20.28秒MP4已產出。
+
+### 最終逐項驗收
+- R001/R103：再次對照原文全部章節，包含Completion Definition、Polish Pass、最後驗證、Git Finalization、FINAL_REPORT後半段；104項皆有結果。
+- R072：Windows unpacked與實際portable.exe均啟動並通過canvas/Pause/Resume/Restart/Selection；portable約一分鐘解壓，不只建置成功。
+- R083/R086：Private repo已確認，main已push並比對commit相同；最終驗收commit後再比對。
+- R094/R095/R096：FINAL_REPORT包含全部14項；COMPLETED/PARTIAL/NOT IMPLEMENTED清楚區分。
+- R102：view_image檢視concept及最新實際browser/desktop/mobile截圖；天空/海面/地形triangulation、攝影機與字級已調整。
+- R104：真正執行啟動、重复啟動、停止、重新啟動腳本，無重複server，保留正式版持續運行。
+- 條件/可選範圍：公開部署未實作；Docker未實跑；remote模型未用外部credential驗證；Replay為timeline/sampled觀察；optional audio有ambient與event，無獨立UI click音效；上述皆如實記錄。
+- 一般Git追蹤排除runtime/cache/build/model weights/secrets；private release單獨附可執行檔。

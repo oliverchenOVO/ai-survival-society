@@ -2,7 +2,7 @@ import { _electron as electron } from 'playwright';
 import assert from 'node:assert/strict';
 import { writeFile } from 'node:fs/promises';
 const executablePath = process.argv[2] ?? 'builds/win-unpacked/AI Survival Society.exe';
-const app = await electron.launch({ executablePath, args: [] });
+const app = await electron.launch({ executablePath, args: [], timeout: 20000 });
 const errors = [];
 try {
   const page = await app.firstWindow();
