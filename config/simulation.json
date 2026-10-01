@@ -1,0 +1,22 @@
+{
+  "seed": 2048,
+  "tickSeconds": 0.25,
+  "speed": 1,
+  "agentCount": 12,
+  "decisionInterval": 2,
+  "matchDuration": 420,
+  "autoRestart": true,
+  "restartDelaySeconds": 35,
+  "maxStoredMatches": 30,
+  "llm": {
+    "enabled": false,
+    "provider": "ollama",
+    "endpoint": "http://127.0.0.1:11434",
+    "model": "qwen2.5:1.5b",
+    "temperature": 0.6,
+    "timeoutMs": 12000,
+    "intervalSeconds": 22,
+    "concurrency": 1,
+    "maxQueue": 6
+  }
+}

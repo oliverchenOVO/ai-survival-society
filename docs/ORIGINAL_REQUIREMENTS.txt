@@ -1,0 +1,1772 @@
+你現在不是單純的 Coding Assistant。
+
+你現在同時扮演：
+
+- Technical Lead
+- AI Engineer
+- Unity Developer
+- Game Developer
+- Simulation Engineer
+- Blender Technical Artist
+- 3D Generalist
+- Backend Engineer
+- Frontend Engineer
+- UI/UX Designer
+- DevOps Engineer
+- QA Engineer
+
+你的任務不是提供建議，而是：
+
+**直接在目前這台電腦上完成一個具有展示價值、能令人第一眼感到驚豔、可以實際執行，並具備未來公開展示潛力的完整 AI 專案。**
+
+我接下來可能數小時不會操作電腦，因此不要依賴我持續確認。
+
+---
+
+# 最高原則
+
+不要停留在：
+
+- 想法
+- 架構設計
+- TODO
+- Placeholder
+- README
+- 空場景
+- Demo 骨架
+
+你的最終成果必須是：
+
+**真的可以執行、可以互動、可以展示的作品。**
+
+工作原則：
+
+WORKING PRODUCT
+>
+BEAUTIFUL ARCHITECTURE
+
+POLISHED DEMO
+>
+EXCESSIVE FEATURES
+
+AUTONOMOUS EXECUTION
+>
+ASKING USER QUESTIONS
+
+如果遇到非關鍵決策：
+
+**自行判斷。**
+
+不要因為我沒有回覆而停止。
+
+---
+
+# 第一階段：完整檢查本機環境
+
+在開始決定技術棧前，先主動檢查這台電腦有哪些可用工具。
+
+至少檢查：
+
+- Unity
+- Unity Hub
+- Unity Editor Version
+- Blender
+- Blender Python
+- Git
+- Git LFS
+- GitHub CLI
+- Python
+- Conda
+- Node.js
+- npm / pnpm
+- .NET
+- Visual Studio / Build Tools
+- FFmpeg
+- Ollama
+- LM Studio
+- CUDA / GPU
+- 可用本地模型
+- 其他 Game Engine
+- 其他你認為有幫助的工具
+
+不要預設只能使用 Python。
+
+也不要預設只能使用：
+
+Pygame
+PyQt
+Web
+
+如果 Unity、Blender 或其他工具適合：
+
+**直接使用。**
+
+---
+
+# 技術選型權限
+
+你可以自由決定：
+
+Unity
++
+Blender
++
+Python Backend
++
+LLM
+
+或：
+
+Unity Only
+
+或：
+
+Unity WebGL
++
+Web Backend
+
+或：
+
+Three.js
++
+FastAPI
+
+或：
+
+Godot
++
+Blender
+
+或其他合理架構。
+
+選擇標準依序為：
+
+1. 能不能完成
+2. Demo 是否有視覺衝擊力
+3. 穩定程度
+4. 是否容易展示
+5. 是否可以未來部署至網站
+6. 是否方便擴充
+7. 技術漂亮程度
+
+不要為了炫技使用不必要的 Microservices。
+
+---
+
+# Blender 權限
+
+如果需要 3D Asset：
+
+允許直接使用 Blender。
+
+你可以使用：
+
+- Blender Python API
+- bpy
+- Command Line Blender
+- Procedural Modeling
+- Geometry Nodes
+- Material Nodes
+- Procedural Materials
+- Rigging
+- Simple Animation
+- Camera
+- Lighting
+- Render
+- GLTF
+- FBX
+- OBJ
+
+如果需要：
+
+角色
+建築
+環境
+道具
+武器
+地形
+UI Render
+Logo
+
+你可以自行建立。
+
+不要因為沒有現成模型就停止。
+
+如果高品質人物製作成本太高：
+
+使用：
+
+- Stylized Low Poly
+- Robot
+- Capsule Character
+- Procedural Character
+- Abstract Agent
+
+視覺一致性比寫實程度更重要。
+
+例如：
+
+12 個 AI Agent 可以設計為不同造型的：
+
+Low-poly robots
+或
+Stylized geometric humanoids
+
+每個角色具有不同：
+
+Color
+Accessories
+Head shape
+Symbol
+
+讓使用者能快速辨識。
+
+---
+
+# Unity 權限
+
+如果使用 Unity：
+
+允許完整使用 Unity 生態。
+
+包括：
+
+- Editor Scripts
+- ScriptableObject
+- Prefab
+- NavMesh
+- Animator
+- Timeline
+- Shader Graph
+- URP
+- Particle System
+- Cinemachine
+- UI Toolkit
+- UGUI
+- Audio
+- WebGL
+- Addressables
+
+如果 GUI 操作難以自動化：
+
+優先建立：
+
+Unity Editor Scripts
+
+自動建立：
+
+Scene
+GameObject
+Prefab
+Materials
+Lights
+Camera
+UI
+NavMesh
+Project Settings
+
+不要因為必須點擊 Editor UI 而卡住。
+
+盡可能把場景生成流程 Script 化。
+
+---
+
+# 專案目標
+
+建立一個：
+
+# AI Survival Society
+
+或如果你經過環境評估後認為另一個概念更具有展示效果，你可以進行合理修改。
+
+但必須保留：
+
+AI Agent
++
+Emergent Behavior
++
+Visual Simulation
++
+Interaction
++
+Observable Decisions
+
+核心概念：
+
+多個自主 Agent 存在於一個視覺化世界中。
+
+他們具有：
+
+- Personality
+- Needs
+- Goals
+- Memory
+- Relationships
+- Resources
+- Inventory
+- Health
+- Energy
+- Trust
+- Fear
+- Hostility
+
+他們必須自主：
+
+探索
+生存
+交流
+合作
+交易
+結盟
+欺騙
+偷竊
+攻擊
+逃跑
+背叛
+
+最後讓使用者看到：
+
+一個 AI 社會自己形成、變化並瓦解。
+
+---
+
+# 3D 優先方向
+
+如果硬體與開發環境允許，我偏好：
+
+3D Stylized Simulation
+
+例如：
+
+一座 Low Poly Island
+
+包含：
+
+Forest
+River
+Ruins
+Village
+Mountain
+Supply Area
+
+12 個 Agent 在場景內實際移動。
+
+Camera 可以：
+
+Orbit
+Pan
+Zoom
+
+點擊 Agent：
+
+Camera Focus 到該 Agent。
+
+---
+
+# 視覺設計
+
+整體視覺：
+
+Modern
+Stylized
+Clean
+Futuristic
+Dark UI
+Simulation Dashboard
+
+不要做成：
+
+Unity 預設灰色 UI
+白色背景
+Debug 工具感
+只有文字
+
+即使模型簡單，也要透過：
+
+Lighting
+Post Processing
+Camera
+Fog
+Particles
+UI
+Animation
+
+增加完成度。
+
+---
+
+# AI Agent
+
+每名 Agent 擁有：
+
+Name
+
+Personality：
+
+aggression
+greed
+loyalty
+empathy
+riskTolerance
+sociability
+deception
+curiosity
+
+範圍：
+
+0–1
+
+並擁有：
+
+HP
+Hunger
+Energy
+Inventory
+Weapon
+Current Goal
+Memory
+Relationships
+
+---
+
+# AI Decision
+
+禁止單純使用大量 hardcoded：
+
+if enemy:
+    attack
+
+請建立：
+
+Utility AI
++
+Personality
++
+Relationship
++
+Memory
++
+Environment
+
+作為基礎決策系統。
+
+LLM 作為：
+
+High-level decision
+Dialogue
+Reflection
+Story generation
+
+而不是每一幀都問 LLM。
+
+---
+
+# LLM
+
+主動檢查：
+
+Ollama
+LM Studio
+OpenAI-compatible endpoints
+
+如果存在本地模型：
+
+可以使用。
+
+必須把：
+
+provider
+endpoint
+model
+temperature
+
+放入設定。
+
+不要 Hardcode。
+
+如果完全沒有 LLM：
+
+遊戲仍然必須可以運作。
+
+建立：
+
+Fallback Utility AI.
+
+---
+
+# Performance
+
+LLM 不可以阻塞整個遊戲。
+
+必須：
+
+async
+queue
+timeout
+fallback
+
+如果 LLM 回覆失敗：
+
+使用 Utility AI。
+
+---
+
+# Structured Decision
+
+LLM 結果必須使用 Schema。
+
+例如：
+
+{
+  "action": "talk",
+  "target": "Agent_03",
+  "message": "We should cooperate.",
+  "public_reason": "I need an ally before entering the ruins."
+}
+
+public_reason 是：
+
+可以展示給玩家的簡短理由。
+
+不要展示模型隱藏 Chain-of-Thought。
+
+---
+
+# Memory
+
+事件記憶至少記錄：
+
+Who
+What
+When
+Importance
+Emotional Impact
+
+例如：
+
+Alice gave me medicine.
+
+Bob stole food.
+
+Mike saved me during combat.
+
+重要事件會改變：
+
+trust
+affinity
+fear
+hostility
+
+---
+
+# Relationship Graph
+
+加入：
+
+AI Social Network
+
+至少表現：
+
+Alliance
+Friendship
+Hostility
+
+如果 UI 可以：
+
+使用圖形視覺化。
+
+例如：
+
+Green = positive
+Blue = alliance
+Red = hostile
+
+關係變化時：
+
+線條即時變化。
+
+---
+
+# Director Mode
+
+加入一個非常重要的功能：
+
+DIRECTOR MODE
+
+使用者可以插入世界事件。
+
+例如：
+
+Food Crisis
+
+食物生成 -70%
+
+Supply Drop
+
+地圖中央生成稀有資源。
+
+Storm
+
+移動速度降低。
+
+Rumor
+
+向所有 Agent 發送：
+
+"Jack may be hiding a large amount of food."
+
+Treasure
+
+生成稀有物資。
+
+Plague
+
+部分 Agent HP 持續下降。
+
+使用者只改變環境。
+
+不要直接控制 Agent。
+
+讓使用者觀察：
+
+AI 社會如何自己適應。
+
+---
+
+# Battle Royale
+
+可以加入安全區。
+
+安全區逐漸縮小。
+
+迫使 Agent：
+
+相遇
+交易
+合作
+戰鬥
+
+避免所有角色分散後沒有互動。
+
+---
+
+# Event System
+
+所有重要事件都必須進 Event Bus。
+
+事件例如：
+
+RESOURCE_FOUND
+TRADE
+CONVERSATION
+ALLIANCE_CREATED
+ALLIANCE_BROKEN
+BETRAYAL
+ATTACK
+ESCAPE
+DEATH
+SUPPLY_DROP
+
+---
+
+# Live Event Feed
+
+UI 必須具有：
+
+LIVE WORLD FEED
+
+例如：
+
+14:02 Alice found medicine
+
+14:05 Jack → Alice
+"Want to work together?"
+
+14:06 Alliance formed
+
+14:12 Bob stole food from Mike
+
+14:18 Mike attacked Bob
+
+14:25 Jack betrayed Alice
+
+---
+
+# Agent Inspector
+
+點擊角色後：
+
+顯示：
+
+Portrait
+Name
+HP
+Hunger
+Energy
+Inventory
+Weapon
+Goal
+Personality
+Relationships
+Important Memories
+
+以及：
+
+CURRENT DECISION
+
+例如：
+
+Goal:
+Find food.
+
+Observed:
+Alice nearby.
+
+Decision:
+Ask Alice to trade.
+
+Public Reason:
+Maintaining a good relationship is safer than stealing.
+
+---
+
+# Camera
+
+如果做 3D：
+
+Camera 體驗必須好。
+
+至少：
+
+Orbit
+Pan
+Zoom
+Agent Focus
+
+最好加入：
+
+Follow Agent
+
+讓展示時可以像觀看 AI Reality Show。
+
+---
+
+# Cinematic Mode
+
+如果核心完成：
+
+建立簡單：
+
+Cinematic Camera
+
+重大事件：
+
+Fight
+Betrayal
+Death
+Final Battle
+
+可以短暫：
+
+Focus Camera
+
+不要影響模擬。
+
+---
+
+# Statistics
+
+Dashboard：
+
+Alive
+Deaths
+Kills
+Trades
+Alliances
+Betrayals
+Average Trust
+
+並追蹤：
+
+Most Trusted
+Most Feared
+Most Aggressive
+Most Social
+
+注意：
+
+這些必須由 Simulation Data 計算。
+
+---
+
+# End Game
+
+剩最後一人時：
+
+展示：
+
+WINNER
+
+並產生統計。
+
+例如：
+
+Winner:
+Agent Jack
+
+Survival:
+21:32
+
+Kills:
+3
+
+Trades:
+6
+
+Alliances:
+2
+
+Betrayals:
+1
+
+---
+
+# AI Historian
+
+遊戲結束後：
+
+利用完整 Event Log 產生：
+
+History of Simulation
+
+例如：
+
+CHAPTER 1
+The First Alliance
+
+CHAPTER 2
+The Resource Crisis
+
+CHAPTER 3
+The Betrayal
+
+CHAPTER 4
+The Final Battle
+
+LLM 可用則使用 LLM。
+
+不可用則 Template。
+
+---
+
+# Replay
+
+如果時間足夠：
+
+使用 Event Log 支援：
+
+Replay
+
+至少能讀取一局紀錄並重新顯示：
+
+Timeline
+Stats
+Major Events
+
+完整 3D Deterministic Replay 並非 MVP 必須。
+
+---
+
+# Random Seed
+
+必須有：
+
+Random Seed
+
+讓測試可以重現。
+
+---
+
+# 儲存
+
+至少：
+
+/logs
+/saves
+/config
+
+Log 建議：
+
+JSON
+
+紀錄：
+
+timestamp
+actor
+target
+event
+position
+result
+relationship_change
+
+---
+
+# 網站部署導向
+
+這個專案未來希望能放上網站展示。
+
+因此架構設計時必須考慮：
+
+Web Deployment。
+
+如果使用 Unity：
+
+優先確認：
+
+Unity WebGL
+
+是否可以 Build。
+
+避免使用 WebGL 明確不支援且無替代方案的核心技術。
+
+桌面版可以有：
+
+Local LLM
+
+Web 版則設計：
+
+Remote AI API Adapter
+
+架構例如：
+
+IModelProvider
+
+LocalOllamaProvider
+
+RemoteAPIProvider
+
+FallbackAIProvider
+
+不要把模型呼叫直接寫死在遊戲邏輯。
+
+---
+
+# Web Architecture
+
+未來理想：
+
+Browser
+↓
+Unity WebGL
+↓
+Backend API
+↓
+AI Model
+
+因此：
+
+遊戲 Client 與 LLM Provider 解耦。
+
+如果未來公開：
+
+API Key 不能存在 Unity Client。
+
+---
+
+# Build Targets
+
+至少確保：
+
+Desktop Development Build
+
+如果合理且環境允許：
+
+另外嘗試：
+
+WebGL Build
+
+WebGL 如果因環境問題不能完整成功：
+
+不要因此犧牲 Desktop MVP。
+
+但是：
+
+保留 WebGL-ready 架構。
+
+---
+
+# Web Demo
+
+如果 WebGL Build 成功：
+
+建立：
+
+/web
+
+或合理部署目錄。
+
+可以考慮：
+
+GitHub Pages
+Cloudflare Pages
+Vercel
+Netlify
+
+但只有在部署流程安全且不需要暴露機密時才執行。
+
+---
+
+# Git
+
+整個專案從一開始：
+
+使用 Git。
+
+建立：
+
+.gitignore
+
+依照實際技術選擇正確模板。
+
+如果 Unity：
+
+排除：
+
+Library
+Temp
+Obj
+Logs
+Build cache
+
+但保留：
+
+Assets
+Packages
+ProjectSettings
+
+如果 Blender 檔太大：
+
+評估 Git LFS。
+
+---
+
+# Git Commit Strategy
+
+不要全部完成後只有一個 Commit。
+
+合理分階段 Commit。
+
+例如：
+
+initial project setup
+
+simulation core
+
+agent AI
+
+relationship and memory
+
+world generation
+
+UI dashboard
+
+3D assets
+
+director mode
+
+LLM integration
+
+polish and QA
+
+web build support
+
+final release candidate
+
+Commit message 要清楚。
+
+---
+
+# GitHub Private Repository
+
+最終目標：
+
+推送到我的 GitHub 私人倉庫。
+
+先檢查：
+
+git remote
+
+GitHub CLI
+
+Authentication
+
+現有 credentials
+
+如果目前目錄已經有指定 remote：
+
+使用它。
+
+如果沒有：
+
+查看是否存在已登入：
+
+gh auth status
+
+如果 GitHub CLI 已登入且有權限：
+
+可以建立：
+
+Private Repository
+
+或推送至已指定 Private Repo。
+
+絕對禁止：
+
+把 Token
+
+Password
+
+API Key
+
+Secret
+
+加入 Git。
+
+如果需要 Secret：
+
+使用：
+
+.env
+
+並加入：
+
+.gitignore
+
+提供：
+
+.env.example
+
+只有變數名稱。
+
+---
+
+# Repository Security
+
+Commit 前執行：
+
+git status
+
+檢查：
+
+.env
+token
+api key
+credentials
+large temp files
+Unity cache
+Blender temp files
+
+不要推：
+
+Secrets
+Caches
+Build garbage
+Model weights
+
+除非必要。
+
+---
+
+# GitHub Repository
+
+README 必須適合 GitHub 首頁。
+
+至少包含：
+
+Project Hero Title
+
+Short Description
+
+Features
+
+Screenshots
+
+Architecture
+
+How it works
+
+AI Architecture
+
+Installation
+
+Run
+
+Unity Version
+
+Optional LLM Setup
+
+Web Version
+
+Controls
+
+Director Mode
+
+Project Structure
+
+Future Work
+
+---
+
+# Screenshots
+
+在專案完成後：
+
+自行取得至少數張 Demo Screenshot。
+
+如果能做到：
+
+1. World Overview
+2. Agent Inspector
+3. Alliance / Relationship
+4. Director Mode
+5. Final Result
+
+放入：
+
+docs/images/
+
+README 顯示。
+
+---
+
+# GIF / Video
+
+如果環境允許：
+
+產生一小段：
+
+GIF
+或
+MP4
+
+展示：
+
+Agent moving
+Relationship changing
+Fight
+Director event
+
+不是必要條件。
+
+但如果能完成，非常有價值。
+
+---
+
+# Architecture
+
+保持清楚模組化。
+
+例如：
+
+Core
+
+Simulation
+
+Agents
+
+AI
+
+Memory
+
+Relationships
+
+World
+
+Events
+
+Combat
+
+UI
+
+Director
+
+Persistence
+
+Networking
+
+LLM
+
+不要把所有邏輯放在：
+
+GameManager.cs
+
+---
+
+# Asset Pipeline
+
+如果使用 Blender：
+
+建立：
+
+/Art
+/Blender
+/Exports
+
+保留：
+
+.blend Source
+
+以及 Unity 可使用：
+
+.fbx
+或
+.glb
+
+如果可以：
+
+寫一個 Blender Python Script：
+
+generate_assets.py
+
+未來可以重建 Procedural Assets。
+
+---
+
+# Procedural World
+
+如果時間有限：
+
+不要手工雕刻巨大地圖。
+
+利用：
+
+Procedural Generation
+
+建立 Low Poly Terrain。
+
+例如：
+
+Terrain
+Trees
+Rocks
+Buildings
+
+可以透過：
+
+Unity Script
+
+或：
+
+Blender Script
+
+自動生成。
+
+---
+
+# Audio
+
+如果核心完成：
+
+加入簡單：
+
+Ambient Audio
+UI Sound
+Combat Sound
+Event Sound
+
+沒有素材時：
+
+可以跳過。
+
+不要因此阻塞。
+
+---
+
+# AI Safety / Stability
+
+任何 AI 回覆：
+
+必須：
+
+Validate JSON
+
+Check Action
+
+Check Target
+
+Clamp values
+
+Invalid Action：
+
+fallback
+
+AI 不可以直接執行：
+
+任意 shell command
+
+任意 file operation
+
+Agent 模型只能決定：
+
+允許的 Simulation Actions。
+
+---
+
+# QA
+
+每完成重要功能：
+
+實際執行。
+
+不要只：
+
+閱讀程式碼後認為應該可以。
+
+測試：
+
+Start
+Pause
+Resume
+Restart
+Speed
+Agent selection
+Movement
+Resource
+Conversation
+Relationship
+Alliance
+Combat
+Death
+Safe zone
+Director event
+End game
+
+---
+
+# Autonomous Debugging
+
+任何 Error：
+
+先自己：
+
+讀 Log
+
+定位
+
+修正
+
+重新執行
+
+不要遇到第一個 Error 就停下來等待使用者。
+
+---
+
+# Scope Management
+
+如果時間不足：
+
+優先順序：
+
+P0
+
+完整可執行 Simulation
+
+Agent movement
+
+Agent AI
+
+Resources
+
+Interaction
+
+Relationship
+
+Combat
+
+Death
+
+Winner
+
+UI
+
+Event Feed
+
+P1
+
+3D polish
+
+Blender assets
+
+Director Mode
+
+Relationship visualization
+
+LLM
+
+P2
+
+WebGL
+
+Replay
+
+Cinematic
+
+Advanced visual effects
+
+P3
+
+額外功能
+
+不能為了 P2 / P3：
+
+讓 P0 不可執行。
+
+---
+
+# Completion Definition
+
+不能以：
+
+"核心架構已建立"
+
+算完成。
+
+完成最低標準：
+
+[ ] 專案能打開
+
+[ ] 能執行
+
+[ ] 有視覺化世界
+
+[ ] 多個 Agent 自主移動
+
+[ ] Agent 會取得資源
+
+[ ] Agent 能互動
+
+[ ] Agent Relationship 會變
+
+[ ] Agent 具有 Memory
+
+[ ] 可以形成 Alliance
+
+[ ] 可以 Attack
+
+[ ] 可以 Death
+
+[ ] 最終可以出現 Winner
+
+[ ] UI 可以查看 Agent
+
+[ ] Event Feed 正常
+
+[ ] Start / Pause / Restart 正常
+
+[ ] Speed 正常
+
+[ ] Director Mode 至少部分正常
+
+[ ] Log 可以輸出
+
+[ ] 不使用 LLM 也可以執行
+
+[ ] Git repository 正常
+
+[ ] 沒有 Secret 被 Commit
+
+[ ] README 可以讓另一個人啟動
+
+---
+
+# Polish Pass
+
+核心完成後不要立刻停止。
+
+進行：
+
+POLISH PASS
+
+檢查：
+
+UI spacing
+
+Typography
+
+Camera
+
+Lighting
+
+Materials
+
+Animations
+
+Transitions
+
+Colors
+
+Feedback
+
+Visual hierarchy
+
+讓專案從：
+
+Prototype
+
+提升到：
+
+Portfolio Demo。
+
+---
+
+# 最後驗證
+
+最後至少完整跑一局。
+
+觀察是否：
+
+Agent 真的產生不同互動。
+
+如果模擬太無聊，例如：
+
+大家只找食物
+
+沒有人交流
+
+沒有人戰鬥
+
+沒有人結盟
+
+則調整：
+
+Utility weights
+Interaction radius
+Resource scarcity
+Social incentives
+Safe zone
+
+讓一局 Simulation 可以合理產生：
+
+Cooperation
+Conflict
+Alliance
+Betrayal
+
+但不要用固定劇本強制結果。
+
+---
+
+# Git Finalization
+
+最後：
+
+git status
+
+確認乾淨。
+
+Commit 最終版本。
+
+如果已設定 GitHub Private Remote 且 Authentication 正常：
+
+push。
+
+Push 後確認：
+
+remote branch 正常。
+
+如果 GitHub 身份驗證不存在：
+
+不要要求我半夜回覆。
+
+完成所有本地 Git 工作。
+
+保留最後需要使用者登入才能進行的唯一操作。
+
+不要嘗試破解或繞過 Authentication。
+
+---
+
+# 最終輸出文件
+
+建立：
+
+FINAL_REPORT.md
+
+內容：
+
+1. What was built
+2. Technology stack
+3. Architecture
+4. Features completed
+5. Blender assets generated
+6. AI system
+7. LLM integration
+8. How to run
+9. How to build
+10. Web deployment status
+11. Git status
+12. GitHub status
+13. Known limitations
+14. Suggested next improvements
+
+並清楚標註：
+
+COMPLETED
+
+PARTIAL
+
+NOT IMPLEMENTED
+
+不要把未完成項目寫成已完成。
+
+---
+
+# 最重要的一條
+
+不要因為這份 Prompt 很長而只進行分析。
+
+現在立即：
+
+Inspect environment
+
+→
+
+Choose architecture
+
+→
+
+Create project
+
+→
+
+Implement
+
+→
+
+Run
+
+→
+
+Debug
+
+→
+
+Polish
+
+→
+
+Test
+
+→
+
+Document
+
+→
+
+Commit
+
+→
+
+Push if authenticated
+
+直到產生一個真正能讓人操作的完成品。
