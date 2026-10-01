@@ -1,0 +1,11 @@
+node_modules
+dist
+builds
+.git
+.env*
+logs
+saves
+.runtime
+.qa
+Art
+docs

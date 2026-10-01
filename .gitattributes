@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.blend binary
+*.glb binary
+*.png binary
+*.ico binary
+*.mp4 binary

@@ -54,10 +54,10 @@
 
 - [x] R034 3D stylized low-poly island，有 forest、river、ruins、village、mountain、supply area
 - [x] R035 Modern、stylized、clean、futuristic、dark simulation dashboard
-- [ ] R036 統一色彩、角色輪廓/頭形/配件/符號，避免預設灰UI或只有文字
-- [ ] R037 lighting、postprocessing、camera、fog、particles、animation提升完成度
-- [ ] R038 程序生成地形、樹、岩石、建築，不手工巨大地圖
-- [ ] R039 Blender若使用：Art／Blender／Exports、保留blend與glb/fbx
+- [x] R036 統一色彩、角色輪廓/頭形/配件/符號，避免預設灰UI或只有文字
+- [x] R037 lighting、postprocessing、camera、fog、particles、animation提升完成度
+- [x] R038 程序生成地形、樹、岩石、建築，不手工巨大地圖
+- [x] R039 Blender若使用：Art／Blender／Exports、保留blend與glb/fbx
 - [x] R040 Blender generate_assets.py 可重建程序資產
 - [x] R041 Orbit、pan、zoom、點擊focus
 - [x] R042 Follow Agent camera
@@ -68,7 +68,7 @@
 
 - [x] R045 Director只改環境，不直接控制角色
 - [x] R046 Food Crisis：食物生成減少70%
-- [ ] R047 Supply Drop：中央稀有資源
+- [x] R047 Supply Drop：中央稀有資源
 - [x] R048 Storm：移速降低
 - [x] R049 Rumor：所有Agent收到某角色藏食物傳聞
 - [x] R050 Treasure：稀有物資
@@ -94,7 +94,7 @@
 
 - [x] R065 Random seed可重現測試
 - [x] R066 logs／saves／config目錄
-- [ ] R067 JSON event含 timestamp、actor、target、event、position、result、relationship_change
+- [x] R067 JSON event含 timestamp、actor、target、event、position、result、relationship_change
 - [x] R068 完整event log可輸出與儲存
 - [x] R069 AI Historian依整局log產生history，LLM可用則模型，否則template
 - [x] R070 可選Replay至少讀取一局timeline/stats/major events
@@ -113,34 +113,34 @@
 
 - [x] R078 從開始使用Git，正確gitignore
 - [x] R079 排除cache/temp/log/build垃圾/model weights/secrets，保留sources/config
-- [ ] R080 Blender大檔評估Git LFS
-- [ ] R081 階段性清楚commits，不只最後一筆
-- [ ] R082 commit前檢查status、秘密、cache、大檔
+- [x] R080 Blender大檔評估Git LFS
+- [x] R081 階段性清楚commits，不只最後一筆
+- [x] R082 commit前檢查status、秘密、cache、大檔
 - [ ] R083 existing remote優先；gh登入且有權限則create private repo/push
-- [ ] R084 禁止token/password/API key/secret加入Git
-- [ ] R085 無登入時完成local，不破解認證、不等待半夜回覆
+- [x] R084 禁止token/password/API key/secret加入Git
+- [x] R085 無登入時完成local，不破解認證、不等待半夜回覆
 - [ ] R086 最後commit、clean status、push後確認remote branch
 
 ## 文件與展示
 
-- [ ] R087 README hero title/description/features/screenshots
-- [ ] R088 README architecture/how it works/AI architecture
-- [ ] R089 README installation/run/Unity version或非Unity说明/optional LLM/Web version
-- [ ] R090 README controls/director/project structure/future work
-- [ ] R091 數張真實Demo screenshot放docs/images並在README顯示
-- [ ] R092 screenshot overview/inspector/relationship/director/final result（可行時）
-- [ ] R093 可選GIF/MP4：moving/relationship/fight/director
+- [x] R087 README hero title/description/features/screenshots
+- [x] R088 README architecture/how it works/AI architecture
+- [x] R089 README installation/run/Unity version或非Unity说明/optional LLM/Web version
+- [x] R090 README controls/director/project structure/future work
+- [x] R091 數張真實Demo screenshot放docs/images並在README顯示
+- [x] R092 screenshot overview/inspector/relationship/director/final result（可行時）
+- [x] R093 可選GIF/MP4：moving/relationship/fight/director
 - [ ] R094 FINAL_REPORT.md：what/stack/architecture/features/Blender/AI/LLM
 - [ ] R095 FINAL_REPORT.md：run/build/web/Git/GitHub/limitations/improvements
 - [ ] R096 報告準確標註COMPLETED、PARTIAL、NOT IMPLEMENTED
 
 ## QA與完成
 
-- [ ] R097 每重要功能實際執行，遇錯讀log修正重跑
-- [ ] R098 測試Start/Pause/Resume/Restart/Speed/Selection/Movement
-- [ ] R099 測試Resource/Conversation/Relationship/Alliance/Combat/Death
-- [ ] R100 測試Safe zone/Director/End game/Log/無LLM執行
-- [ ] R101 最後至少完整跑一局，多seed驗證不同互動並調整utility非劇本
+- [x] R097 每重要功能實際執行，遇錯讀log修正重跑
+- [x] R098 測試Start/Pause/Resume/Restart/Speed/Selection/Movement
+- [x] R099 測試Resource/Conversation/Relationship/Alliance/Combat/Death
+- [x] R100 測試Safe zone/Director/End game/Log/無LLM執行
+- [x] R101 最後至少完整跑一局，多seed驗證不同互動並調整utility非劇本
 - [ ] R102 Polish spacing/typography/camera/lighting/materials/animation/transitions/colors/feedback/hierarchy
 - [ ] R103 逐條核對原文後半段與Completion Definition、Finalization、Final report
 - [ ] R104 另一個人依README可啟動；最終成果是可操作完成品
@@ -154,3 +154,13 @@
 - Utility完整局：seed 2048 / 42 / 7 均結束且有winner；seed 7 出現合作與背叛，非固定劇本。
 - Blender生成12組機器人，保留blend、GLB與生成script。
 - 首次Vite build成功，實際Chrome渲染有3D canvas，完整UI QA待續。
+
+### 實際QA階段
+- `npm test`：10項行為/整合測試通過，含多局自動重開與最多3筆紀錄保留的測試設定。
+- `npm run test:simulation`：20個種子完整結束，236結盟、248交易、14背叛、50合作。
+- Playwright/Chrome：desktop1600×1000、mobile390×844，所有16類操作流程通過，無page/console/request錯誤。
+- 真實Ollama結構化回覆通過驗證；cold-load約20秒，所以預設timeout改為30秒；Utility持續運行。
+- R075/R076：Web build可行，公開host未執行，保留同origin backend部署說明；不是Unity，所以Unity WebGL不適用。
+- R080：blend4.7MB、單一GLB约150KB，Git LFS已評估但不需要。
+- R085：gh已登入，本項無登入例外不適用；未繞過認證。
+- R093：實際20.28秒MP4已產出。

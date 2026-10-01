@@ -15,9 +15,12 @@
     "desktop": "electron .",
     "build:desktop": "npm run build && electron-builder --win --dir",
     "build:portable": "npm run build && electron-builder --win portable",
-    "assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-assets.ps1"
+    "assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-assets.ps1",
+    "test:desktop": "node scripts/qa-desktop.mjs",
+    "demo:video": "node scripts/demo-video.mjs"
   },
   "dependencies": {
+    "delaunator": "^5.1.0",
     "express": "^5.1.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
@@ -30,6 +33,7 @@
     "electron": "^44.5.1",
     "electron-builder": "^26.0.0",
     "playwright": "^1.55.0",
+    "prettier": "^3.9.9",
     "vite": "^7.0.0"
   },
   "build": {
@@ -50,8 +54,11 @@
       "target": [
         "portable"
       ],
-      "artifactName": "AI-Survival-Society-${version}.${ext}"
+      "artifactName": "AI-Survival-Society-${version}.${ext}",
+      "icon": "desktop/icon.ico",
+      "signExecutable": false
     },
-    "asar": true
-  }
+    "asar": false
+  },
+  "author": "Oliver"
 }

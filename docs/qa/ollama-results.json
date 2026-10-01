@@ -1,0 +1,31 @@
+{
+  "status": {
+    "state": "ready",
+    "requests": 1,
+    "completed": 1,
+    "failed": 0,
+    "discarded": 0,
+    "lastError": null,
+    "lastLatencyMs": 13331,
+    "pending": 0,
+    "active": 0,
+    "enabled": true,
+    "provider": "ollama",
+    "model": "qwen2.5:1.5b"
+  },
+  "decisions": [
+    [
+      "Agent_01",
+      {
+        "action": "rest",
+        "target": null,
+        "message": "Nova takes a moment to rest, feeling the weight of her journey starting to take its toll.",
+        "public_reason": "After a long and exhausting day, Nova decides it's time for a well-deserved break. She feels the need to recharge before continuing on her mission.",
+        "time": 12
+      }
+    ]
+  ],
+  "decisionSourceAfterTick": "llm",
+  "historianSource": "llm",
+  "historianNarration": "### History of the Simulation\n\n**Event 1: The Beginning (World Started, Chapter 1)**\n- Twelve strangers found themselves on an isolated island with no resources or knowledge.\n- They quickly realized they needed to cooperate for survival.\n\n**Event 2: Initial Cooperation and Scarcity (Chapter 2)**\n- They started building shelters, growing food, and trading among each other.\n- The first few days were tough; everyone was hungry and cold. They found a way to share what little they had with others who needed it.\n\n**Event 3: Deception and Betrayal (Chapter 3)**\n- One of the group, Iris, made false promises about staying safe but failed to keep them.\n- Kairo saw through her deception and decided to stay alone. This led to a rift in their alliance.\n\n**Event 4: Alliance Formation (Chapter 4)**\n- Juno and Pax formed an alliance by promising each other safety. They shared resources and protection.\n- Atlas and Nova also joined this alliance, forming another strong bond.\n\n**Event 5: Resource Scarcity and Deception (Chapter 5)**\n- Onyx found a food source but was caught stealing it from others. This led to a trade of medicine for food between Lyra and Sage.\n- Kairo stole food from Onyx without being noticed, which was later discovered by Iris.\n\n**Event 6: Alliance Breakdowns (Chapter 6)**\n- Atlas and Juno's alliance ended when Atlas stole food from Pax with a false promise. Both were caught but survived.\n- Nova and Rune's alliance broke down after Rune stole medicine from Juno without being noticed, leading to both losing their allies.\n\n**Event 7: Deception and Betrayal (Chapter 7)**\n- Vex saw through Iris’s deception about staying safe and formed an alliance with her. They shared resources but were later betrayed by Kairo.\n- Onyx stole food from Lyra without being noticed, leading to a trade of medicine for food between Sage and Lyra.\n\n**Event 8: Alliance Breakdowns (Chapter 8)**\n- Pax and Juno's alliance ended when Pax stole food from Atlas with a false promise. Both were caught but survived.\n- Rune and Lyra’s alliance broke down after Lyra stole medicine from Rune without being noticed, leading to both losing their allies.\n\n**Event 9: Deception (Chapter 9)**\n- Iris saw through Vex's false promises about staying safe and formed an alliance with her. They shared resources but were later betrayed by Kairo.\n- Echo saw through Vex’s false promise and formed an alliance with her, sharing medicine to help Vex survive.\n\n**Event 10: Alliance Breakdowns (Chapter 10)**\n- Pax and Nova's alliance ended when Pax stole food from Atlas with a false promise. Both were caught but survived.\n- Rune and Lyra’s alliance broke down after Lyra stole medicine from Rune without being noticed, leading to both losing their allies.\n\n**Event 11: Deception (Chapter 11)**\n- Kairo saw through Vex's false promises about staying safe and formed an alliance with her. They shared resources but were later betrayed by Echo.\n- Onyx stole food from Lyra without being noticed, leading to a trade of medicine for food between Sage and Lyra.\n\n**Event 12:"
+}

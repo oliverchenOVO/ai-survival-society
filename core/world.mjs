@@ -11,8 +11,16 @@ export function terrainHeight(x, z) {
   return 2.0 + Math.sin(x * 0.15) * Math.cos(z * 0.18) * 0.7 + mountain;
 }
 export function createResource(sim, type = null, position = null) {
-  const p = position ?? polar(Math.sqrt(sim.rng()) * Math.max(3, sim.safeRadius - 2), sim.rng() * Math.PI * 2);
+  const p =
+    position ??
+    polar(Math.sqrt(sim.rng()) * Math.max(3, sim.safeRadius - 2), sim.rng() * Math.PI * 2);
   const roll = sim.rng();
-  const kind = type ?? (roll < 0.65 ? 'food' : roll < 0.83 ? 'medicine' : roll < 0.94 ? 'weapon' : 'relic');
-  return { id: `Resource_${++sim.resourceId}`, type: kind, position: p, amount: kind === 'food' ? 2 : 1 };
+  const kind =
+    type ?? (roll < 0.65 ? 'food' : roll < 0.83 ? 'medicine' : roll < 0.94 ? 'weapon' : 'relic');
+  return {
+    id: `Resource_${++sim.resourceId}`,
+    type: kind,
+    position: p,
+    amount: kind === 'food' ? 2 : 1,
+  };
 }

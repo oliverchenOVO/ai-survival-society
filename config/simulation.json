@@ -14,7 +14,7 @@
     "endpoint": "http://127.0.0.1:11434",
     "model": "qwen2.5:1.5b",
     "temperature": 0.6,
-    "timeoutMs": 12000,
+    "timeoutMs": 30000,
     "intervalSeconds": 22,
     "concurrency": 1,
     "maxQueue": 6

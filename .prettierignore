@@ -1,0 +1,11 @@
+node_modules/
+builds/
+dist/
+Art/
+logs/
+saves/
+.qa/
+.runtime/
+docs/ORIGINAL_REQUIREMENTS.txt
+docs/qa/
+package-lock.json
