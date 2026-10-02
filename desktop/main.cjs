@@ -39,7 +39,7 @@ app.whenReady().then(async () => {
       if (!url.startsWith(origin + '/')) event.preventDefault();
     });
     win.webContents.session.on('will-download', (_, item) => {
-      if (!item.getFilename().endsWith('.json')) item.cancel();
+      if (!/\.(json|md|png)$/i.test(item.getFilename())) item.cancel();
     });
     await win.loadURL(origin);
   } catch (error) {

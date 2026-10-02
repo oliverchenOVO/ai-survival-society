@@ -36,7 +36,7 @@ const NAV = [
   ['network', 'nav.network', Network],
   ['director', 'nav.director', SlidersHorizontal],
 ];
-export default function App() {
+export default function App({ initialReplayId = null, initialReplayTime = 0 }) {
   const { t, error: localizeError } = useLocale();
   const [live, setLive] = useState(null),
     [connected, setConnected] = useState(false),
@@ -70,6 +70,22 @@ export default function App() {
       }),
     [],
   );
+  useEffect(() => {
+    if (!initialReplayId) return;
+    let disposed = false;
+    request('/api/replays/' + encodeURIComponent(initialReplayId))
+      .then((r) => {
+        if (!disposed) {
+          setReplay(r);
+          setReplayTime(Math.max(0, Math.min(initialReplayTime, r.elapsed)));
+          setDialog(null);
+        }
+      })
+      .catch(onError);
+    return () => {
+      disposed = true;
+    };
+  }, [initialReplayId]);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(''), 5000);
@@ -116,7 +132,12 @@ export default function App() {
     };
   }, []);
   useEffect(() => {
-    if (live?.status === 'finished' && finished.current !== live.matchId && !replay) {
+    if (
+      live?.status === 'finished' &&
+      finished.current !== live.matchId &&
+      !replay &&
+      !initialReplayId
+    ) {
       finished.current = live.matchId;
       setCompletedResult(live);
       setDialog('winner');
@@ -462,6 +483,11 @@ export default function App() {
       </footer>
       {replay ? (
         <div className="replay-bar">
+          {replay.simulation_id ? (
+            <a className="button" href={'/story/' + replay.simulation_id}>
+              {t('story.return')}
+            </a>
+          ) : null}
           <button aria-label={t('replay.play')} onClick={() => setReplayPlaying(!replayPlaying)}>
             {replayPlaying ? <Pause size={15} /> : <Play size={15} />}
           </button>

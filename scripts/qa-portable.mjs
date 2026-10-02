@@ -9,7 +9,7 @@ const probe = net.createServer();
 await new Promise((resolve) => probe.listen(0, '127.0.0.1', resolve));
 const debugPort = probe.address().port;
 await new Promise((resolve) => probe.close(resolve));
-const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.1.1.exe');
+const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.4.0.exe');
 const processHandle = spawn(exe, [`--remote-debugging-port=${debugPort}`], {
   stdio: 'ignore',
   windowsHide: true,

@@ -3,7 +3,7 @@
 來源：`docs/ORIGINAL_REQUIREMENTS.txt`（完整保存使用者提示詞）。
 勾選僅代表已實作並驗證。可選功能與條件功能仍需明確說明結果；不得當作無条件必須功能或默默省略。
 
-目前：完整實作與逐項驗收完成；条件/可選功能的限制詳見FINAL_REPORT.md，沒有把未公開部署或完整重播寫成已實作。
+原始版本驗收保留於下方；本次 v1.4 的逐項驗收見本文末尾與 docs/V1.4_REPORT.md。未公開部署、crawler 圖片 metadata 與可選功能均明列限制。
 
 ## 流程與環境
 
@@ -218,3 +218,41 @@
 - L10：1920×1080、1366×768 的 controls/文字 scrollWidth 與 peer overlap 全通過；Browser/桌面實跑截圖存 docs/images/zh-TW-*，人工視覺確認。
 - L11：npm test 15 項＋100-seed gate、20-seed simulation、原有15組 UI、結算回歸、繁中UI/斷線/錯誤、unpacked＋portable desktop QA 通過。
 - L12：JSX AST＋runtime 英文漏翻掃描通過，README 與 docs/LOCALIZATION.md 已補語言切換及維護方式；Git/私人release交付見 localization report 與最終回覆。
+# v1.4 Shareable Simulation Stories acceptance
+
+- [x] Read complete v1.4 prompt and inspect existing save/log/replay/historian/event/relationship/memory/i18n/server/Electron systems.
+- [x] Write docs/V1.4_PLAN.md and reuse existing archive and portraits.
+- [x] Stable short URL-safe simulation_id, independent crypto RNG, persisted across Story/Replay/export and restart.
+- [x] Versioned render-ready facts; schemaVersion 1 migration, unknown/corrupt format explicit failure.
+- [x] Automatic permanent completed saves, bounded unfinished/debug logs, durable deletion.
+- [x] Persisted independent /story/:id route; winner and extinction hero with ID/seed/date/duration/all statistics.
+- [x] Data-derived five-phase bilingual summary independent of LLM.
+- [x] Importance ranking with first/rare/social/combat/Director/final bonuses; limited major moments.
+- [x] Collapsed complete timeline with category/type/agent/time filtering and pagination.
+- [x] All cast cards with existing portraits, personality/fate/survival/four counters.
+- [x] Agent life modal with biography, relationships, memories, personality and stats; no unsupported psychological claims.
+- [x] Final relationship network with friendship/alliance/hostility and clickable pair timelines.
+- [x] Important recorded relationship influences labelled honestly; no invented directional evolution.
+- [x] Final Three / Last to Fall with truthful simultaneous ties and short biographies.
+- [x] Data-derived awards with documented formulas and zero/tie handling.
+- [x] Copy link, Web Share fallback, explicit local-only scope, configurable PUBLIC_BASE_URL.
+- [x] Local 1200×630 share card and PNG download in Browser and Electron.
+- [x] Safe JSON and complete Markdown story export (summary/result/stats/moments/cast/historian).
+- [x] Upgrade unified library with ID/date/seed/outcome/duration/stats, search and five sorts, Story/Replay/Export/Delete.
+- [x] Completion modal View Story without manual Save.
+- [x] Authoritative list/detail/export/delete APIs; path validation and mutation origin guard.
+- [x] Public serialization excludes secrets, provider config, paths and machine identity; escaped untrusted prose.
+- [x] DATA_DIR/Docker persistence and public deployment documentation; truthful OG metadata status.
+- [x] New UI centralized zh-TW/en catalog, CJK font fallback, cold editorial large-section design.
+- [x] Major-moment replay seek and return to Story without rewriting engine.
+- [x] Core/config unchanged; exact deterministic 100-seed benchmark unchanged.
+- [x] Tests: serializer/ranking/biography/final-three/ID/persistence/API/locales/export/escaping/share URL/migration.
+- [x] QA: winner/extinction/reload/old save/unknown/corrupt/long-many-events/no LLM/free prose/XSS/restart/continuous.
+- [x] Browser QA: zh/en, 1920×1080, 1366×768, mobile, share/download/library/delete/deep-link.
+- [x] Electron QA: route/locale/PNG/Markdown/replay/persistence and existing desktop regression.
+- [x] Re-run npm test, i18n, simulation, Browser and desktop regression.
+- [x] Four actual screenshots: v1.4-story-hero, major-moments, agent-story, share-card in docs/images.
+- [x] README and 17-section docs/V1.4_REPORT.md with limitations and validation evidence.
+- [ ] Version 1.4.0 metadata, reasonable commits, clean tree, push main to existing private repo.
+- [ ] After acceptance: v1.4.0 tag/private release, Traditional Chinese notes and Windows portable asset.
+

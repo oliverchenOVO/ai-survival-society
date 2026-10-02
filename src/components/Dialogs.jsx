@@ -321,8 +321,17 @@ export function Winner({ state, onClose, onRestart }) {
         )}
       </div>
       <div className="modal-footer">
+        {state.simulation_id ? (
+          <a className="button primary" href={'/story/' + state.simulation_id}>
+            {t('story.view')}
+          </a>
+        ) : null}
         {exportUrl ? (
-          <a className="button" href={exportUrl} download={`society-${state.matchId}.json`}>
+          <a
+            className="button"
+            href={exportUrl}
+            download={`society-${state.simulation_id ?? state.matchId}.json`}
+          >
             <Download size={14} />
             {t('result.export')}
           </a>
@@ -338,49 +347,132 @@ export function Winner({ state, onClose, onRestart }) {
   );
 }
 export function ReplayLibrary({ onClose, onLoad, onError }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [items, setItems] = useState(null);
+  const [search, setSearch] = useState(''),
+    [sort, setSort] = useState('newest');
+  const visible = (items ?? [])
+    .filter((r) => [r.id, r.seed, r.winner].join(' ').toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) =>
+      sort === 'oldest'
+        ? (a.date ?? '').localeCompare(b.date ?? '')
+        : sort === 'longest'
+          ? b.elapsed - a.elapsed
+          : sort === 'combat'
+            ? (b.stats?.kills ?? 0) - (a.stats?.kills ?? 0)
+            : sort === 'sociable'
+              ? (b.stats?.trades ?? 0) +
+                (b.stats?.alliances ?? 0) -
+                ((a.stats?.trades ?? 0) + (a.stats?.alliances ?? 0))
+              : (b.date ?? '').localeCompare(a.date ?? ''),
+    );
   useEffect(() => {
     request('/api/replays').then(setItems).catch(onError);
   }, []);
   return (
     <Modal title={t('replay.title')} onClose={onClose} wide>
       <p className="muted">{t('replay.intro')}</p>
+      <h3>{t('story.library')}</h3>
+      <div className="library-tools">
+        <input
+          aria-label={t('story.search')}
+          placeholder={t('story.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select aria-label={t('story.sort')} value={sort} onChange={(e) => setSort(e.target.value)}>
+          {['newest', 'oldest', 'longest', 'combat', 'sociable'].map((k) => (
+            <option key={k} value={k}>
+              {t('story.' + k)}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="archive-list">
-        {items?.length ? (
-          items.map((r) => (
-            <button
-              key={r.id}
-              onClick={async () => {
-                try {
-                  onLoad(await request(`/api/replays/${r.id}`));
-                  onClose();
-                } catch (e) {
-                  onError(e);
-                }
-              }}
-            >
-              <div>
-                <strong>Seed {r.seed}</strong>
-                <span>
-                  {r.winner
-                    ? t('replay.survived', {
-                        name: r.winner,
-                      })
-                    : r.outcome?.kind === 'extinction'
-                      ? t('replay.extinction')
-                      : t('replay.status', {
-                          status: t('status.' + r.status),
-                        })}{' '}
-                  ·{' '}
-                  {t('replay.events', {
-                    count: r.events,
-                  })}
-                </span>
+        {visible.length ? (
+          visible.map((r) => (
+            <article className="library-entry" key={r.id}>
+              <button
+                key={r.id}
+                data-testid="library-replay"
+                disabled={r.error}
+                onClick={async () => {
+                  try {
+                    onLoad(await request(`/api/replays/${r.id}`));
+                    onClose();
+                  } catch (e) {
+                    onError(e);
+                  }
+                }}
+              >
+                <div>
+                  <strong>{r.error ? t('story.unavailable') : `Seed ${r.seed}`}</strong>
+                  <small className="library-id">{r.id}</small>
+                  <span>
+                    {r.error
+                      ? t('story.error')
+                      : r.winner
+                        ? t('replay.survived', {
+                            name: r.winner,
+                          })
+                        : r.outcome?.kind === 'extinction'
+                          ? t('replay.extinction')
+                          : t('replay.status', {
+                              status: t('status.' + r.status),
+                            })}{' '}
+                    ·{' '}
+                    {t('replay.events', {
+                      count: r.events,
+                    })}
+                  </span>
+                </div>
+                <time>{r.error ? '—' : formatTime(r.elapsed)}</time>
+                <ArrowRight size={17} />
+              </button>
+              <div className="library-meta">
+                <time>
+                  {r.date ? new Date(r.date).toLocaleString(locale) : t('story.unknownDate')}
+                </time>
+                {['kills', 'trades', 'alliances', 'betrayals'].map((k) => (
+                  <span key={k}>
+                    {t('stats.' + k)} {r.stats?.[k] ?? 0}
+                  </span>
+                ))}
               </div>
-              <time>{formatTime(r.elapsed)}</time>
-              <ArrowRight size={17} />
-            </button>
+              <div className="library-actions">
+                {r.status === 'finished' ? (
+                  <>
+                    <a className="button" href={'/story/' + r.id}>
+                      {t('story.view')}
+                    </a>
+                    <a
+                      className="button"
+                      href={`/api/stories/${r.id}/export?format=markdown&lang=${locale}`}
+                      download
+                    >
+                      {t('story.markdown')}
+                    </a>
+                    <a className="button" href={`/api/stories/${r.id}/export`} download>
+                      {t('story.json')}
+                    </a>
+                  </>
+                ) : null}
+                <button
+                  onClick={async () => {
+                    if (!confirm(t('story.confirmDelete'))) return;
+                    try {
+                      const res = await fetch('/api/stories/' + r.id, { method: 'DELETE' });
+                      if (!res.ok) throw new Error(t('story.error'));
+                      setItems(items.filter((i) => i.id !== r.id));
+                    } catch (e) {
+                      onError(e);
+                    }
+                  }}
+                >
+                  {t('story.delete')}
+                </button>
+              </div>
+            </article>
           ))
         ) : (
           <p>{items ? t('replay.empty') : t('replay.loading')}</p>

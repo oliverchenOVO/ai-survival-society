@@ -33,6 +33,8 @@ const check = (name) => {
   console.log('PASS', name);
 };
 const allowed = new Set([
+  'ID',
+  'Markdown',
   'AI',
   'SURVIVAL',
   'SOCIETY',
@@ -70,7 +72,9 @@ async function audit(label) {
         .map((e) => e.getAttribute('title') || e.getAttribute('aria-label'))
         .join('\n'),
   );
-  const words = [...new Set(text.match(/[A-Za-z_]+/g) ?? [])].filter((w) => !allowed.has(w));
+  const words = [
+    ...new Set(text.replace(/S-[0-9A-HJKMNP-TV-Z]{16}/g, '').match(/[A-Za-z_]+/g) ?? []),
+  ].filter((w) => !allowed.has(w));
   assert.deepEqual(words, [], `${label}: residual English`);
   const result = await page.evaluate(() => {
     const clipped = [
