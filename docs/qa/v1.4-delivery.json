@@ -1,0 +1,22 @@
+{
+  "version": "1.4.0",
+  "sourceCommit": "f187e992f0a3f936e4dcc12edfe32751d03f42e7",
+  "baseline": "5d7910f",
+  "unitTests": 21,
+  "seedBenchmark": 100,
+  "deterministicBenchmarkUnchanged": true,
+  "simulationMatches": 20,
+  "browserStory": "PASS",
+  "desktopStory": "PASS",
+  "localization": "PASS",
+  "browserRegression": "PASS",
+  "desktopRegression": "PASS",
+  "resultsRegression": "PASS",
+  "portableLaunch": "PASS",
+  "portableFile": "AI-Survival-Society-1.4.0.exe",
+  "portableSize": 102527806,
+  "portableSHA256": "508B6B40CBD697DD9EA21A437517E1F265370A77F1434AB083E0ECBD2EC1A10A",
+  "releaseStatus": "awaiting private release",
+  "publicDeployment": "not requested",
+  "crawlerMetadata": "text implemented; server image metadata prepared"
+}

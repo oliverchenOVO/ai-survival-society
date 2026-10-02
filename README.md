@@ -4,7 +4,7 @@
 
 **v1.1 已完成模擬品質與結算修正。** 100個 utility-only deterministic seeds 全部有交易、聯盟及戰鬥，無零社交全滅；平均交易由11.30提升至14.82次（同一50-seed cohort）。連續模式結算與匯出固定在完成的局，全滅使用EXTINCTION EVENT。完整量測、限制及驗收見 [v1.1 report](docs/V1.1_REPORT.md)。`npm test` 已包含兩組50-seed防退化基準，`npm run test:results`驗證結算UI。
 
-**v1.1.1 已正式加入繁體中文。** 預設 zh-TW，在 **設定 → 語言** 切換 **繁體中文 / English**，立即生效並在重開 Browser / Electron 後保留。模擬核心、Seed 與 gameplay 保持不變。架構與完整驗收見 [本地化說明](docs/LOCALIZATION.md)。
+**v1.4.0 — Shareable Simulation Stories。** 完成局自動成為永久保存的雙語故事：結果、五段摘要、關鍵時刻、角色生平、關係歷史與重播，並可下載分享卡、Markdown 和 JSON。模擬核心、Seed 與 gameplay 保持不變。架構與驗收見 [v1.4 報告](docs/V1.4_REPORT.md)。
 
 ![繁體中文世界](docs/images/zh-TW-world-1920.png)
 
@@ -16,7 +16,7 @@ Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://127
 
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
-最新單檔桌面版：[私人 Release v1.1.1](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.1.1)，下載 `AI-Survival-Society-1.1.1.exe` 即可執行。
+最新單檔桌面版：[私人 Release v1.4.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.4.0)，下載 `AI-Survival-Society-1.4.0.exe` 即可執行。舊版 Release 保留。
 
 遊戲啟動後自動運行。上方可暫停／繼續／重新開始、設定速度。設定可切換語言、改 Seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
 
@@ -39,7 +39,22 @@ Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://127
 - Shrinking safety zone, winner statistics and an event-derived four-chapter historian.
 - Automatic JSON logs, saved timelines, export/import and observational replay.
 - Optional asynchronous Ollama or OpenAI-compatible model decisions, with bounded queues, validation, timeouts and Utility AI fallback.
-- Continuous mode: a new seed begins 35 seconds after the winner screen. The most recent 30 saved runs are retained.
+- Shareable Simulation Stories: stable Story IDs, ranked moments, cast biographies, final-three endings, social history, searchable library, 1200×630 PNG cards and Markdown exports.
+- Continuous mode: a new seed begins 35 seconds after the result. Completed stories remain until explicitly deleted; only unfinished snapshots and debug logs are capped at 30.
+
+### 開啟歷史故事
+
+一局結束後點 **觀看故事**，不必先手動 Save。也可從左側 **模擬檔案庫** 搜尋 Story ID、Seed 或生還者，選擇 **觀看故事**。故事網址為 `/story/S-…`；資料来自已保存的完成局，重開服務或觀看另一局不會改變結果。
+
+故事頁可切換繁體中文／English、查看角色生命軌跡與兩者互動紀錄。重大事件的 **重看此刻** 會開啟 `/replay/:id?t=秒數`，再按 **返回故事**。完整時間軸預設收合，每頁 25 筆，支援分類、事件、角色與時間篩選。
+
+**複製連結** 在本機只供同一部電腦使用；PNG／Markdown／JSON 可直接傳送。部署網站後，可設定 `PUBLIC_BASE_URL=https://你的網站`；這僅改分享網址，**不會上傳本機故事**，公開伺服器必須保存同一份資料。`DATA_DIR` 中的 `saves/` 與刪除標記須持續保存，Docker 請掛載 `/data` volume。
+
+Server 已提供逐則故事的 Open Graph **文字** metadata；PNG 分享卡目前在 Browser／Electron 生成下載，尚未提供供 crawler 抓取的公開 PNG URL，不能保證社群平台的圖片預覽。詳見 [部署限制](docs/V1.4_REPORT.md#16-deployment-implications)。
+
+![繁體中文 Story](docs/images/v1.4-story-hero.png)
+
+故事驗證：`npm run test:story`；實際桌面版：`npm run build:desktop` 後執行 `npm run test:story:desktop`。原有 `npm test`、`test:i18n`、`test:ui`、`test:desktop` 與 `test:simulation` 仍可執行。
 
 | Agent inspector | Social network |
 |---|---|
@@ -111,7 +126,7 @@ npm run build:desktop
 # Output: builds/win-unpacked/AI Survival Society.exe
 
 npm run build:portable
-# Output: builds/AI-Survival-Society-1.0.0.exe
+# Output: builds/AI-Survival-Society-1.4.0.exe
 ```
 
 The build uses Electron and packages the Node server with the app. The unpacked folder is a valid runnable development distribution. Portable builds are unsigned. Cold self-extraction can take about a minute; the unpacked executable starts faster. Close any running copy before replacing its build folder.

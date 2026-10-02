@@ -89,7 +89,7 @@ try {
   check(
     'Story routes, winner, 12 portraits, bilingual UI, collapsed timeline and three viewport sizes',
   );
-  await page.locator('#moments').scrollIntoViewIfNeeded();
+  await page.locator('#moments').evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await page.screenshot({ path: 'docs/images/v1.4-major-moments.png', scale: 'css' });
   await page.locator('.cast-card').first().click();
   await page.getByRole('dialog').waitFor();
@@ -98,6 +98,8 @@ try {
   await page.getByRole('button', { name: '關閉視窗' }).click();
   await page.locator('.story-edge').first().press('Enter');
   await page.getByRole('dialog').waitFor();
+  await page.getByRole('heading', { name: '最終單向關係值' }).waitFor();
+  assert.equal(await page.locator('.life-relations article').count(), 2);
   assert.ok((await page.locator('.story-full-timeline .story-event').count()) <= 25);
   await page.getByRole('button', { name: '關閉視窗' }).click();
   check(
