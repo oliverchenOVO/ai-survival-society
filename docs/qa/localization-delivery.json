@@ -1,0 +1,38 @@
+{
+  "version": "1.1.1",
+  "codeCommit": "177d6d995757edc83fb4af273ad60257c56074b8",
+  "repository": "oliverchenOVO/ai-survival-society",
+  "repositoryVisibility": "private",
+  "defaultLocale": "zh-TW",
+  "locales": [
+    "zh-TW",
+    "en"
+  ],
+  "catalogKeys": 360,
+  "unitServerLocalizationTests": 15,
+  "benchmarkSeeds": 100,
+  "benchmarkJsonUnchanged": true,
+  "simulationSmokeMatches": 20,
+  "legacyBrowserWorkflowGroups": 15,
+  "browserLocalizationQA": "PASS",
+  "desktopQA": "PASS",
+  "portableQA": "PASS",
+  "simulationCoreAndConfigUnchanged": true,
+  "portable": {
+    "file": "AI-Survival-Society-1.1.1.exe",
+    "bytes": 102494766,
+    "sha256": "E433CC0D364451A64383D8B64F49C81586278460E7BFAFB548030920F93A2411"
+  },
+  "runtimeService": {
+    "url": "http://127.0.0.1:4310",
+    "version": "1.1.1",
+    "defaultLocale": "zh-TW"
+  },
+  "release": {
+    "url": "https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.1.1",
+    "draft": false,
+    "assetState": "uploaded",
+    "remoteSizeMatches": true,
+    "remoteSha256Matches": true
+  }
+}

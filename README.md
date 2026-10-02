@@ -16,6 +16,8 @@ Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://127
 
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
+最新單檔桌面版：[私人 Release v1.1.1](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.1.1)，下載 `AI-Survival-Society-1.1.1.exe` 即可執行。
+
 遊戲啟動後自動運行。上方可暫停／繼續／重新開始、設定速度。設定可切換語言、改 Seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
 
 ### 介面語言

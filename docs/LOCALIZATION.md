@@ -53,4 +53,6 @@ Browser plugin 未提供，依 frontend testing skill 使用 Playwright Chrome�
 
 Windows 單檔程式：`builds/AI-Survival-Society-1.1.1.exe`。v1.1.0 舊 release 與 SHA256 記錄保持原樣；v1.1.1 是本輪本地化版本。
 
+[私人 GitHub Release v1.1.1](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.1.1) 已上傳、完成發佈；GitHub 回報的 SHA256 與檔案大小均和本機驗證版本一致。程式提交為 `177d6d995757edc83fb4af273ad60257c56074b8`。
+
 檔案大小 102,494,766 bytes；SHA256：`E433CC0D364451A64383D8B64F49C81586278460E7BFAFB548030920F93A2411`。Docker runtime 同步包含純 JavaScript 字串目錄；Docker 本身維持原版「未實跑」驗證狀態。

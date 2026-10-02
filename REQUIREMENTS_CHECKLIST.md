@@ -218,4 +218,3 @@
 - L10：1920×1080、1366×768 的 controls/文字 scrollWidth 與 peer overlap 全通過；Browser/桌面實跑截圖存 docs/images/zh-TW-*，人工視覺確認。
 - L11：npm test 15 項＋100-seed gate、20-seed simulation、原有15組 UI、結算回歸、繁中UI/斷線/錯誤、unpacked＋portable desktop QA 通過。
 - L12：JSX AST＋runtime 英文漏翻掃描通過，README 與 docs/LOCALIZATION.md 已補語言切換及維護方式；Git/私人release交付見 localization report 與最終回覆。
-
