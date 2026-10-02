@@ -1,9 +1,9 @@
 {
-  "executablePath": "builds/AI-Survival-Society-1.0.0.exe",
+  "executablePath": "C:\\Users\\oliver\\Desktop\\CodeX開發小東東\\AI Survival Society\\builds\\AI-Survival-Society-1.1.0.exe",
   "launch": "PASS",
   "canvas": "PASS",
   "pauseResumeRestartSelection": "PASS",
   "rendererNodeAccess": "unavailable",
   "rendererErrors": [],
-  "verificationMethod": "Launched actual portable exe with a fixed Chromium debug port; CDP attached after NSIS extraction. electron.launch cannot use wrapper stderr; cold extraction takes about a minute."
+  "verificationMethod": "Real portable executable launched, then attached through Chromium DevTools. NSIS does not forward the stderr awaited by electron.launch."
 }

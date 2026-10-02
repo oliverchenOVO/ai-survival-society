@@ -62,7 +62,7 @@ export function candidates(sim, a) {
       resources[0].position,
     );
   const nearby = sim.agents.filter(
-    (b) => b.alive && b.id !== a.id && distance(a.position, b.position) < 9,
+    (b) => b.alive && b.id !== a.id && distance(a.position, b.position) < sim.config.socialRadius,
   );
   a.observed = nearby.length
     ? `${nearby
@@ -92,14 +92,18 @@ export function candidates(sim, a) {
         b.id,
         `An alliance with ${b.name} offers mutual protection.`,
       );
-    if (a.inventory.food > 1 && (b.inventory.food < 1 || b.hunger > 35))
+    if (a.inventory.food > 1 && (b.inventory.food < 1 || b.hunger > 35) && r.hostility < 0.5)
       add(
         'trade',
-        0.45 + p.sociability * 0.3 + p.greed * 0.18 + r.trust * 0.2,
+        0.45 +
+          p.sociability * 0.3 +
+          p.greed * 0.18 +
+          r.trust * 0.2 +
+          (a.inventory.medicine === 0 && b.inventory.medicine > 0 ? 0.3 : 0),
         b.id,
         'Exchange surplus food for medicine or a future favor.',
       );
-    if (a.inventory.food === 0 && b.inventory.food > 1)
+    if (a.inventory.food === 0 && b.inventory.food > 1 && relation(b, a).hostility < 0.5)
       add(
         'trade',
         0.4 + urgent + r.trust * 0.3 - p.aggression * 0.15,
@@ -108,7 +112,8 @@ export function candidates(sim, a) {
       );
     if (
       r.alliance &&
-      ((b.hp < 65 && a.inventory.medicine) || (b.hunger > 55 && a.inventory.food > 1))
+      (((b.hp < 75 || b.infected) && a.inventory.medicine) ||
+        (b.hunger > 35 && b.inventory.food === 0 && a.inventory.food > 1))
     )
       add(
         'cooperate',

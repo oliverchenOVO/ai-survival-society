@@ -174,3 +174,24 @@
 - R104：真正執行啟動、重复啟動、停止、重新啟動腳本，無重複server，保留正式版持續運行。
 - 條件/可選範圍：公開部署未實作；Docker未實跑；remote模型未用外部credential驗證；Replay為timeline/sampled觀察；optional audio有ambient與event，無獨立UI click音效；上述皆如實記錄。
 - 一般Git追蹤排除runtime/cache/build/model weights/secrets；private release單獨附可執行檔。
+
+## v1.1 模擬品質與結算修正
+- [x] V101：開發前追蹤全部新增要求；結束逐項驗收。
+- [x] V102：至少50個 deterministic utility-only seed 基準，無Director或LLM介入。
+- [x] V103：平均局長、角色存活時間、首次社交時間、trade/alliance/combat/betrayal發生率。
+- [x] V104：比較調整前後，調整utility、資源互補、社交半徑、安全區與生存壓力；禁止固定劇本。
+- [x] V105：大多數seed有多次跨角色實質互動；量測零社交全滅，加入持續防退化benchmark。
+- [x] V106：同tick環境死亡公平處理，全滅明確EXTINCTION結局，無LAST SURVIVOR誤標。
+- [x] V107：連續模式结算資料保持同局，時間、統計、匯出一致；瀏覽器回歸。
+- [x] V108：觀賞性以正確局末社會摘要為此次範圍；角色卡/導播等既有功能保留，新增完整cinematic與人生軌跡列後續。
+- [x] V109：公開網站建議列後續；此輪不直接公開部署，說明Docker與server-side key現況。
+- [x] V110：測試、正式建置、文件、版本與可重复運行交付。
+
+
+### v1.1 逐項驗收記錄
+- V101–V103：先建追加清單；原版50-seed對照與新版兩組50-seed結果保留完整JSON，時間缺失單獨計數。
+- V104–V105：無LLM/Director/劇本；交易11.30→14.82、互助2.84→3.60；100/100局均有交易、聯盟、戰鬥，零社交全滅0。npm test和本機pre-push hook執行gate；GitHub CI僅範本，帳號缺workflow scope。
+- V106–V107：反轉角色順序的同tick死亡測試通過；全滅banner/modal/archive語義修正；跨局結算不漂移，兩次不同結局的匯出ID/統計/結果通過真實瀏覽器測試。
+- V108–V109：本輪局末社會摘要已實作；新對話氣泡/聯盟動畫/死亡cinematic/完整人生軌跡與公開部署明確延後，未宣稱實作。Docker仍未實跑、remote key維持server-side。
+- V110：11核心/HTTP測試、100-seed gate、20-seed smoke、15组瀏覽器workflow、結果桌面/mobile回歸、Windows unpacked及portable啟動均有證據；最後封裝與Git交付記錄見V1.1_REPORT。
+

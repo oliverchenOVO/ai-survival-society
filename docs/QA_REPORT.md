@@ -1,5 +1,7 @@
 # QA report
 
+**v1.1 validation:** 11 unit/server tests, both 50-seed social regression suites, the 20-seed smoke suite, full 15-group browser workflow and automatic-restart/export/extinction UI regression passed. See [V1.1_REPORT.md](V1.1_REPORT.md) and `docs/qa/results-ui.json`. The v1.0 results below are historical; current `simulation-results.json` is regenerated with winner/extinction semantics.
+
 Validation date: 2026-10-02, Asia/Taipei. Tests use actual running simulation, API, Chromium renderer and packaged executable.
 
 ## Results

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Stop pushes when unit/server checks or either social cohort regresses.
+exec npm test

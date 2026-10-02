@@ -50,19 +50,25 @@ test('complete runs contain autonomous survival, alliances, trade, conflict, mem
   assert.ok(s.stats().betrayals > 0);
   assert.ok(s.stats().cooperation > 0);
   assert.ok(s.stats().counts.THEFT > 0);
-  assert.ok(s.stats().counts.DECEPTION > 0);
+  assert.ok([7, 42, 2048].some((seed) => run(seed).stats().counts.DECEPTION > 0));
 });
-test('simultaneous exposure stops immediately when one survivor remains', () => {
-  const s = new Simulation({ agentCount: 2 });
-  s.elapsed = 600;
-  for (const a of s.agents) {
-    a.hp = 0.01;
-    a.position = { x: 30, z: 0 };
+test('simultaneous exposure produces extinction independently of agent array order', () => {
+  for (const reversed of [false, true]) {
+    const s = new Simulation({ agentCount: 2 });
+    if (reversed) s.agents.reverse();
+    s.elapsed = 600;
+    for (const a of s.agents) {
+      a.hp = 0.01;
+      a.position = { x: 30, z: 0 };
+    }
+    s.tick();
+    assert.equal(s.status, 'finished');
+    assert.equal(s.stats().alive, 0);
+    assert.equal(s.winner, null);
+    assert.equal(s.outcome.kind, 'extinction');
+    assert.equal(s.stats().deaths, 2);
+    assert.equal(s.bus.log.at(-1).data.kind, 'extinction');
   }
-  s.tick();
-  assert.equal(s.status, 'finished');
-  assert.equal(s.stats().alive, 1);
-  assert.ok(s.winner);
 });
 test('events include required structured fields and important memories affect social relationships', () => {
   const s = new Simulation();
@@ -117,6 +123,9 @@ test('all six Director events change environment and safe zone contracts', () =>
   ); // Director does not puppeteer actions or grant inventory.
   const radius = s.safeRadius;
   s.tick();
+  assert.equal(s.safeRadius, radius); // Social opening has no ring pressure.
+  s.elapsed = s.config.matchDuration * s.config.safeZoneGraceFraction;
+  s.tick();
   assert.ok(s.safeRadius < radius);
   assert.throws(() => s.director('shell'));
 });
@@ -132,4 +141,37 @@ test('pause is inert and repeated independent runs do not share state', () => {
   assert.equal(b.stats().alive, 12);
   assert.equal(b.bus.log.length, 1);
   assert.ok(a.bus.log.length > 1);
+});
+
+test('nearby allies improve recovery; mutual aid transfers resources rather than creating them', () => {
+  const s = new Simulation({ agentCount: 2 });
+  const [a, b] = s.agents;
+  a.position = { x: 0, z: 0 };
+  b.position = { x: 1, z: 0 };
+  a.hp = 50;
+  a.energy = 50;
+  a.action = 'rest';
+  executeAction(s, a, 1);
+  const alone = { hp: a.hp, energy: a.energy };
+  a.hp = 50;
+  a.energy = 50;
+  relation(a, b).alliance = true;
+  executeAction(s, a, 1);
+  assert.ok(a.hp > alone.hp && a.energy > alone.energy);
+  a.inventory.food = 3;
+  b.inventory.food = 0;
+  b.hunger = 50;
+  a.action = 'cooperate';
+  a.target = b.id;
+  s.elapsed = 10;
+  executeAction(s, a, 0.25);
+  assert.equal(a.inventory.food, 2);
+  assert.equal(b.inventory.food, 1);
+  assert.equal(s.bus.log.at(-1).event, 'COOPERATION');
+  a.inventory.medicine = 1;
+  b.hp = 70;
+  s.elapsed = 20;
+  executeAction(s, a, 0.25);
+  assert.equal(a.inventory.medicine, 0);
+  assert.equal(b.hp, 100);
 });

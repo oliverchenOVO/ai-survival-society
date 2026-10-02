@@ -47,6 +47,9 @@ export class Persistence {
             id: data.matchId,
             seed: data.seed,
             status: data.status,
+            outcome:
+              data.outcome ??
+              (data.status === 'finished' ? { kind: data.winner ? 'winner' : 'extinction' } : null),
             elapsed: data.elapsed,
             winner: data.agents.find((a) => a.id === data.winner)?.name ?? null,
             events: data.events.length,

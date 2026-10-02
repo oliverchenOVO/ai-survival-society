@@ -59,8 +59,15 @@ export function executeAction(sim, a, dt) {
     return;
   }
   if (a.action === 'rest') {
-    a.energy = clamp(a.energy + dt * 4, 0, 100);
-    a.hp = clamp(a.hp + dt * 0.15, 0, 100);
+    const sheltered = sim.agents.some(
+      (b) =>
+        b.alive &&
+        b.id !== a.id &&
+        relation(a, b).alliance &&
+        distance(a.position, b.position) < 3.5,
+    );
+    a.energy = clamp(a.energy + dt * (sheltered ? 5 : 4), 0, 100);
+    a.hp = clamp(a.hp + dt * (sheltered ? 0.3 : 0.15), 0, 100);
     return;
   }
   if (a.action === 'eat' && a.inventory.food && sim.elapsed - a.lastAction > 1.5) {
@@ -164,7 +171,7 @@ export function executeAction(sim, a, dt) {
     }
     case 'cooperate': {
       let resource;
-      if (b.hp < 65 && a.inventory.medicine > 0) {
+      if ((b.hp < 75 || b.infected) && a.inventory.medicine > 0) {
         a.inventory.medicine--;
         b.hp = Math.min(100, b.hp + 30);
         b.infected = false;

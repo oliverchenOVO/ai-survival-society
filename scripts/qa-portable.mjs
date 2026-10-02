@@ -1,27 +1,30 @@
 import { chromium } from 'playwright';
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { readFile, stat, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-const debugFile = path.join(process.env.APPDATA, 'ai-survival-society', 'DevToolsActivePort');
-const oldStamp = await stat(debugFile)
-  .then((s) => s.mtimeMs)
-  .catch(() => 0);
-const exe = path.resolve('builds/AI-Survival-Society-1.0.0.exe');
-const processHandle = spawn(exe, ['--remote-debugging-port=0'], { stdio: 'ignore' });
+import net from 'node:net';
+const probe = net.createServer();
+await new Promise((resolve) => probe.listen(0, '127.0.0.1', resolve));
+const debugPort = probe.address().port;
+await new Promise((resolve) => probe.close(resolve));
+const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.1.0.exe');
+const processHandle = spawn(exe, [`--remote-debugging-port=${debugPort}`], { stdio: 'ignore' });
 let browser, page;
 try {
   const deadline = Date.now() + 120000;
   let port;
   while (Date.now() < deadline) {
-    const stamp = await stat(debugFile)
-      .then((s) => s.mtimeMs)
-      .catch(() => 0);
-    if (stamp > oldStamp) {
-      port = Number((await readFile(debugFile, 'utf8')).split('\n')[0]);
-      if (port) break;
-    }
+    try {
+      const response = await fetch(`http://127.0.0.1:${debugPort}/json/version`, {
+        signal: AbortSignal.timeout(1000),
+      });
+      if (response.ok) {
+        port = debugPort;
+        break;
+      }
+    } catch {}
     await new Promise((r) => setTimeout(r, 250));
   }
   assert.ok(port, 'Portable must start its Chromium debug target within 120 seconds');
@@ -55,7 +58,7 @@ try {
     'docs/qa/portable-results.json',
     JSON.stringify(
       {
-        executablePath: 'builds/AI-Survival-Society-1.0.0.exe',
+        executablePath: exe,
         launch: 'PASS',
         canvas: 'PASS',
         pauseResumeRestartSelection: 'PASS',

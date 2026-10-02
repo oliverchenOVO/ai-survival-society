@@ -52,7 +52,8 @@ export function createAgents(count, rng) {
       hp: 100,
       hunger: 12 + rng() * 25,
       energy: 75 + rng() * 25,
-      inventory: { food: 1, medicine: index % 4 === 0 ? 1 : 0, relic: 0 },
+      // Seeded supplies create complementary needs without assigning social roles by identity.
+      inventory: { food: Math.floor(rng() * 3), medicine: rng() < 0.3 ? 2 : 0, relic: 0 },
       weapon: 'None',
       goal: 'Understand the island',
       alive: true,

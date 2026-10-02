@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Download, Trophy, Play, ArrowRight, Save } from 'lucide-react';
+import { X, Download, Trophy, Skull, Play, ArrowRight, Save } from 'lucide-react';
 import { request, formatTime } from '../api.mjs';
 import { RobotPortrait } from './Inspector.jsx';
 export function Modal({ title, onClose, children, wide = false }) {
@@ -200,28 +200,72 @@ export function Roster({ state, onSelect, onClose }) {
 }
 export function Winner({ state, onClose, onRestart }) {
   const a = state.agents.find((a) => a.id === state.winner);
+  const [exportUrl, setExportUrl] = useState(null),
+    [exportError, setExportError] = useState('');
+  useEffect(() => {
+    let disposed = false,
+      url;
+    const load = state.timeline
+      ? Promise.resolve(state)
+      : request(`/api/matches/${state.matchId}/export`);
+    load
+      .then((data) => {
+        if (disposed) return;
+        url = URL.createObjectURL(
+          new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+        );
+        setExportUrl(url);
+      })
+      .catch((e) => {
+        if (!disposed) setExportError(e.message);
+      });
+    return () => {
+      disposed = true;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [state.matchId]);
   return (
     <Modal title="The island remembers" onClose={onClose} wide>
       <div className="winner-intro">
-        <Trophy size={25} />
-        <span>LAST SURVIVOR</span>
+        {a ? <Trophy size={25} /> : <Skull size={25} />}
+        <span>{a ? 'LAST SURVIVOR' : 'EXTINCTION EVENT'}</span>
         {a ? <RobotPortrait agent={a} size={86} /> : null}
-        <h1>{a ? a.name : 'No survivors'}</h1>
+        <h1>{a ? a.name : 'The island claimed everyone.'}</h1>
         <p>{state.history?.summary}</p>
+        <small>SEED {state.seed} · Completed world · Island totals below</small>
       </div>
       <div className="winner-stats">
         {[
-          ['Survival', formatTime(state.elapsed)],
-          ['Kills', a?.stats.kills ?? 0],
-          ['Trades', a?.stats.trades ?? 0],
-          ['Alliances', a?.stats.alliances ?? 0],
-          ['Betrayals', a?.stats.betrayals ?? 0],
+          ['Duration', formatTime(state.elapsed)],
+          ['Kills', state.stats.kills],
+          ['Trades', state.stats.trades],
+          ['Alliances', state.stats.alliances],
+          ['Betrayals', state.stats.betrayals],
         ].map(([k, v]) => (
           <div key={k}>
             <strong>{v}</strong>
             <span>{k}</span>
           </div>
         ))}
+      </div>
+      <div className="leaderboard">
+        <span>
+          Most social
+          <strong>
+            {state.stats.conversations || state.stats.trades ? state.stats.mostSocial : '—'}
+          </strong>
+        </span>
+        <span>
+          Most trusted
+          <strong>
+            {state.stats.conversations || state.stats.trades || state.stats.alliances
+              ? state.stats.mostTrusted
+              : '—'}
+          </strong>
+        </span>
+        <span>
+          Mutual aid<strong>{state.stats.cooperation} acts</strong>
+        </span>
       </div>
       <div className="history">
         {state.history?.narration ? (
@@ -236,9 +280,13 @@ export function Winner({ state, onClose, onRestart }) {
         )}
       </div>
       <div className="modal-footer">
-        <a className="button" href="/api/export" download>
-          <Download size={14} /> Export this history
-        </a>
+        {exportUrl ? (
+          <a className="button" href={exportUrl} download={`society-${state.matchId}.json`}>
+            <Download size={14} /> Export this history
+          </a>
+        ) : (
+          <span>{exportError || 'Preparing history export…'}</span>
+        )}
         <button className="primary" onClick={onRestart}>
           <Play size={14} /> New simulation
         </button>
@@ -274,7 +322,12 @@ export function ReplayLibrary({ onClose, onLoad, onError }) {
               <div>
                 <strong>Seed {r.seed}</strong>
                 <span>
-                  {r.winner ? `${r.winner} survived` : `${r.status} simulation`} · {r.events} events
+                  {r.winner
+                    ? `${r.winner} survived`
+                    : r.outcome?.kind === 'extinction'
+                      ? 'Extinction event'
+                      : `${r.status} simulation`}{' '}
+                  · {r.events} events
                 </span>
               </div>
               <time>{formatTime(r.elapsed)}</time>

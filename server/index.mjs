@@ -65,9 +65,18 @@ export async function startServer(options = {}) {
     return snapshot();
   };
   app.get('/api/health', (_, res) =>
-    res.json({ ok: true, app: 'AI Survival Society', version: '1.0.0' }),
+    res.json({ ok: true, app: 'AI Survival Society', version: '1.1.0' }),
   );
   app.get('/api/state', (_, res) => res.json(snapshot()));
+  app.get('/api/matches/:id/export', async (req, res) => {
+    try {
+      const data = req.params.id === sim.matchId ? sim.export() : await store.read(req.params.id);
+      res.setHeader('Content-Disposition', `attachment; filename="society-${data.matchId}.json"`);
+      res.json(data);
+    } catch {
+      res.status(404).json({ error: 'Match is no longer in the archive' });
+    }
+  });
   app.post('/api/control', async (req, res) => {
     const { action, value } = req.body;
     switch (action) {

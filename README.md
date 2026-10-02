@@ -2,6 +2,8 @@
 
 **Twelve minds. A smaller tomorrow.** A living 3D island where autonomous robots build trust, exchange supplies, form alliances and sometimes betray each other to survive.
 
+**v1.1 已完成模擬品質與結算修正。** 100個 utility-only deterministic seeds 全部有交易、聯盟及戰鬥，無零社交全滅；平均交易由11.30提升至14.82次（同一50-seed cohort）。連續模式結算與匯出固定在完成的局，全滅使用EXTINCTION EVENT。完整量測、限制及驗收見 [v1.1 report](docs/V1.1_REPORT.md)。`npm test` 已包含兩組50-seed防退化基準，`npm run test:results`驗證結算UI。
+
 ![World overview](docs/images/world-overview.png)
 
 ## 快速開始
@@ -62,7 +64,7 @@ The simulation advances in fixed 250ms steps. Every agent evaluates choices roug
 
 Scores combine hunger, health, energy, personality, proximity, resources, safety-zone pressure, relationship trust/fear/hostility and memory-based social novelty. Damage, trades and assistance update relationship values and create structured memories. Important events always enter the Event Bus.
 
-The final zone keeps agents from dispersing forever. Late-round exposure ensures a run terminates even if the final agents avoid combat. The winner is the actual last survivor, not a named character chosen by a script.
+The final zone keeps agents from dispersing forever. Late-round exposure ensures a run terminates even if the final agents avoid combat. The winner is the actual last survivor, not a named character chosen by a script. Environmental damage resolves for all living agents in the tick before deciding the ending; simultaneous final deaths produce extinction. The opening 18% of each match has no zone contraction, allowing initial relationships to develop.
 
 ### AI architecture
 

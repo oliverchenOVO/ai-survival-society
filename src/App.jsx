@@ -26,6 +26,7 @@ import Director from './components/Director.jsx';
 import EventFeed from './components/EventFeed.jsx';
 import { Modal, Settings, Roster, Winner, ReplayLibrary } from './components/Dialogs.jsx';
 import { request, formatTime } from './api.mjs';
+import { safeRadiusAt } from '../core/rules.mjs';
 const WorldView = lazy(() => import('./world/WorldView.jsx'));
 const NAV = [
   ['world', 'World', Globe2],
@@ -39,6 +40,7 @@ export default function App() {
     [connected, setConnected] = useState(false),
     [selected, setSelected] = useState('Agent_01'),
     [dialog, setDialog] = useState(null),
+    [completedResult, setCompletedResult] = useState(null),
     [follow, setFollow] = useState(false),
     [cinematic, setCinematic] = useState(false),
     [graph, setGraph] = useState(false),
@@ -100,6 +102,7 @@ export default function App() {
   useEffect(() => {
     if (live?.status === 'finished' && finished.current !== live.matchId && !replay) {
       finished.current = live.matchId;
+      setCompletedResult(live);
       setDialog('winner');
     }
   }, [live?.status, live?.matchId, replay]);
@@ -212,7 +215,11 @@ export default function App() {
       speed: live.speed,
       llm: live.llm,
       autoRestart: false,
-      safeRadius: Math.max(1.6, 29 - (replayTime / replay.duration) * 27.4),
+      safeRadius: safeRadiusAt(
+        replayTime,
+        replay.duration,
+        replay.duration * (replay.config?.safeZoneGraceFraction ?? 0),
+      ),
       effects: { food_crisis: 0, storm: 0, plague: 0, rumor: '' },
       stats: frame?.stats ?? replay.stats,
       agents: replay.agents.map((a) => ({ ...a, ...frame?.agents.find((b) => b.id === a.id) })),
@@ -415,9 +422,18 @@ export default function App() {
         <div className="result-banner">
           <TrophyMark />
           <span>
-            {live.agents.find((a) => a.id === live.winner)?.name ?? 'No one'} survived the island.
+            {live.winner
+              ? `${live.agents.find((a) => a.id === live.winner)?.name} survived the island.`
+              : 'EXTINCTION EVENT · The island claimed everyone.'}
           </span>
-          <button onClick={() => setDialog('winner')}>View history</button>
+          <button
+            onClick={() => {
+              setCompletedResult(live);
+              setDialog('winner');
+            }}
+          >
+            View history
+          </button>
           {live.restartIn !== null ? (
             <small>Next world in {Math.ceil(live.restartIn)}s</small>
           ) : null}
@@ -443,9 +459,10 @@ export default function App() {
       {dialog === 'agents' ? (
         <Roster state={state} onSelect={onSelect} onClose={() => setDialog(null)} />
       ) : null}
-      {dialog === 'winner' ? (
+      {dialog === 'winner' && (replay ?? completedResult)?.status === 'finished' ? (
         <Winner
-          state={replay ?? live}
+          key={(replay ?? completedResult).matchId}
+          state={replay ?? completedResult}
           onClose={() => setDialog(null)}
           onRestart={() => control('restart', (live.seed + 1) >>> 0)}
         />

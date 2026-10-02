@@ -5,6 +5,7 @@ import { createResource, ZONES } from './world.mjs';
 import { chooseDecision } from './utility.mjs';
 import { executeAction } from './actions.mjs';
 import { generateHistory } from './historian.mjs';
+import { safeRadiusAt } from './rules.mjs';
 export const DIRECTOR_EVENTS = [
   'food_crisis',
   'supply_drop',
@@ -21,6 +22,8 @@ export class Simulation {
       decisionInterval: 2,
       matchDuration: 420,
       agentCount: 12,
+      safeZoneGraceFraction: 0.18,
+      socialRadius: 11,
       ...config,
     };
     this.rng = randomGenerator(this.config.seed);
@@ -34,6 +37,7 @@ export class Simulation {
     this.modelDecisions = new Map();
     this.status = 'running';
     this.winner = null;
+    this.outcome = null;
     this.history = null;
     this.nextResource = 6;
     this.nextSnapshot = 0;
@@ -129,7 +133,11 @@ export class Simulation {
   tick(dt = this.config.tickSeconds) {
     if (this.status !== 'running') return;
     this.elapsed += dt;
-    this.safeRadius = Math.max(1.6, 29 - (this.elapsed / this.config.matchDuration) * 27.4);
+    this.safeRadius = safeRadiusAt(
+      this.elapsed,
+      this.config.matchDuration,
+      this.config.matchDuration * this.config.safeZoneGraceFraction,
+    );
     if (this.elapsed > this.nextResource && this.resources.length < 55) {
       const resource = createResource(this);
       if (resource.type !== 'food' || this.effects.food_crisis <= this.elapsed || this.rng() >= 0.7)
@@ -140,7 +148,7 @@ export class Simulation {
       if (!a.alive) continue;
       a.hunger = clamp(a.hunger + dt * 0.2, 0, 100);
       a.energy = clamp(a.energy - dt * 0.1, 0, 100);
-      if (a.hunger > 85) a.hp -= dt * (a.hunger - 80) * 0.045;
+      if (a.hunger > 85) a.hp -= dt * (a.hunger - 80) * 0.035;
       if (a.infected && this.effects.plague > this.elapsed) a.hp -= dt * 0.65;
       if (distance(a.position, { x: 0, z: 0 }) > this.safeRadius)
         a.hp -= dt * (1.1 + (this.elapsed / this.config.matchDuration) * 2.5);
@@ -157,13 +165,14 @@ export class Simulation {
               ? 'plague'
               : 'exposure or hunger',
         );
-        const survivors = this.agents.filter((b) => b.alive);
-        if (survivors.length <= 1) {
-          this.finish(survivors[0] ?? null);
-          break;
-        }
-        continue;
       }
+    }
+    // Environmental damage belongs to one simultaneous phase: array order cannot award a survivor.
+    const survivors = this.agents.filter((a) => a.alive);
+    if (survivors.length <= 1) this.finish(survivors[0] ?? null);
+    for (const a of this.agents) {
+      if (this.status !== 'running') break;
+      if (!a.alive) continue;
       if (this.elapsed >= a.nextDecision) {
         const d = chooseDecision(this, a);
         a.message = d.message ?? '';
@@ -196,12 +205,15 @@ export class Simulation {
   finish(winner) {
     this.status = 'finished';
     this.winner = winner?.id ?? null;
+    this.outcome = { kind: winner ? 'winner' : 'extinction', survivors: winner ? 1 : 0 };
     this.event(
       'MATCH_ENDED',
       winner,
       null,
-      winner ? `${winner.name} is the last survivor.` : 'No survivors remain.',
-      {},
+      winner
+        ? `${winner.name} is the last survivor.`
+        : 'Extinction event. The island claimed everyone.',
+      this.outcome,
       1,
     );
     this.history = generateHistory(this.bus.log, this.agents, winner, this.elapsed);
@@ -312,6 +324,7 @@ export class Simulation {
       events: this.bus.log.slice(-100),
       eventCount: this.bus.log.length,
       winner: this.winner,
+      outcome: this.outcome,
       history: this.history,
     };
   }

@@ -9,12 +9,13 @@ for (const seed of seeds) {
   const s = new Simulation({ seed });
   while (s.status === 'running' && s.elapsed < 750) s.tick();
   assert.equal(s.status, 'finished');
-  assert.equal(s.stats().alive, 1);
+  assert.ok(s.stats().alive <= 1);
+  assert.equal(s.outcome.kind, s.stats().alive ? 'winner' : 'extinction');
   assert.ok(s.bus.log.length < 10000);
   rows.push({
     seed,
     elapsed: s.elapsed,
-    winner: s.agents.find((a) => a.id === s.winner).name,
+    winner: s.agents.find((a) => a.id === s.winner)?.name ?? null,
     ...s.stats(),
   });
 }

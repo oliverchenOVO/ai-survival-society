@@ -1,0 +1,11 @@
+{
+  "browser": "Playwright Chrome; Browser plugin not available",
+  "checks": [
+    "Result stays bound to completed match after automatic restart",
+    "Export uses completed match ID, duration and stats",
+    "Simultaneous environmental death renders EXTINCTION, without winner label",
+    "Desktop and mobile result display",
+    "No runtime errors"
+  ],
+  "completedSeed": 7
+}
