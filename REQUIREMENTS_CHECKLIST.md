@@ -194,3 +194,4 @@
 - V106–V107：反轉角色順序的同tick死亡測試通過；全滅banner/modal/archive語義修正；跨局結算不漂移，兩次不同結局的匯出ID/統計/結果通過真實瀏覽器測試。
 - V108–V109：本輪局末社會摘要已實作；新對話氣泡/聯盟動畫/死亡cinematic/完整人生軌跡與公開部署明確延後，未宣稱實作。Docker仍未實跑、remote key維持server-side。
 - V110：11核心/HTTP測試、100-seed gate、20-seed smoke、15组瀏覽器workflow、結果桌面/mobile回歸、Windows unpacked及portable啟動均有證據；最後封裝與Git交付記錄見V1.1_REPORT。
+- [x] V111：修復本機ERR_CONNECTION_REFUSED：確認舊PID已消失且4310無listener；WMI獨立背景啟動並保留stdout/stderr/PID，實跑重複啟動、停止、重新啟動與跨終端機HTTP驗證。瀏覽器安全規則阻擋操作錯誤頁，需使用者手動重新加載。

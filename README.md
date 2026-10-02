@@ -10,6 +10,8 @@
 
 Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://127.0.0.1:4310`。第一次啟動會安裝套件並建置。停止使用 **`Stop-Society.cmd`**。需要 Node.js 22.12+；本機驗證版本為 24.13.0。
 
+背景服務透過 Windows WMI 以隱藏程序獨立啟動，避免開發工具回收終端機程序樹時一起結束。啟動腳本確認健康狀態並記錄真正的 Node PID；重複啟動會沿用現有服務。這不會建立開機自啟動或排程工作；電腦重新開機後請再次執行 `Start-Society.cmd`。
+
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
 遊戲啟動後自動運行。上方可 Pause / Resume / Restart、設定速度。Settings 可改 random seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。

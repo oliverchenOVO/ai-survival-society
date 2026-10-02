@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-02",
+  "observedFailure": "ERR_CONNECTION_REFUSED; port 4310 had no listener, previous Node PID no longer existed; no stderr crash record",
+  "change": "Start-Society.ps1 creates a hidden WMI launcher outside the calling terminal job tree and records its Node child PID",
+  "checks": {
+    "independentLaunch": "PASS: Node parent cmd.exe, launcher parent WmiPrvSE.exe",
+    "repeatedLaunchSameNodePid": "PASS",
+    "managedStopAndRestart": "PASS",
+    "healthFromSeparateTerminal": "PASS",
+    "browserReload": "BLOCKED: browser security policy disallowed binding to the browser's internal error page; manual reload needed"
+  },
+  "limitations": "No startup task, Windows service registration, or crash watchdog was installed. Restart after a computer reboot by running Start-Society.cmd. The absence of crash logs does not establish what terminated the previous process."
+}
