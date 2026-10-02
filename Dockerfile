@@ -16,6 +16,7 @@ COPY --from=build /app/dist ./dist
 COPY core ./core
 COPY server ./server
 COPY src/i18n ./src/i18n
+COPY src/story ./src/story
 COPY config ./config
 RUN mkdir -p /data/logs /data/saves && chown -R node:node /data /app
 ENV HOST=0.0.0.0 PORT=4310 DATA_DIR=/data

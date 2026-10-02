@@ -1,6 +1,6 @@
 {
   "name": "ai-survival-society",
-  "version": "1.1.1",
+  "version": "1.4.0",
   "private": true,
   "description": "A living 3D society of autonomous agents, with utility AI and optional local language models.",
   "type": "module",
@@ -20,7 +20,9 @@
     "build:portable": "npm run build && electron-builder --win portable",
     "assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-assets.ps1",
     "test:desktop": "node scripts/qa-desktop.mjs",
-    "demo:video": "node scripts/demo-video.mjs"
+    "demo:video": "node scripts/demo-video.mjs",
+    "test:story": "node scripts/qa-stories.mjs",
+    "test:story:desktop": "node scripts/qa-stories.mjs --desktop"
   },
   "dependencies": {
     "delaunator": "^5.1.0",
@@ -52,7 +54,8 @@
       "core/**/*",
       "config/**/*",
       "src/i18n/*.mjs",
-      "package.json"
+      "package.json",
+      "src/story/*.mjs"
     ],
     "win": {
       "target": [

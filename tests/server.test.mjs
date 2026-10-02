@@ -59,7 +59,7 @@ test('HTTP controls, persistence, archive, bad inputs and cross-origin protectio
     await rm(dir, { recursive: true, force: true });
   }
 });
-test('continuous mode runs multiple matches autonomously and retains bounded archives', async () => {
+test('continuous mode preserves completed stories and retains bounded debug logs', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'society-continuous-'));
   const runtime = await startServer({
     port: 0,
@@ -87,7 +87,8 @@ test('continuous mode runs multiple matches autonomously and retains bounded arc
       body: '{}',
     });
     const runs = await fetch(base + '/api/replays').then((r) => r.json());
-    assert.ok(runs.length <= 3);
+    assert.ok(runs.filter((r) => r.status === 'finished').length >= 4);
+    assert.ok(runs.filter((r) => r.status !== 'finished').length <= 3);
     assert.ok(runs.some((r) => r.status === 'finished'));
     assert.ok(
       (await readdir(path.join(dir, 'logs'))).filter((f) => f.endsWith('.json')).length <= 3,

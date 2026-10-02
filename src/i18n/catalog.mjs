@@ -1,5 +1,7 @@
 // Each entry is [stable key, English, Traditional Chinese]. Keep technical terms intentional.
+import { storyEntries } from './story.mjs';
 export const entries = [
+  ...storyEntries,
   ['nav.world', 'World', '世界'],
   ['nav.agents', 'Agents', '角色'],
   ['nav.log', 'Log', '紀錄'],

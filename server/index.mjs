@@ -9,6 +9,7 @@ import { ModelQueue } from './llm.mjs';
 import { Persistence } from './persistence.mjs';
 import { Preferences } from './preferences.mjs';
 import { translate } from '../src/i18n/translate.mjs';
+import { markdown, shareURL, summary, escapeXML, publicStory } from '../src/story/facts.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export async function startServer(options = {}) {
   const config = {
@@ -35,7 +36,7 @@ export async function startServer(options = {}) {
   app.use(express.json({ limit: '64kb' }));
   app.use((req, res, next) => {
     // Loopback defaults and same-origin mutations protect a locally running control API.
-    if (req.method === 'POST' && req.headers.origin) {
+    if (['POST', 'DELETE'].includes(req.method) && req.headers.origin) {
       const origin = new URL(req.headers.origin);
       const allowed = options.allowedOrigin ?? process.env.ALLOWED_ORIGIN;
       if (origin.host !== req.headers.host && req.headers.origin !== allowed)
@@ -45,6 +46,7 @@ export async function startServer(options = {}) {
   });
   const snapshot = () => ({
     ...sim.snapshot(),
+    simulation_id: store.identity(sim).simulationId,
     speed,
     autoRestart,
     restartIn:
@@ -71,7 +73,7 @@ export async function startServer(options = {}) {
     return snapshot();
   };
   app.get('/api/health', (_, res) =>
-    res.json({ ok: true, app: 'AI Survival Society', version: '1.1.1' }),
+    res.json({ ok: true, app: 'AI Survival Society', version: '1.4.0' }),
   );
   app.get('/api/state', (_, res) => res.json(snapshot()));
   app.get('/api/preferences', (_, res) => res.json({ language: preferences.language }));
@@ -88,8 +90,13 @@ export async function startServer(options = {}) {
   });
   app.get('/api/matches/:id/export', async (req, res) => {
     try {
-      const data = req.params.id === sim.matchId ? sim.export() : await store.read(req.params.id);
-      res.setHeader('Content-Disposition', `attachment; filename="society-${data.matchId}.json"`);
+      const raw =
+        req.params.id === sim.matchId ? store.capture(sim) : await store.read(req.params.id);
+      const data = raw.status === 'finished' ? publicStory(raw) : raw;
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="society-${data.simulation_id}.json"`,
+      );
       res.json(data);
     } catch {
       res.status(404).json({ error: 'Match is no longer in the archive' });
@@ -166,24 +173,96 @@ export async function startServer(options = {}) {
     res.json(clean);
   });
   app.get('/api/export', (_, res) => {
-    res.attachment(`society-${sim.config.seed}.json`).json(sim.export());
+    const data = store.capture(sim);
+    res
+      .attachment(`society-${data.simulation_id}.json`)
+      .json(data.status === 'finished' ? publicStory(data) : data);
   });
   app.post('/api/save', async (_, res) => {
     await store.persist(sim);
-    res.json({ id: sim.matchId, saved: true });
+    res.json({ id: store.identity(sim).simulationId, saved: true });
   });
   app.get('/api/replays', async (_, res) => res.json(await store.list()));
   app.get('/api/replays/:id', async (req, res) => {
     try {
-      res.json(await store.read(req.params.id));
+      const data = await store.read(req.params.id);
+      res.json(data.status === 'finished' ? publicStory(data) : data);
     } catch {
       res.status(404).json({ error: 'Replay not found' });
     }
   });
   const dist = path.join(root, 'dist');
+  app.get('/api/stories', async (_, res) => res.json(await store.list()));
+  app.get('/api/stories/:id', async (req, res) => {
+    try {
+      const story = await store.story(req.params.id);
+      const publicBase = options.publicBaseURL ?? process.env.PUBLIC_BASE_URL ?? '';
+      const origin = `${req.protocol}://${req.get('host')}`;
+      const url = shareURL(story.simulation_id, origin, publicBase);
+      const hostname = new URL(url).hostname;
+      res.json({
+        ...story,
+        share: {
+          url,
+          local: !publicBase && ['localhost', '127.0.0.1', '[::1]'].includes(hostname),
+          configured: Boolean(publicBase),
+        },
+      });
+    } catch (e) {
+      res.status(e.status ?? 422).json({ error: 'Story unavailable' });
+    }
+  });
+  const exportStory = async (req, res) => {
+    try {
+      const story = await store.story(req.params.id),
+        locale = req.query.lang === 'en' ? 'en' : 'zh-TW';
+      if (req.query.format === 'markdown')
+        res
+          .attachment(`simulation-${story.simulation_id}.md`)
+          .type('text/markdown; charset=utf-8')
+          .send(markdown(story, locale));
+      else res.attachment(`simulation-${story.simulation_id}.json`).json(story);
+    } catch (e) {
+      res.status(e.status ?? 422).json({ error: 'Story unavailable' });
+    }
+  };
+  app.get('/api/stories/:id/export', exportStory);
+  app.post('/api/stories/:id/export', exportStory);
+  app.delete('/api/stories/:id', async (req, res) => {
+    try {
+      await store.remove(req.params.id);
+      res.json({ deleted: true });
+    } catch (e) {
+      res.status(e.status ?? 400).json({ error: 'Story unavailable' });
+    }
+  });
   if (existsSync(dist)) {
     app.use(express.static(dist));
     app.get('/', (_, res) => res.sendFile(path.join(dist, 'index.html')));
+    app.get('/replay/:id', (_, res) => res.sendFile(path.join(dist, 'index.html')));
+    app.get('/story/:id', async (req, res) => {
+      let html = readFileSync(path.join(dist, 'index.html'), 'utf8');
+      try {
+        const data = await store.story(req.params.id),
+          locale = req.query.lang === 'en' ? 'en' : 'zh-TW';
+        const title = `AI Survival Society — ${data.agents.find((a) => a.id === data.winner)?.name ?? translate('result.extinction', locale)}`;
+        const description = summary(data, locale)[4].text;
+        const url = shareURL(
+          data.simulation_id,
+          `${req.protocol}://${req.get('host')}`,
+          options.publicBaseURL ?? process.env.PUBLIC_BASE_URL ?? '',
+        );
+        html = html
+          .replace(/<title>[^<]*<\/title>/, `<title>${escapeXML(title)}</title>`)
+          .replace(
+            '</head>',
+            `<meta name="description" content="${escapeXML(description)}"><meta property="og:title" content="${escapeXML(title)}"><meta property="og:description" content="${escapeXML(description)}"><meta property="og:url" content="${escapeXML(url)}"><meta name="twitter:card" content="summary"></head>`,
+          );
+      } catch {
+        /* SPA still presents its localized missing/corrupt record state. */
+      }
+      res.type('html').send(html);
+    });
   } else app.get('/', (_, res) => res.send(translate('error.build', preferences.language)));
   app.use((error, req, res, next) => {
     console.error(error.message);
@@ -262,6 +341,7 @@ export async function startServer(options = {}) {
     port: actualPort,
     getSimulation: () => sim,
     models,
+    store,
     close: async () => {
       closed = true;
       clearInterval(timer);
