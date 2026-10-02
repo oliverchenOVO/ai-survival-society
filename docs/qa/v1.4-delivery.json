@@ -16,7 +16,12 @@
   "portableFile": "AI-Survival-Society-1.4.0.exe",
   "portableSize": 102527806,
   "portableSHA256": "508B6B40CBD697DD9EA21A437517E1F265370A77F1434AB083E0ECBD2EC1A10A",
-  "releaseStatus": "awaiting private release",
+  "releaseStatus": "published and asset verified",
   "publicDeployment": "not requested",
-  "crawlerMetadata": "text implemented; server image metadata prepared"
+  "crawlerMetadata": "text implemented; server image metadata prepared",
+  "releaseURL": "https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.4.0",
+  "releaseCommit": "442f4303be1ad62cfd150c266e690e3c9ba2a873",
+  "gitHubAssetDigest": "sha256:508b6b40cbd697dd9ea21a437517e1f265370a77f1434ab083e0ecbd2ec1a10a",
+  "gitHubAssetSize": 102527806,
+  "verifiedAt": "2026-10-02T16:01:28.6975210Z"
 }

@@ -254,6 +254,7 @@
 - [x] Four actual screenshots: v1.4-story-hero, major-moments, agent-story, share-card in docs/images.
 - [x] README and 17-section docs/V1.4_REPORT.md with limitations and validation evidence.
 - [x] Version 1.4.0 metadata, reasonable commits, clean tree, push main to existing private repo.
-- [ ] After acceptance: v1.4.0 tag/private release, Traditional Chinese notes and Windows portable asset.
+- [x] After acceptance: v1.4.0 tag/private release, Traditional Chinese notes and Windows portable asset.
+
 
 
