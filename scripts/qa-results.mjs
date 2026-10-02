@@ -16,9 +16,11 @@ const base = `http://127.0.0.1:${runtime.port}`;
 await mkdir('docs/qa', { recursive: true });
 await mkdir('docs/images', { recursive: true });
 try {
+  await page.addInitScript(() => localStorage.setItem('society.locale.v1', 'en'));
   await page.goto(base);
   const dialog = page.getByRole('dialog', { name: 'The island remembers' });
   await dialog.waitFor({ timeout: 30000 });
+  if (!baseline) await dialog.getByRole('link', { name: 'Export this history' }).waitFor();
   const old = await dialog.innerText();
   const completed = await page.request.get(base + '/api/state').then((r) => r.json());
   assert.equal(completed.status, 'finished');

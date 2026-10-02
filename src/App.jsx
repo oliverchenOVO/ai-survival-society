@@ -1,3 +1,4 @@
+import { useLocale } from './i18n/LocaleProvider.jsx';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Globe2,
@@ -29,13 +30,14 @@ import { request, formatTime } from './api.mjs';
 import { safeRadiusAt } from '../core/rules.mjs';
 const WorldView = lazy(() => import('./world/WorldView.jsx'));
 const NAV = [
-  ['world', 'World', Globe2],
-  ['agents', 'Agents', Users],
-  ['feed', 'Log', ScrollText],
-  ['network', 'Network', Network],
-  ['director', 'Director', SlidersHorizontal],
+  ['world', 'nav.world', Globe2],
+  ['agents', 'nav.agents', Users],
+  ['feed', 'nav.log', ScrollText],
+  ['network', 'nav.network', Network],
+  ['director', 'nav.director', SlidersHorizontal],
 ];
 export default function App() {
+  const { t, error: localizeError } = useLocale();
   const [live, setLive] = useState(null),
     [connected, setConnected] = useState(false),
     [selected, setSelected] = useState('Agent_01'),
@@ -52,8 +54,22 @@ export default function App() {
   const finished = useRef(null),
     audioContext = useRef(null),
     seenEvent = useRef(0);
-  const onError = useCallback((e) => setToast(e.message ?? String(e)), []);
-  const notify = useCallback((message) => setToast(message), []);
+  const onError = useCallback(
+    (e) =>
+      setToast({
+        kind: 'error',
+        text: e.message ?? String(e),
+      }),
+    [],
+  );
+  const notify = useCallback(
+    (message) =>
+      setToast({
+        kind: 'message',
+        key: message,
+      }),
+    [],
+  );
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(''), 5000);
@@ -164,7 +180,10 @@ export default function App() {
   const control = useCallback(
     async (action, value) => {
       try {
-        const s = await request('/api/control', { action, value });
+        const s = await request('/api/control', {
+          action,
+          value,
+        });
         setLive(s);
         if (action === 'restart') {
           setReplay(null);
@@ -179,8 +198,12 @@ export default function App() {
   );
   const onEvent = async (event) => {
     try {
-      setLive(await request('/api/director', { event }));
-      notify('World event introduced. Watch the society adapt.');
+      setLive(
+        await request('/api/director', {
+          event,
+        }),
+      );
+      notify('toast.director');
     } catch (e) {
       onError(e);
     }
@@ -189,7 +212,7 @@ export default function App() {
   const save = async () => {
     try {
       await request('/api/save', {});
-      notify('Simulation saved to the archive.');
+      notify('toast.saved');
     } catch (e) {
       onError(e);
     }
@@ -199,9 +222,13 @@ export default function App() {
       <div className="startup">
         <div className="brand-symbol">◎</div>
         <h1>AI Survival Society</h1>
-        <p>Connecting to the island…</p>
-        {toast ? <p className="coral">{toast}</p> : null}
-        <small>Start the server with npm start if it is not running.</small>
+        <p>{t('connection.connecting')}</p>
+        {toast ? (
+          <p className="coral">
+            {toast.kind === 'error' ? localizeError(toast.text) : t(toast.key)}
+          </p>
+        ) : null}
+        <small>{t('connection.startHelp')}</small>
       </div>
     );
   let state = live;
@@ -220,9 +247,17 @@ export default function App() {
         replay.duration,
         replay.duration * (replay.config?.safeZoneGraceFraction ?? 0),
       ),
-      effects: { food_crisis: 0, storm: 0, plague: 0, rumor: '' },
+      effects: {
+        food_crisis: 0,
+        storm: 0,
+        plague: 0,
+        rumor: '',
+      },
       stats: frame?.stats ?? replay.stats,
-      agents: replay.agents.map((a) => ({ ...a, ...frame?.agents.find((b) => b.id === a.id) })),
+      agents: replay.agents.map((a) => ({
+        ...a,
+        ...frame?.agents.find((b) => b.id === a.id),
+      })),
       events: replay.events.filter((e) => e.timestamp <= replayTime).slice(-100),
       eventCount: replay.events.filter((e) => e.timestamp <= replayTime).length,
       resources: [],
@@ -231,62 +266,70 @@ export default function App() {
   const trust = Math.round(state.stats.averageTrust * 100);
   return (
     <div className="app-shell">
-      <nav className="nav-rail" aria-label="Main navigation">
-        <button className="brand-symbol" aria-label="World home" onClick={() => setDialog(null)}>
+      <nav className="nav-rail" aria-label={t('a11y.navigation')}>
+        <button
+          className="brand-symbol"
+          aria-label={t('a11y.home')}
+          onClick={() => setDialog(null)}
+        >
           ◎
         </button>
         <div className="nav-items">
           {NAV.map(([id, label, Icon]) => (
             <button
               key={id}
-              aria-label={label}
+              aria-label={t(label)}
               className={dialog === id || (id === 'world' && !dialog) ? 'active' : ''}
               onClick={() => (id === 'world' ? setDialog(null) : setDialog(id))}
             >
               <Icon size={21} strokeWidth={1.6} />
-              <span>{label}</span>
+              <span>{t(label)}</span>
             </button>
           ))}
         </div>
         <div className="nav-bottom">
           <button
-            title="Simulation archive"
-            aria-label="Simulation archive"
+            title={t('replay.title')}
+            aria-label={t('replay.title')}
             onClick={() => setDialog('archive')}
           >
             <Archive size={21} />
-            <span>Replay</span>
+            <span>{t('nav.replay')}</span>
           </button>
-          <button title="Settings" aria-label="Settings" onClick={() => setDialog('settings')}>
+          <button
+            title={t('nav.settings')}
+            aria-label={t('nav.settings')}
+            onClick={() => setDialog('settings')}
+          >
             <Settings2 size={21} />
-            <span>Settings</span>
+            <span>{t('nav.settings')}</span>
           </button>
         </div>
       </nav>
       <header className="topbar">
         <div className="brand">
           <h1>AI SURVIVAL SOCIETY</h1>
-          <span>TWELVE MINDS. A SMALLER TOMORROW.</span>
+          <span>{t('brand.tagline')}</span>
         </div>
         <div className="top-stats">
           <span>
             <Users size={15} />
-            <small>Alive</small>
+            <small>{t('stats.alive')}</small>
             <b data-testid="alive">{state.stats.alive}</b>
           </span>
           <span>
             <Handshake size={15} />
-            <small>Trades</small>
+            <small>{t('stats.trades')}</small>
             <b>{state.stats.trades}</b>
           </span>
           <span>
             <Network size={15} />
-            <small>Alliances</small>
+            <small>{t('stats.alliances')}</small>
             <b>{state.stats.activeAlliances}</b>
           </span>
           <span>
             <Heart size={15} />
-            <small>Trust</small>
+            <small>{t('stats.trust')}</small>
             <b>{trust}%</b>
           </span>
         </div>
@@ -297,24 +340,26 @@ export default function App() {
             onClick={() => control(live.status === 'paused' ? 'resume' : 'pause')}
           >
             {live.status === 'paused' ? <Play size={15} /> : <Pause size={15} />}
-            <span>{live.status === 'paused' ? 'Resume' : 'Pause'}</span>
+            <span>{live.status === 'paused' ? t('control.resume') : t('control.pause')}</span>
           </button>
           <button
-            aria-label="Restart simulation"
+            aria-label={t('control.restartLabel')}
             data-testid="restart"
             onClick={() => control('restart', live.seed)}
           >
             <RotateCcw size={15} />
-            <span>Restart</span>
+            <span>{t('control.restart')}</span>
           </button>
           <select
-            aria-label="Simulation speed"
+            aria-label={t('control.speedLabel')}
             value={live.speed}
             onChange={(e) => control('speed', Number(e.target.value))}
           >
             {[0.5, 1, 2, 4, 8, 16, 32].map((v) => (
               <option key={v} value={v}>
-                {v}× speed
+                {t('speed.option', {
+                  speed: v,
+                })}
               </option>
             ))}
           </select>
@@ -323,7 +368,13 @@ export default function App() {
       <div className="simulation-strip">
         <div>
           <span className={connected ? 'connection-dot' : 'connection-dot offline'} />
-          <span>{replay ? 'ARCHIVE REPLAY' : connected ? 'CONNECTED' : 'RECONNECTING'}</span>
+          <span>
+            {replay
+              ? t('replay.active')
+              : connected
+                ? t('connection.connected')
+                : t('connection.reconnecting')}
+          </span>
           <span className="strip-divider" />
           <span>SEED {state.seed}</span>
           <span className="strip-divider" />
@@ -332,36 +383,54 @@ export default function App() {
         </div>
         <div className="strip-right">
           <span>
-            <Skull size={12} /> {state.stats.deaths} deaths
+            <Skull size={12} />{' '}
+            {t('stats.deathCount', {
+              count: state.stats.deaths,
+            })}
           </span>
-          <span>{state.stats.kills} kills</span>
-          <span>{state.stats.betrayals} betrayals</span>
-          <span>Safe zone {state.safeRadius.toFixed(1)}m</span>
-          <span className="model-badge">
-            {state.llm.enabled ? 'MODEL + UTILITY' : 'UTILITY AI'}
+          <span>
+            {t('stats.killCount', {
+              count: state.stats.kills,
+            })}
           </span>
+          <span>
+            {t('stats.betrayalCount', {
+              count: state.stats.betrayals,
+            })}
+          </span>
+          <span>
+            {t('stats.safeZone', {
+              radius: state.safeRadius.toFixed(1),
+            })}
+          </span>
+          <span className="model-badge">{state.llm.enabled ? t('model.badge') : 'Utility AI'}</span>
           <button
-            title="Show relationships in world"
-            aria-label="Show world relationships"
+            title={t('tooltip.relationships')}
+            aria-label={t('tooltip.worldRelationships')}
             aria-pressed={graph}
             className={graph ? 'active' : ''}
             onClick={() => setGraph(!graph)}
           >
             <Network size={14} />
           </button>
-          <button title="Toggle audio" aria-label="Toggle audio" onClick={toggleAudio}>
+          <button title={t('tooltip.audio')} aria-label={t('tooltip.audio')} onClick={toggleAudio}>
             {audio ? <Volume2 size={14} /> : <VolumeX size={14} />}
           </button>
-          <button title="Save run" aria-label="Save run" onClick={save}>
+          <button title={t('tooltip.save')} aria-label={t('tooltip.save')} onClick={save}>
             <Save size={14} />
           </button>
-          <a href="/api/export" download title="Export event log" aria-label="Export event log">
+          <a
+            href="/api/export"
+            download
+            title={t('tooltip.export')}
+            aria-label={t('tooltip.export')}
+          >
             <Download size={14} />
           </a>
         </div>
       </div>
       <main className="main-stage">
-        <Suspense fallback={<div className="world-loading">Building Haven Island…</div>}>
+        <Suspense fallback={<div className="world-loading">{t('connection.loadingWorld')}</div>}>
           <WorldView
             state={state}
             selected={selected}
@@ -378,28 +447,31 @@ export default function App() {
       </main>
       <div className="lower-deck">
         <EventFeed events={state.events} eventCount={state.eventCount} />
-        <Director
-          state={state}
-          onEvent={replay ? () => notify('Exit replay to introduce a live world event.') : onEvent}
-        />
+        <Director state={state} onEvent={replay ? () => notify('toast.replay') : onEvent} />
         <SocialGraph state={state} selected={selected} onSelect={onSelect} />
       </div>
       <footer className="statusbar">
-        <span>Every decision leaves a mark.</span>
+        <span>{t('footer.motto')}</span>
         <span>
-          {live.autoRestart ? 'CONTINUOUS MODE' : 'SINGLE SIMULATION'} · {state.eventCount} recorded
-          events
+          {live.autoRestart ? t('footer.continuous') : t('footer.single')} ·{' '}
+          {t('footer.count', {
+            count: state.eventCount,
+          })}
         </span>
-        <button onClick={() => setDialog('help')}>Controls & about</button>
+        <button onClick={() => setDialog('help')}>{t('help.controls')}</button>
       </footer>
       {replay ? (
         <div className="replay-bar">
-          <button aria-label="Play replay" onClick={() => setReplayPlaying(!replayPlaying)}>
+          <button aria-label={t('replay.play')} onClick={() => setReplayPlaying(!replayPlaying)}>
             {replayPlaying ? <Pause size={15} /> : <Play size={15} />}
           </button>
-          <strong>ARCHIVE · SEED {replay.seed}</strong>
+          <strong>
+            {t('replay.seed', {
+              seed: replay.seed,
+            })}
+          </strong>
           <input
-            aria-label="Replay timeline"
+            aria-label={t('replay.timeline')}
             type="range"
             min="0"
             max={replay.elapsed}
@@ -414,7 +486,7 @@ export default function App() {
               setReplayPlaying(false);
             }}
           >
-            Return live
+            {t('replay.return')}
           </button>
         </div>
       ) : null}
@@ -423,8 +495,10 @@ export default function App() {
           <TrophyMark />
           <span>
             {live.winner
-              ? `${live.agents.find((a) => a.id === live.winner)?.name} survived the island.`
-              : 'EXTINCTION EVENT · The island claimed everyone.'}
+              ? t('result.survived', {
+                  name: live.agents.find((a) => a.id === live.winner)?.name,
+                })
+              : t('result.extinctionBanner')}
           </span>
           <button
             onClick={() => {
@@ -432,18 +506,22 @@ export default function App() {
               setDialog('winner');
             }}
           >
-            View history
+            {t('result.view')}
           </button>
           {live.restartIn !== null ? (
-            <small>Next world in {Math.ceil(live.restartIn)}s</small>
+            <small>
+              {t('result.next', {
+                seconds: Math.ceil(live.restartIn),
+              })}
+            </small>
           ) : null}
         </div>
       ) : null}
       {toast ? (
         <div className="toast" role="status">
           <AlertCircle size={16} />
-          {toast}
-          <button aria-label="Dismiss notification" onClick={() => setToast('')}>
+          {toast.kind === 'error' ? localizeError(toast.text) : t(toast.key)}
+          <button aria-label={t('a11y.dismiss')} onClick={() => setToast('')}>
             ×
           </button>
         </div>
@@ -479,79 +557,62 @@ export default function App() {
         />
       ) : null}
       {dialog === 'feed' ? (
-        <Modal title="World event log" onClose={() => setDialog(null)} wide>
+        <Modal title={t('log.title')} onClose={() => setDialog(null)} wide>
           <EventFeed events={state.events} eventCount={state.eventCount} expanded />
           <a className="button" href="/api/export" download>
-            <Download size={14} /> Download complete event log
+            <Download size={14} />
+            {t('log.download')}
           </a>
         </Modal>
       ) : null}
       {dialog === 'network' ? (
-        <Modal title="The social fabric" onClose={() => setDialog(null)} wide>
+        <Modal title={t('graph.title')} onClose={() => setDialog(null)} wide>
           <SocialGraph state={state} selected={selected} onSelect={onSelect} expanded />
-          <p className="muted">
-            Green: friendship · Blue: alliance · Red: hostility. Lines reflect current relationship
-            data; eliminated agents fade.
-          </p>
+          <p className="muted">{t('graph.explanation')}</p>
           <div className="leaderboard">
             <span>
-              Most trusted<strong>{state.stats.mostTrusted}</strong>
+              {t('ranking.trusted')}
+              <strong>{state.stats.mostTrusted}</strong>
             </span>
             <span>
-              Most feared<strong>{state.stats.mostFeared}</strong>
+              {t('ranking.feared')}
+              <strong>{state.stats.mostFeared}</strong>
             </span>
             <span>
-              Most aggressive<strong>{state.stats.mostAggressive}</strong>
+              {t('ranking.aggressive')}
+              <strong>{state.stats.mostAggressive}</strong>
             </span>
             <span>
-              Most social<strong>{state.stats.mostSocial}</strong>
+              {t('ranking.social')}
+              <strong>{state.stats.mostSocial}</strong>
             </span>
           </div>
         </Modal>
       ) : null}
       {dialog === 'director' ? (
-        <Modal title="Director mode" onClose={() => setDialog(null)} wide>
-          <p className="muted">You change the environment. The agents choose how to respond.</p>
+        <Modal title={t('director.label')} onClose={() => setDialog(null)} wide>
+          <p className="muted">{t('director.explanation')}</p>
           <Director state={state} onEvent={onEvent} expanded />
         </Modal>
       ) : null}
       {dialog === 'help' ? (
-        <Modal title="Welcome to the observatory" onClose={() => setDialog(null)}>
-          <p>
-            Twelve autonomous robots share a small island. Resources, personality, relationships and
-            memories shape their choices. The safe zone contracts until a survivor remains.
-          </p>
+        <Modal title={t('help.title')} onClose={() => setDialog(null)}>
+          <p>{t('help.intro')}</p>
           <dl className="help-list">
-            <dt>Camera</dt>
-            <dd>
-              Drag to orbit, right-drag to pan, wheel to zoom. Click a robot or its name to focus.
-            </dd>
-            <dt>Follow & cinema</dt>
-            <dd>
-              Eye follows the selected robot. Video focuses notable combat and alliance events.
-            </dd>
-            <dt>Director</dt>
-            <dd>Introduce crises, gifts or rumors. Every decision still belongs to the agents.</dd>
-            <dt>Seeds</dt>
-            <dd>
-              Same seed + same events + Utility AI reproduces the same simulation. LLM decisions are
-              intentionally nondeterministic.
-            </dd>
-            <dt>Continuous mode</dt>
-            <dd>
-              New world after each result. Toggle in Settings. Completed runs are saved, with the
-              most recent 30 retained.
-            </dd>
-            <dt>Models</dt>
-            <dd>
-              Enable Ollama or a compatible API in Settings. Timeouts and invalid replies fall back
-              to Utility AI.
-            </dd>
-            <dt>Replay</dt>
-            <dd>
-              Review saved timeline samples and full event history. This is an observational replay,
-              not a deterministic re-simulation.
-            </dd>
+            <dt>{t('help.camera')}</dt>
+            <dd>{t('help.cameraText')}</dd>
+            <dt>{t('help.follow')}</dt>
+            <dd>{t('help.followText')}</dd>
+            <dt>{t('nav.director')}</dt>
+            <dd>{t('help.directorText')}</dd>
+            <dt>{t('help.seeds')}</dt>
+            <dd>{t('help.seedText')}</dd>
+            <dt>{t('help.continuous')}</dt>
+            <dd>{t('help.continuousText')}</dd>
+            <dt>{t('help.models')}</dt>
+            <dd>{t('help.modelsText')}</dd>
+            <dt>{t('nav.replay')}</dt>
+            <dd>{t('help.replayText')}</dd>
           </dl>
         </Modal>
       ) : null}

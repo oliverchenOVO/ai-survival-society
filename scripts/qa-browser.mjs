@@ -32,6 +32,7 @@ const check = (name) => {
 await mkdir('docs/images', { recursive: true });
 await mkdir('docs/qa', { recursive: true });
 try {
+  await page.addInitScript(() => localStorage.setItem('society.locale.v1', 'en'));
   await page.goto(base);
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
   await page.locator('canvas').waitFor();

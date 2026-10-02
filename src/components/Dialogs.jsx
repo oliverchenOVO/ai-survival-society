@@ -1,8 +1,10 @@
+import { useLocale } from '../i18n/LocaleProvider.jsx';
 import { useEffect, useState } from 'react';
 import { X, Download, Trophy, Skull, Play, ArrowRight, Save } from 'lucide-react';
 import { request, formatTime } from '../api.mjs';
 import { RobotPortrait } from './Inspector.jsx';
 export function Modal({ title, onClose, children, wide = false }) {
+  const { t } = useLocale();
   return (
     <div
       className="modal-backdrop"
@@ -18,7 +20,7 @@ export function Modal({ title, onClose, children, wide = false }) {
       >
         <div className="modal-header">
           <h2>{title}</h2>
-          <button aria-label="Close dialog" onClick={onClose}>
+          <button aria-label={t('a11y.close')} onClick={onClose}>
             <X size={19} />
           </button>
         </div>
@@ -28,6 +30,7 @@ export function Modal({ title, onClose, children, wide = false }) {
   );
 }
 export function Settings({ onClose, onError, state, onControl }) {
+  const { t, error: localizeError, locale, setLanguage, preferenceError } = useLocale();
   const [config, setConfig] = useState(null),
     [saving, setSaving] = useState(false),
     [note, setNote] = useState(''),
@@ -35,13 +38,17 @@ export function Settings({ onClose, onError, state, onControl }) {
   useEffect(() => {
     request('/api/config/llm').then(setConfig).catch(onError);
   }, []);
-  const update = (key, value) => setConfig((c) => ({ ...c, [key]: value }));
+  const update = (key, value) =>
+    setConfig((c) => ({
+      ...c,
+      [key]: value,
+    }));
   async function save(e) {
     e.preventDefault();
     setSaving(true);
     try {
       await request('/api/config/llm', config);
-      setNote('Model settings applied. Utility AI remains available at all times.');
+      setNote('settings.applied');
     } catch (e) {
       onError(e);
     } finally {
@@ -49,11 +56,27 @@ export function Settings({ onClose, onError, state, onControl }) {
     }
   }
   return (
-    <Modal title="Simulation settings" onClose={onClose}>
+    <Modal title={t('settings.title')} onClose={onClose}>
       <div className="settings-block">
-        <h3>Reproducible worlds</h3>
         <label>
-          Random seed
+          {t('settings.language')}
+          <select
+            aria-label={t('settings.language')}
+            data-testid="language-select"
+            value={locale}
+            onChange={(e) => setLanguage(e.target.value)}
+          >
+            <option value="zh-TW">{t('language.zhTW')}</option>
+            <option value="en">{t('language.en')}</option>
+          </select>
+        </label>
+        <p className="muted">{t('settings.languageHelp')}</p>
+        {preferenceError ? <p role="status">{t('language.failed')}</p> : null}
+      </div>
+      <div className="settings-block">
+        <h3>{t('settings.worlds')}</h3>
+        <label>
+          {t('settings.seed')}
           <input
             type="number"
             min="0"
@@ -69,7 +92,8 @@ export function Settings({ onClose, onError, state, onControl }) {
             onClose();
           }}
         >
-          Start this seed <ArrowRight size={15} />
+          {t('settings.startSeed')}
+          <ArrowRight size={15} />
         </button>
         <label className="check-label">
           <input
@@ -77,15 +101,12 @@ export function Settings({ onClose, onError, state, onControl }) {
             checked={state.autoRestart}
             onChange={(e) => onControl('auto_restart', e.target.checked)}
           />
-          Continuous mode: start a new seed after each result
+          {t('settings.continuous')}
         </label>
-        <p className="muted">
-          Results remain visible for 35 seconds and are saved automatically. Pause to hold the
-          world.
-        </p>
+        <p className="muted">{t('settings.continuousHelp')}</p>
       </div>
       <form onSubmit={save} className="settings-block">
-        <h3>Optional language model</h3>
+        <h3>{t('settings.models')}</h3>
         {config ? (
           <>
             <label className="check-label">
@@ -94,27 +115,27 @@ export function Settings({ onClose, onError, state, onControl }) {
                 checked={config.enabled}
                 onChange={(e) => update('enabled', e.target.checked)}
               />
-              Enable high-level model decisions
+              {t('settings.enabled')}
             </label>
             <label>
-              Provider
+              {t('settings.provider')}
               <select value={config.provider} onChange={(e) => update('provider', e.target.value)}>
-                <option value="ollama">Local Ollama</option>
-                <option value="compatible">OpenAI-compatible API</option>
-                <option value="fallback">Utility AI only</option>
+                <option value="ollama">{t('settings.ollama')}</option>
+                <option value="compatible">{t('settings.compatible')}</option>
+                <option value="fallback">{t('settings.fallback')}</option>
               </select>
             </label>
             <label>
-              Endpoint
+              {t('settings.endpoint')}
               <input value={config.endpoint} onChange={(e) => update('endpoint', e.target.value)} />
             </label>
             <label>
-              Model
+              {t('settings.model')}
               <input value={config.model} onChange={(e) => update('model', e.target.value)} />
             </label>
             <div className="form-row">
               <label>
-                Temperature
+                {t('settings.temperature')}
                 <input
                   type="number"
                   min="0"
@@ -125,7 +146,7 @@ export function Settings({ onClose, onError, state, onControl }) {
                 />
               </label>
               <label>
-                Timeout (ms)
+                {t('settings.timeout')}
                 <input
                   type="number"
                   min="500"
@@ -136,32 +157,35 @@ export function Settings({ onClose, onError, state, onControl }) {
                 />
               </label>
             </div>
-            <p className="muted">
-              Model calls run in a bounded background queue. Remote API keys are read only by the
-              server from LLM_API_KEY. They never enter this client.
-            </p>
+            <p className="muted">{t('settings.security')}</p>
             <button type="submit" className="primary" disabled={saving}>
-              {saving ? 'Applying…' : 'Apply model settings'}
+              {saving ? t('settings.applying') : t('settings.apply')}
             </button>
-            <p className="settings-note">{note}</p>
+            <p className="settings-note">{note ? t(note) : ''}</p>
             <div className="model-status">
-              <span>{state.llm.state}</span>
+              <span>{t('model.' + state.llm.state)}</span>
               <span>
-                {state.llm.completed} valid · {state.llm.failed} fallbacks
+                {t('model.count', {
+                  valid: state.llm.completed,
+                  failed: state.llm.failed,
+                })}
               </span>
             </div>
-            {state.llm.lastError ? <p className="coral">{state.llm.lastError}</p> : null}
+            {state.llm.lastError ? (
+              <p className="coral">{localizeError(state.llm.lastError)}</p>
+            ) : null}
           </>
         ) : (
-          <p>Loading settings…</p>
+          <p>{t('settings.loading')}</p>
         )}
       </form>
     </Modal>
   );
 }
 export function Roster({ state, onSelect, onClose }) {
+  const { t, text } = useLocale();
   return (
-    <Modal title="Twelve minds" onClose={onClose} wide>
+    <Modal title={t('roster.title')} onClose={onClose} wide>
       <div className="roster">
         {state.agents.map((a) => (
           <button
@@ -175,7 +199,7 @@ export function Roster({ state, onSelect, onClose }) {
             <RobotPortrait agent={a} size={50} />
             <div>
               <strong>{a.name}</strong>
-              <span>{a.goal}</span>
+              <span>{text(a.goal)}</span>
             </div>
             <b>{Math.round(a.hp)} HP</b>
           </button>
@@ -183,22 +207,28 @@ export function Roster({ state, onSelect, onClose }) {
       </div>
       <div className="leaderboard">
         <span>
-          Most trusted<strong>{state.stats.mostTrusted}</strong>
+          {t('ranking.trusted')}
+          <strong>{state.stats.mostTrusted}</strong>
         </span>
         <span>
-          Most feared<strong>{state.stats.mostFeared}</strong>
+          {t('ranking.feared')}
+          <strong>{state.stats.mostFeared}</strong>
         </span>
         <span>
-          Most aggressive<strong>{state.stats.mostAggressive}</strong>
+          {t('ranking.aggressive')}
+          <strong>{state.stats.mostAggressive}</strong>
         </span>
         <span>
-          Most social<strong>{state.stats.mostSocial}</strong>
+          {t('ranking.social')}
+          <strong>{state.stats.mostSocial}</strong>
         </span>
       </div>
     </Modal>
   );
 }
 export function Winner({ state, onClose, onRestart }) {
+  const { t, error: localizeError, history: localizeHistory } = useLocale();
+  const localizedHistory = localizeHistory(state);
   const a = state.agents.find((a) => a.id === state.winner);
   const [exportUrl, setExportUrl] = useState(null),
     [exportError, setExportError] = useState('');
@@ -212,7 +242,9 @@ export function Winner({ state, onClose, onRestart }) {
       .then((data) => {
         if (disposed) return;
         url = URL.createObjectURL(
-          new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+          new Blob([JSON.stringify(data, null, 2)], {
+            type: 'application/json',
+          }),
         );
         setExportUrl(url);
       })
@@ -225,22 +257,26 @@ export function Winner({ state, onClose, onRestart }) {
     };
   }, [state.matchId]);
   return (
-    <Modal title="The island remembers" onClose={onClose} wide>
+    <Modal title={t('result.title')} onClose={onClose} wide>
       <div className="winner-intro">
         {a ? <Trophy size={25} /> : <Skull size={25} />}
-        <span>{a ? 'LAST SURVIVOR' : 'EXTINCTION EVENT'}</span>
+        <span>{a ? t('result.winner') : t('result.extinction')}</span>
         {a ? <RobotPortrait agent={a} size={86} /> : null}
-        <h1>{a ? a.name : 'The island claimed everyone.'}</h1>
-        <p>{state.history?.summary}</p>
-        <small>SEED {state.seed} · Completed world · Island totals below</small>
+        <h1>{a ? a.name : t('result.claimed')}</h1>
+        <p>{localizedHistory?.summary}</p>
+        <small>
+          {t('result.seed', {
+            seed: state.seed,
+          })}
+        </small>
       </div>
       <div className="winner-stats">
         {[
-          ['Duration', formatTime(state.elapsed)],
-          ['Kills', state.stats.kills],
-          ['Trades', state.stats.trades],
-          ['Alliances', state.stats.alliances],
-          ['Betrayals', state.stats.betrayals],
+          [t('stats.duration'), formatTime(state.elapsed)],
+          [t('stats.kills'), state.stats.kills],
+          [t('stats.trades'), state.stats.trades],
+          [t('stats.alliances'), state.stats.alliances],
+          [t('stats.betrayals'), state.stats.betrayals],
         ].map(([k, v]) => (
           <div key={k}>
             <strong>{v}</strong>
@@ -250,13 +286,13 @@ export function Winner({ state, onClose, onRestart }) {
       </div>
       <div className="leaderboard">
         <span>
-          Most social
+          {t('ranking.social')}
           <strong>
             {state.stats.conversations || state.stats.trades ? state.stats.mostSocial : '—'}
           </strong>
         </span>
         <span>
-          Most trusted
+          {t('ranking.trusted')}
           <strong>
             {state.stats.conversations || state.stats.trades || state.stats.alliances
               ? state.stats.mostTrusted
@@ -264,14 +300,19 @@ export function Winner({ state, onClose, onRestart }) {
           </strong>
         </span>
         <span>
-          Mutual aid<strong>{state.stats.cooperation} acts</strong>
+          {t('ranking.aid')}
+          <strong>
+            {t('stats.acts', {
+              count: state.stats.cooperation,
+            })}
+          </strong>
         </span>
       </div>
       <div className="history">
         {state.history?.narration ? (
           <p className="narration">{state.history.narration}</p>
         ) : (
-          state.history?.chapters.map((c) => (
+          localizedHistory?.chapters.map((c) => (
             <section key={c.title}>
               <h3>{c.title}</h3>
               <p>{c.text}</p>
@@ -282,29 +323,29 @@ export function Winner({ state, onClose, onRestart }) {
       <div className="modal-footer">
         {exportUrl ? (
           <a className="button" href={exportUrl} download={`society-${state.matchId}.json`}>
-            <Download size={14} /> Export this history
+            <Download size={14} />
+            {t('result.export')}
           </a>
         ) : (
-          <span>{exportError || 'Preparing history export…'}</span>
+          <span>{exportError ? localizeError(exportError) : t('result.preparing')}</span>
         )}
         <button className="primary" onClick={onRestart}>
-          <Play size={14} /> New simulation
+          <Play size={14} />
+          {t('result.new')}
         </button>
       </div>
     </Modal>
   );
 }
 export function ReplayLibrary({ onClose, onLoad, onError }) {
+  const { t } = useLocale();
   const [items, setItems] = useState(null);
   useEffect(() => {
     request('/api/replays').then(setItems).catch(onError);
   }, []);
   return (
-    <Modal title="Simulation archive" onClose={onClose} wide>
-      <p className="muted">
-        Review a saved timeline, statistics and major events. Live simulation continues
-        independently.
-      </p>
+    <Modal title={t('replay.title')} onClose={onClose} wide>
+      <p className="muted">{t('replay.intro')}</p>
       <div className="archive-list">
         {items?.length ? (
           items.map((r) => (
@@ -323,11 +364,18 @@ export function ReplayLibrary({ onClose, onLoad, onError }) {
                 <strong>Seed {r.seed}</strong>
                 <span>
                   {r.winner
-                    ? `${r.winner} survived`
+                    ? t('replay.survived', {
+                        name: r.winner,
+                      })
                     : r.outcome?.kind === 'extinction'
-                      ? 'Extinction event'
-                      : `${r.status} simulation`}{' '}
-                  · {r.events} events
+                      ? t('replay.extinction')
+                      : t('replay.status', {
+                          status: t('status.' + r.status),
+                        })}{' '}
+                  ·{' '}
+                  {t('replay.events', {
+                    count: r.events,
+                  })}
                 </span>
               </div>
               <time>{formatTime(r.elapsed)}</time>
@@ -335,15 +383,11 @@ export function ReplayLibrary({ onClose, onLoad, onError }) {
             </button>
           ))
         ) : (
-          <p>
-            {items
-              ? 'No saved runs yet. Use Save run or complete a simulation.'
-              : 'Loading archive…'}
-          </p>
+          <p>{items ? t('replay.empty') : t('replay.loading')}</p>
         )}
       </div>
       <label className="import-replay">
-        Or import an exported log
+        {t('replay.import')}
         <input
           type="file"
           accept="application/json,.json"
@@ -351,7 +395,7 @@ export function ReplayLibrary({ onClose, onLoad, onError }) {
             const file = e.target.files?.[0];
             if (!file) return;
             try {
-              if (file.size > 20 * 1024 * 1024) throw new Error('Replay exceeds 20MB');
+              if (file.size > 20 * 1024 * 1024) throw new Error(t('error.replaySize'));
               const r = JSON.parse(await file.text());
               if (
                 r.schemaVersion !== 1 ||
@@ -362,7 +406,7 @@ export function ReplayLibrary({ onClose, onLoad, onError }) {
                 r.timeline.length > 5000 ||
                 r.agents.length !== 12
               )
-                throw new Error('Unsupported replay schema');
+                throw new Error(t('error.replaySchema'));
               onLoad(r);
               onClose();
             } catch (err) {

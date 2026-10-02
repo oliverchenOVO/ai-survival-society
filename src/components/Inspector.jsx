@@ -1,3 +1,4 @@
+import { useLocale } from '../i18n/LocaleProvider.jsx';
 import { Heart, Zap, Utensils, Shield, Brain, ChevronDown, Crosshair } from 'lucide-react';
 import { formatTime } from '../api.mjs';
 const TRAITS = [
@@ -11,14 +12,19 @@ const TRAITS = [
   'curiosity',
 ];
 export function RobotPortrait({ agent, size = 72 }) {
+  const { t } = useLocale();
   return (
     <svg
       className="robot-portrait"
       width={size}
       height={size}
       viewBox="0 0 80 80"
-      aria-label={`${agent.name} robot portrait`}
-      style={{ color: agent.color }}
+      aria-label={t('inspector.portrait', {
+        name: agent.name,
+      })}
+      style={{
+        color: agent.color,
+      }}
     >
       <circle cx="40" cy="40" r="38" fill="#14232b" stroke="currentColor" strokeWidth=".7" />
       <path d="M18 77Q20 56 40 55Q60 56 62 77" fill="#c5d6d7" />
@@ -58,7 +64,12 @@ function Meter({ label, value, color, icon: Icon }) {
         {label}
       </span>
       <div className="meter-track">
-        <i style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }} />
+        <i
+          style={{
+            width: `${Math.max(0, Math.min(100, value))}%`,
+            background: color,
+          }}
+        />
       </div>
       <b>
         {Math.round(value)}
@@ -68,25 +79,29 @@ function Meter({ label, value, color, icon: Icon }) {
   );
 }
 export default function Inspector({ state, selected, onSelect }) {
+  const { t, text } = useLocale();
   const a = state.agents.find((a) => a.id === selected) ?? state.agents[0];
   const relationships = Object.entries(a.relationships)
-    .map(([id, r]) => ({ ...r, agent: state.agents.find((a) => a.id === id) }))
+    .map(([id, r]) => ({
+      ...r,
+      agent: state.agents.find((a) => a.id === id),
+    }))
     .filter((r) => r.agent)
     .sort((x, y) => (y.alliance ? 2 : 0) + y.trust - (x.alliance ? 2 : 0) - x.trust);
   const memories = [...a.memory]
     .sort((x, y) => y.importance - x.importance || y.when - x.when)
     .slice(0, 5);
   return (
-    <aside className="inspector" aria-label="Agent inspector">
+    <aside className="inspector" aria-label={t('inspector.label')}>
       <div className="panel-title">
-        <span>AGENT INSPECTOR</span>
+        <span>{t('inspector.title')}</span>
         <span className="muted">#{String(a.index + 1).padStart(2, '0')}</span>
       </div>
       <div className="agent-identity">
         <RobotPortrait agent={a} />
         <div>
           <select
-            aria-label="Selected agent"
+            aria-label={t('inspector.selected')}
             value={a.id}
             onChange={(e) => onSelect(e.target.value)}
           >
@@ -98,78 +113,99 @@ export default function Inspector({ state, selected, onSelect }) {
           </select>
           <p>
             {a.personality.empathy > 0.6
-              ? 'Empathic'
+              ? t('inspector.empathic')
               : a.personality.aggression > 0.65
-                ? 'Volatile'
-                : 'Adaptive'}{' '}
-            · {a.personality.curiosity > 0.5 ? 'Curious' : 'Pragmatic'}
+                ? t('inspector.volatile')
+                : t('inspector.adaptive')}{' '}
+            · {a.personality.curiosity > 0.5 ? t('inspector.curious') : t('inspector.pragmatic')}
           </p>
           <span className={a.alive ? 'alive-state' : 'dead-state'}>
             <i />
-            {a.alive ? (a.infected ? 'Infected' : 'Active') : 'Eliminated'}
+            {a.alive
+              ? a.infected
+                ? t('inspector.infected')
+                : t('inspector.active')
+              : t('inspector.eliminated')}
           </span>
         </div>
       </div>
       <div className="vitals">
-        <Meter label="Health" value={a.hp} color="#89dfba" icon={Heart} />
-        <Meter label="Energy" value={a.energy} color="#e4b77e" icon={Zap} />
-        <Meter label="Hunger" value={a.hunger} color="#e7857e" icon={Utensils} />
+        <Meter label={t('inspector.health')} value={a.hp} color="#89dfba" icon={Heart} />
+        <Meter label={t('inspector.energy')} value={a.energy} color="#e4b77e" icon={Zap} />
+        <Meter label={t('inspector.hunger')} value={a.hunger} color="#e7857e" icon={Utensils} />
       </div>
       <div className="inventory">
         <span>
-          <Utensils size={12} /> {a.inventory.food} food
+          <Utensils size={12} /> {a.inventory.food}
+          {t('resource.food')}
         </span>
         <span>
-          <Heart size={12} /> {a.inventory.medicine} med
+          <Heart size={12} /> {a.inventory.medicine}
+          {t('resource.med')}
         </span>
-        <span>◇ {a.inventory.relic} relic</span>
+        <span>
+          ◇ {a.inventory.relic}
+          {t('resource.relic')}
+        </span>
       </div>
       <div className="weapon">
         <Shield size={13} />
-        <span>{a.weapon}</span>
-        <span className="muted">{a.alliance.length} allies</span>
+        <span>{text(a.weapon)}</span>
+        <span className="muted">
+          {t('stats.allies', {
+            count: a.alliance.length,
+          })}
+        </span>
       </div>
       <section className="inspector-section decision">
         <div className="panel-title">
-          <span>CURRENT DECISION</span>
-          <span className="source">{a.decisionSource.toUpperCase()}</span>
+          <span>{t('inspector.decision')}</span>
+          <span className="source">{a.decisionSource === 'llm' ? 'LLM' : 'Utility AI'}</span>
         </div>
         <strong>
           <span className="decision-dot">↗</span>
-          {a.goal}
+          {text(a.goal)}
         </strong>
-        <p>{a.public_reason}</p>
+        <p>{a.decisionSource === 'llm' ? a.public_reason : text(a.public_reason)}</p>
         <dl>
-          <dt>Observed</dt>
-          <dd>{a.observed}</dd>
-          <dt>Action</dt>
+          <dt>{t('inspector.observed')}</dt>
+          <dd>{text(a.observed)}</dd>
+          <dt>{t('inspector.action')}</dt>
           <dd>
-            {a.action}
+            {t('action.' + a.action)}
             {a.target
-              ? ` → ${state.agents.find((b) => b.id === a.target)?.name ?? a.target.replace('Resource_', 'Supply #')}`
+              ? ` → ${
+                  state.agents.find((b) => b.id === a.target)?.name ??
+                  t('inspector.supply', {
+                    id: a.target.replace('Resource_', ''),
+                  })
+                }`
               : ''}
           </dd>
         </dl>
         <details>
-          <summary>Utility scores</summary>
+          <summary>{t('inspector.utility')}</summary>
           {a.utility.map((u, i) => (
             <div className="utility-line" key={i}>
-              <span>{u.action}</span>
+              <span>{t('action.' + u.action)}</span>
               <span>{u.score.toFixed(2)}</span>
             </div>
           ))}
         </details>
       </section>
       <section className="inspector-section">
-        <div className="panel-title">PERSONALITY</div>
+        <div className="panel-title">{t('inspector.personality')}</div>
         <div className="trait-grid">
           {TRAITS.map((key) => (
             <div className="trait" key={key}>
-              <span>
-                {key === 'riskTolerance' ? 'Risk tolerance' : key[0].toUpperCase() + key.slice(1)}
-              </span>
+              <span>{t('trait.' + key)}</span>
               <div>
-                <i style={{ width: `${a.personality[key] * 100}%`, background: a.color }} />
+                <i
+                  style={{
+                    width: `${a.personality[key] * 100}%`,
+                    background: a.color,
+                  }}
+                />
               </div>
               <b>{Math.round(a.personality[key] * 100)}</b>
             </div>
@@ -178,44 +214,48 @@ export default function Inspector({ state, selected, onSelect }) {
       </section>
       <section className="inspector-section">
         <div className="panel-title">
-          <span>RELATIONSHIPS</span>
-          <span className="muted">TRUST</span>
+          <span>{t('inspector.relationships')}</span>
+          <span className="muted">{t('inspector.trust')}</span>
         </div>
         <div className="relationship-list">
           {relationships.length ? (
             relationships.slice(0, 4).map((r) => (
               <button key={r.agent.id} onClick={() => onSelect(r.agent.id)}>
-                <i style={{ background: r.agent.color }} />
+                <i
+                  style={{
+                    background: r.agent.color,
+                  }}
+                />
                 <span>{r.agent.name}</span>
                 <small className={r.alliance ? 'blue' : r.hostility > 0.4 ? 'coral' : 'mint'}>
                   {r.alliance
-                    ? 'ALLY'
+                    ? t('relation.ally')
                     : r.hostility > 0.4
-                      ? 'HOSTILE'
+                      ? t('relation.hostile')
                       : r.trust > 0.3
-                        ? 'FRIEND'
-                        : 'NEUTRAL'}
+                        ? t('relation.friend')
+                        : t('relation.neutral')}
                 </small>
                 <b>{Math.round(r.trust * 100)}%</b>
               </button>
             ))
           ) : (
-            <p className="muted">Every connection starts with an encounter.</p>
+            <p className="muted">{t('relation.empty')}</p>
           )}
         </div>
       </section>
       <section className="inspector-section memories">
-        <div className="panel-title">IMPORTANT MEMORIES</div>
+        <div className="panel-title">{t('inspector.memories')}</div>
         {memories.length ? (
           memories.map((m, i) => (
             <div className="memory" key={`${m.when}-${i}`}>
               <i className={m.emotionalImpact < 0 ? 'negative' : ''} />
-              <p>{m.what}</p>
+              <p>{text(m.what)}</p>
               <time>{formatTime(m.when)}</time>
             </div>
           ))
         ) : (
-          <p className="muted">The island has not left its mark yet.</p>
+          <p className="muted">{t('memory.empty')}</p>
         )}
       </section>
     </aside>

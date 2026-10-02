@@ -1,5 +1,9 @@
 import { ACTIONS } from '../core/utility.mjs';
 import { clamp } from '../core/random.mjs';
+export const proseLanguageInstruction = (language) =>
+  language === 'zh-TW'
+    ? ' Prefer Traditional Chinese (zh-TW) for message and public_reason only. Keep action enums and target IDs unchanged.'
+    : ' Prefer English for message and public_reason only. Keep action enums and target IDs unchanged.';
 export const DECISION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -184,7 +188,7 @@ export class ModelQueue {
         [
           {
             role: 'system',
-            content: `You are a survival simulation character. Choose ONE of the provided utility choices, with a legal target ID. Return only JSON with action, target, message, public_reason. Public reason is a brief player-facing explanation, never private reasoning. Allowed actions: ${ACTIONS.join(', ')}. Do not invent resources or execute code. Use short natural dialogue. Reflect on recent memory in the public reason.`,
+            content: `You are a survival simulation character. Choose ONE of the provided utility choices, with a legal target ID. Return only JSON with action, target, message, public_reason. Public reason is a brief player-facing explanation, never private reasoning. Allowed actions: ${ACTIONS.join(', ')}. Do not invent resources or execute code. Use short natural dialogue. Reflect on recent memory in the public reason.${proseLanguageInstruction(this.config.responseLanguage)}`,
           },
           { role: 'user', content: JSON.stringify(context) },
         ],
@@ -254,7 +258,10 @@ export class ModelQueue {
           {
             role: 'system',
             content:
-              'Write a concise four-chapter history of this simulation based only on supplied event facts. No hidden reasoning. Under 450 words. Mention cooperation, scarcity, betrayal if recorded, and the final survivor. Plain text only.',
+              'Write a concise four-chapter history of this simulation based only on supplied event facts. No hidden reasoning. Under 450 words. Mention cooperation, scarcity, betrayal if recorded, and the final survivor. Plain text only.' +
+              (this.config.responseLanguage === 'zh-TW'
+                ? ' Prefer Traditional Chinese (zh-TW).'
+                : ' Prefer English.'),
           },
           {
             role: 'user',

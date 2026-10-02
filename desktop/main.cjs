@@ -1,6 +1,12 @@
 const { app, BrowserWindow, dialog } = require('electron');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
+// Allows isolated desktop QA profiles without disturbing the user's saved runs.
+if (process.env.SOCIETY_USER_DATA_DIR) {
+  const dataPath = path.resolve(process.env.SOCIETY_USER_DATA_DIR);
+  require('node:fs').mkdirSync(dataPath, { recursive: true });
+  app.setPath('userData', dataPath);
+}
 let runtime,
   win,
   closing = false;
@@ -37,7 +43,17 @@ app.whenReady().then(async () => {
     });
     await win.loadURL(origin);
   } catch (error) {
-    dialog.showErrorBox('Could not start Society', error.message);
+    const { translate, localizeError } = await import(
+      pathToFileURL(path.join(__dirname, '..', 'src', 'i18n', 'translate.mjs')).href
+    );
+    const { Preferences } = await import(
+      pathToFileURL(path.join(__dirname, '..', 'server', 'preferences.mjs')).href
+    );
+    const { language } = await new Preferences(app.getPath('userData')).init();
+    dialog.showErrorBox(
+      translate('desktop.startError', language),
+      localizeError(error.message, language),
+    );
     app.quit();
   }
 });

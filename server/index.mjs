@@ -7,6 +7,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { Simulation, DIRECTOR_EVENTS } from '../core/simulation.mjs';
 import { ModelQueue } from './llm.mjs';
 import { Persistence } from './persistence.mjs';
+import { Preferences } from './preferences.mjs';
+import { translate } from '../src/i18n/translate.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export async function startServer(options = {}) {
   const config = {
@@ -23,7 +25,11 @@ export async function startServer(options = {}) {
     restarting = false;
   const store = new Persistence(dataDir, config.maxStoredMatches);
   await store.init();
-  const models = new ModelQueue({ ...config.llm }, () => sim);
+  const preferences = await new Preferences(dataDir).init();
+  const models = new ModelQueue(
+    { ...config.llm, responseLanguage: preferences.language },
+    () => sim,
+  );
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '64kb' }));
@@ -65,9 +71,21 @@ export async function startServer(options = {}) {
     return snapshot();
   };
   app.get('/api/health', (_, res) =>
-    res.json({ ok: true, app: 'AI Survival Society', version: '1.1.0' }),
+    res.json({ ok: true, app: 'AI Survival Society', version: '1.1.1' }),
   );
   app.get('/api/state', (_, res) => res.json(snapshot()));
+  app.get('/api/preferences', (_, res) => res.json({ language: preferences.language }));
+  app.post('/api/preferences', async (req, res) => {
+    if (!['zh-TW', 'en'].includes(req.body.language))
+      return res.status(400).json({ error: 'Unsupported interface language' });
+    try {
+      const result = await preferences.set(req.body.language);
+      models.config.responseLanguage = result.language;
+      res.json(result);
+    } catch {
+      res.status(503).json({ error: 'Could not save interface preference' });
+    }
+  });
   app.get('/api/matches/:id/export', async (req, res) => {
     try {
       const data = req.params.id === sim.matchId ? sim.export() : await store.read(req.params.id);
@@ -142,6 +160,7 @@ export async function startServer(options = {}) {
       intervalSeconds: Math.max(8, Math.min(120, Number(c.intervalSeconds) || 22)),
       concurrency: 1,
       maxQueue: 6,
+      responseLanguage: preferences.language,
     };
     models.configure(clean);
     res.json(clean);
@@ -165,8 +184,7 @@ export async function startServer(options = {}) {
   if (existsSync(dist)) {
     app.use(express.static(dist));
     app.get('/', (_, res) => res.sendFile(path.join(dist, 'index.html')));
-  } else
-    app.get('/', (_, res) => res.send('Run npm run build, or use npm run dev on localhost:5173.'));
+  } else app.get('/', (_, res) => res.send(translate('error.build', preferences.language)));
   app.use((error, req, res, next) => {
     console.error(error.message);
     if (!res.headersSent) res.status(400).json({ error: String(error.message).slice(0, 180) });

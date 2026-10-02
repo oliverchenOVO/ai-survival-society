@@ -195,3 +195,27 @@
 - V108–V109：本輪局末社會摘要已實作；新對話氣泡/聯盟動畫/死亡cinematic/完整人生軌跡與公開部署明確延後，未宣稱實作。Docker仍未實跑、remote key維持server-side。
 - V110：11核心/HTTP測試、100-seed gate、20-seed smoke、15组瀏覽器workflow、結果桌面/mobile回歸、Windows unpacked及portable啟動均有證據；最後封裝與Git交付記錄見V1.1_REPORT。
 - [x] V111：修復本機ERR_CONNECTION_REFUSED：確認舊PID已消失且4310無listener；WMI獨立背景啟動並保留stdout/stderr/PID，實跑重複啟動、停止、重新啟動與跨終端機HTTP驗證。瀏覽器安全規則阻擋操作錯誤頁，需使用者手動重新加載。
+
+## zh-TW localization requirements
+- [x] L01：預設zh-TW；Settings繁體中文/English切換。
+- [x] L02：Browser與Electron語言持久化，重新開啟保留，無大型字體檔。
+- [x] L03：集中字串、可維護翻譯鍵與動態模板、兩語鍵一致。
+- [x] L04：不修改core、Seed、utility與gameplay；原始log不被翻譯改寫。
+- [x] L05：導覽、統計、播放、觀察器、人格、關係、動態、六種Director事件名稱與說明。
+- [x] L06：Winner/extinction、Historian、Replay、Settings、loading/error/connection、tooltips與所有modals。
+- [x] L07：public_reason fallback、固定事件句型、observed、memory、goal/action、資源與武器顯示翻譯。
+- [x] L08：名字/品牌/Utility AI/LLM/Seed可保留；自由LLM文本不強制翻譯，zh-TW模型文字提示且失敗不中斷。
+- [x] L09：冷峻科幻自然中文＋少量技術英文；Windows CJK font stack，Browser/Electron無tofu。
+- [x] L10：1920×1080與1366×768實測，無文字溢出/截斷/重疊；至少2張zh-TW實跑截圖。
+- [x] L11：npm test、simulation regression、browser UI QA、desktop QA全部重跑。
+- [x] L12：逐頁modal漏翻掃描；README語言切換說明；commit/push private repo。
+
+### zh-TW 逐項驗收記錄
+- L01–L03：360 個集中兩語鍵；預設繁中、Settings 立即切換；Browser reload 與 Electron 三次重開、不同 port 實測持久化。
+- L04：core/config git diff 為空；100-seed JSON 基準與前版完全一致；暫停後語言切換的完整 snapshot deepEqual；adapter 不改寫原始 log。
+- L05–L07：全部導覽與 modal、兩種結算、歷史、重播、tooltips、固定決策/事件/記憶翻譯；真實 Utility seeds 加六種 Director 事件覆蓋測試。
+- L08–L09：品牌/名字/技術名詞保留，雙語觀測器標題；自由模型文字保持原樣、prose-only zh-TW prompt；Windows 真實 CJK font 計數有 glyph，無字體檔新增。
+- L10：1920×1080、1366×768 的 controls/文字 scrollWidth 與 peer overlap 全通過；Browser/桌面實跑截圖存 docs/images/zh-TW-*，人工視覺確認。
+- L11：npm test 15 項＋100-seed gate、20-seed simulation、原有15組 UI、結算回歸、繁中UI/斷線/錯誤、unpacked＋portable desktop QA 通過。
+- L12：JSX AST＋runtime 英文漏翻掃描通過，README 與 docs/LOCALIZATION.md 已補語言切換及維護方式；Git/私人release交付見 localization report 與最終回覆。
+

@@ -4,7 +4,9 @@
 
 **v1.1 已完成模擬品質與結算修正。** 100個 utility-only deterministic seeds 全部有交易、聯盟及戰鬥，無零社交全滅；平均交易由11.30提升至14.82次（同一50-seed cohort）。連續模式結算與匯出固定在完成的局，全滅使用EXTINCTION EVENT。完整量測、限制及驗收見 [v1.1 report](docs/V1.1_REPORT.md)。`npm test` 已包含兩組50-seed防退化基準，`npm run test:results`驗證結算UI。
 
-![World overview](docs/images/world-overview.png)
+**v1.1.1 已正式加入繁體中文。** 預設 zh-TW，在 **設定 → 語言** 切換 **繁體中文 / English**，立即生效並在重開 Browser / Electron 後保留。模擬核心、Seed 與 gameplay 保持不變。架構與完整驗收見 [本地化說明](docs/LOCALIZATION.md)。
+
+![繁體中文世界](docs/images/zh-TW-world-1920.png)
 
 ## 快速開始
 
@@ -14,7 +16,15 @@ Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://127
 
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
-遊戲啟動後自動運行。上方可 Pause / Resume / Restart、設定速度。Settings 可改 random seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
+遊戲啟動後自動運行。上方可暫停／繼續／重新開始、設定速度。設定可切換語言、改 Seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
+
+### 介面語言
+
+點選左側 **設定 → 語言 → 繁體中文 / English**。Browser 使用 localStorage；桌面版另在 Electron userData 保存語言，重新開啟、連線埠改變後仍會保留。zh-TW 模式優先要求模型使用繁體中文；自由生成文字不強制翻譯，模型失敗不影響遊戲。固定事件與決策 fallback 只在顯示時翻譯，原始匯出 JSON 保持原樣。
+
+字串集中在 `src/i18n/`；Windows 以 Microsoft JhengHei 提供 CJK fallback，沒有加入大型字體檔。`npm run test:i18n` 驗證所有頁面、modal、狀態與兩種桌面解析度。
+
+![繁體中文語言設定](docs/images/zh-TW-settings-1366.png)
 
 ## What unfolds on the island
 

@@ -1,3 +1,4 @@
+import { useLocale } from '../i18n/LocaleProvider.jsx';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -21,11 +22,28 @@ export default function WorldView({
   graphVisible,
   audio,
 }) {
+  const { t, text, error: localizeError, locale } = useLocale();
   const host = useRef(null),
     runtime = useRef(null),
-    latest = useRef({ state, selected, follow, cinematic, graphVisible, audio }),
+    latest = useRef({
+      state,
+      selected,
+      follow,
+      cinematic,
+      graphVisible,
+      audio,
+    }),
     [error, setError] = useState('');
-  latest.current = { state, selected, follow, cinematic, graphVisible, audio };
+  latest.current = {
+    state,
+    selected,
+    follow,
+    cinematic,
+    graphVisible,
+    audio,
+    text,
+    t,
+  };
   useEffect(() => {
     const container = host.current;
     let disposed = false,
@@ -37,13 +55,16 @@ export default function WorldView({
     try {
       scene = new THREE.Scene();
       scene.fog = new THREE.FogExp2('#38535a', 0.0045);
-      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
       renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.05;
-      renderer.domElement.setAttribute('aria-label', 'Interactive 3D island');
+      renderer.domElement.setAttribute('aria-label', t('world.canvas'));
       container.appendChild(renderer.domElement);
       const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1800);
       camera.position.set(37, 23, 43);
@@ -80,14 +101,20 @@ export default function WorldView({
         worldSeed = latest.current.state.seed;
       const ring = new THREE.Mesh(
         new THREE.TorusGeometry(1, 0.016, 6, 160),
-        new THREE.MeshBasicMaterial({ color: '#e6c27e', transparent: true, opacity: 0.58 }),
+        new THREE.MeshBasicMaterial({
+          color: '#e6c27e',
+          transparent: true,
+          opacity: 0.58,
+        }),
       );
       ring.rotation.x = -Math.PI / 2;
       ring.position.y = 1.5;
       scene.add(ring);
       const selectionRing = new THREE.Mesh(
         new THREE.TorusGeometry(0.95, 0.035, 6, 64),
-        new THREE.MeshBasicMaterial({ color: '#a0efd0' }),
+        new THREE.MeshBasicMaterial({
+          color: '#a0efd0',
+        }),
       );
       selectionRing.rotation.x = -Math.PI / 2;
       scene.add(selectionRing);
@@ -157,13 +184,17 @@ export default function WorldView({
             // Procedural fallback still supplies a visible, selectable robot if an asset request fails.
             const torso = new THREE.Mesh(
               new THREE.BoxGeometry(0.7, 0.9, 0.5),
-              new THREE.MeshStandardMaterial({ color: a.color }),
+              new THREE.MeshStandardMaterial({
+                color: a.color,
+              }),
             );
             torso.position.y = 0.8;
             wrapper.add(torso);
             const head = new THREE.Mesh(
               new THREE.BoxGeometry(0.8, 0.55, 0.6),
-              new THREE.MeshStandardMaterial({ color: '#e0e7e5' }),
+              new THREE.MeshStandardMaterial({
+                color: '#e0e7e5',
+              }),
             );
             head.position.y = 1.5;
             wrapper.add(head);
@@ -189,7 +220,10 @@ export default function WorldView({
         pointer = new THREE.Vector2();
       let down = null;
       const pointerDown = (e) => {
-        down = { x: e.clientX, y: e.clientY };
+        down = {
+          x: e.clientX,
+          y: e.clientY,
+        };
       };
       const pointerUp = (e) => {
         if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
@@ -311,7 +345,7 @@ export default function WorldView({
           label.style.display = tmp.z < 1 && a.alive ? 'block' : 'none';
           label.classList.toggle('selected', a.id === id);
           label.classList.toggle('fighting', ['attack', 'betray'].includes(a.action));
-          label.title = `${a.name}: ${a.goal}`;
+          label.title = `${a.name}: ${latest.current.text(a.goal)}`;
           if (a.id === id) {
             selectionRing.position.set(
               wrapper.position.x,
@@ -404,7 +438,10 @@ export default function WorldView({
                 }),
               );
               effectGroup.add(line);
-              traces.push({ object: line, expires: time + 0.75 });
+              traces.push({
+                object: line,
+                expires: time + 0.75,
+              });
             }
             if (cinema && a && time - lastCinematic > 9) {
               focus(a.id);
@@ -471,26 +508,33 @@ export default function WorldView({
         runtime.current = null;
       };
     } catch (e) {
-      setError(
-        `3D renderer could not start: ${e.message}. Try a browser with hardware acceleration.`,
-      );
+      setError(e.message);
       renderer?.dispose();
     }
   }, []);
+  useEffect(() => {
+    host.current?.querySelector('canvas')?.setAttribute('aria-label', t('world.canvas'));
+  }, [locale]);
   return (
-    <section className="world-panel" aria-label="World simulation">
+    <section className="world-panel" aria-label={t('world.label')}>
       <div className="world-canvas" ref={host} />
-      {error ? <div className="world-error">{error}</div> : null}
+      {error ? (
+        <div className="world-error">
+          {t('error.renderer', {
+            detail: localizeError(error),
+          })}
+        </div>
+      ) : null}
       <div className="world-heading">
         <span className="live-dot" />
         <span>
           {state.status === 'finished'
-            ? 'SIMULATION COMPLETE'
+            ? t('world.finished')
             : state.status === 'paused'
-              ? 'TIME IS PAUSED'
-              : 'LIVE SIMULATION'}
+              ? t('world.paused')
+              : t('world.live')}
         </span>
-        <span className="world-location">HAVEN ISLAND</span>
+        <span className="world-location">{t('world.island')}</span>
       </div>
       <div className="world-bottom">
         <div className="world-caption">
@@ -498,39 +542,43 @@ export default function WorldView({
             N<span>↑</span>
           </span>
           <div>
-            <strong>A society, unfolding.</strong>
-            <small>Drag to orbit · Right-drag to pan · Scroll to zoom</small>
+            <strong>{t('world.caption')}</strong>
+            <small>{t('world.cameraHint')}</small>
           </div>
         </div>
         <div className="camera-tools">
-          <button title="Zoom in" aria-label="Zoom in" onClick={() => runtime.current?.zoom(0.85)}>
+          <button
+            title={t('camera.in')}
+            aria-label={t('camera.in')}
+            onClick={() => runtime.current?.zoom(0.85)}
+          >
             <Plus size={17} />
           </button>
           <button
-            title="Zoom out"
-            aria-label="Zoom out"
+            title={t('camera.out')}
+            aria-label={t('camera.out')}
             onClick={() => runtime.current?.zoom(1.18)}
           >
             <Minus size={17} />
           </button>
           <button
-            title="Focus selected agent"
-            aria-label="Focus selected agent"
+            title={t('camera.focus')}
+            aria-label={t('camera.focus')}
             onClick={() => runtime.current?.focus(selected)}
           >
             <Crosshair size={17} />
           </button>
           <button
-            title="Reset camera"
-            aria-label="Reset camera"
+            title={t('camera.reset')}
+            aria-label={t('camera.reset')}
             onClick={() => runtime.current?.reset()}
           >
             <RotateCcw size={17} />
           </button>
           <button
             className={follow ? 'active' : ''}
-            title="Follow selected agent"
-            aria-label="Follow selected agent"
+            title={t('camera.follow')}
+            aria-label={t('camera.follow')}
             aria-pressed={follow}
             onClick={() => setFollow(!follow)}
           >
@@ -538,8 +586,8 @@ export default function WorldView({
           </button>
           <button
             className={cinematic ? 'active' : ''}
-            title="Cinematic event camera"
-            aria-label="Cinematic event camera"
+            title={t('camera.cinema')}
+            aria-label={t('camera.cinema')}
             aria-pressed={cinematic}
             onClick={() => setCinematic(!cinematic)}
           >
@@ -548,7 +596,7 @@ export default function WorldView({
         </div>
       </div>
       {state.effects.storm > state.elapsed ? (
-        <div className="weather-notice">STORM · MOVEMENT REDUCED</div>
+        <div className="weather-notice">{t('world.storm')}</div>
       ) : null}
     </section>
   );

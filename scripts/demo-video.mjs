@@ -12,6 +12,7 @@ const context = await browser.newContext({
 const page = await context.newPage();
 const post = (url, data) => page.request.post(base + url, { data });
 try {
+  await page.addInitScript(() => localStorage.setItem('society.locale.v1', 'en'));
   await page.goto(base);
   await page.locator('canvas').waitFor();
   await page.waitForTimeout(1000);

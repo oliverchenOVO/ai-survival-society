@@ -1,8 +1,36 @@
 {
   "executablePath": "builds/win-unpacked/AI Survival Society.exe",
-  "title": "AI Survival Society",
+  "checks": [
+    "Fresh desktop profile defaults to zh-TW; Chinese glyphs, 1920x1080/1366x768, pause/resume/restart/selection/camera",
+    "English persists after actual app close/relaunch on a different ephemeral port",
+    "Traditional Chinese persists after a second actual close/relaunch"
+  ],
+  "ports": [
+    "11944",
+    "12265",
+    "9829"
+  ],
+  "viewports": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0000000149011612
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "scale": 1.0000000149011612
+    }
+  ],
+  "fonts": [
+    {
+      "familyName": "Microsoft JhengHei UI",
+      "postScriptName": "MicrosoftJhengHeiUIRegular",
+      "isCustomFont": false,
+      "glyphCount": 16
+    }
+  ],
   "rendererErrors": [],
-  "pauseResumeRestartSelection": "PASS",
   "nodeIntegration": false,
   "contextIsolation": true,
   "sandbox": true

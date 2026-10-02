@@ -1,8 +1,10 @@
+import { useLocale } from '../i18n/LocaleProvider.jsx';
 import { useState } from 'react';
 import { formatTime } from '../api.mjs';
 const combat = new Set(['ATTACK', 'DEATH', 'BETRAYAL', 'THEFT']);
 const social = new Set(['CONVERSATION', 'TRADE', 'ALLIANCE_CREATED', 'COOPERATION', 'DECEPTION']);
 export default function EventFeed({ events, eventCount, expanded = false }) {
+  const { t, event: localizeEvent } = useLocale();
   const [filter, setFilter] = useState('all');
   const filtered = events
     .filter(
@@ -14,15 +16,23 @@ export default function EventFeed({ events, eventCount, expanded = false }) {
     .slice()
     .reverse();
   return (
-    <section className={`feed-panel ${expanded ? 'expanded' : ''}`} aria-label="Live world feed">
+    <section className={`feed-panel ${expanded ? 'expanded' : ''}`} aria-label={t('feed.label')}>
       <div className="panel-title">
-        <span>LIVE WORLD FEED</span>
-        <span className="muted">{eventCount} EVENTS</span>
+        <span>{t('feed.title')}</span>
+        <span className="muted">
+          {t('feed.count', {
+            count: eventCount,
+          })}
+        </span>
       </div>
       <div className="feed-tabs">
         {['all', 'social', 'conflict'].map((f) => (
-          <button key={f} onClick={() => setFilter(f)} className={f === filter ? 'active' : ''}>
-            {f}
+          <button
+            key={t('feed.' + f)}
+            onClick={() => setFilter(f)}
+            className={f === filter ? 'active' : ''}
+          >
+            {t('feed.' + f)}
           </button>
         ))}
       </div>
@@ -36,11 +46,11 @@ export default function EventFeed({ events, eventCount, expanded = false }) {
                 }
               />
               <time>{formatTime(e.timestamp)}</time>
-              <p>{e.result}</p>
+              <p>{localizeEvent(e)}</p>
             </div>
           ))
         ) : (
-          <p className="empty-message">Waiting for the next encounter…</p>
+          <p className="empty-message">{t('feed.empty')}</p>
         )}
       </div>
     </section>

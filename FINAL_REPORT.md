@@ -1,6 +1,6 @@
 # AI Survival Society — final delivery report
 
-**Current release: v1.1.0.** See [v1.1 delivery and benchmark report](docs/V1.1_REPORT.md) for the simulation tuning, fair extinction ending, continuous-result/export fix and 100-seed regression. The original v1.0 delivery record below is historical; its guaranteed-one-survivor environmental handling was replaced by explicit winner/extinction outcomes.
+**Current release: v1.1.1.** Traditional Chinese / English localization, persistence and QA are described in [localization delivery](docs/LOCALIZATION.md). See [v1.1 delivery and benchmark report](docs/V1.1_REPORT.md) for the simulation tuning, fair extinction ending, continuous-result/export fix and 100-seed regression. The original v1.0 delivery record below is historical; its guaranteed-one-survivor environmental handling was replaced by explicit winner/extinction outcomes.
 
 Date: 2026-10-02 (Asia/Taipei). Working directory: `C:\Users\oliver\Desktop\CodeX開發小東東\AI Survival Society`.
 

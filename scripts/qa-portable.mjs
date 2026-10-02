@@ -9,8 +9,12 @@ const probe = net.createServer();
 await new Promise((resolve) => probe.listen(0, '127.0.0.1', resolve));
 const debugPort = probe.address().port;
 await new Promise((resolve) => probe.close(resolve));
-const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.1.0.exe');
-const processHandle = spawn(exe, [`--remote-debugging-port=${debugPort}`], { stdio: 'ignore' });
+const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.1.1.exe');
+const processHandle = spawn(exe, [`--remote-debugging-port=${debugPort}`], {
+  stdio: 'ignore',
+  windowsHide: true,
+  env: { ...process.env, SOCIETY_USER_DATA_DIR: path.resolve(`.qa/portable-locale-${Date.now()}`) },
+});
 let browser, page;
 try {
   const deadline = Date.now() + 120000;
@@ -38,28 +42,27 @@ try {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
   await page.locator('canvas').waitFor();
+  assert.equal(await page.locator('html').getAttribute('lang'), 'zh-TW');
   await page.getByTestId('restart').click();
   await page.waitForTimeout(300);
   await page.getByTestId('pause').click();
-  await page.getByRole('button', { name: 'Resume', exact: true }).waitFor();
+  await page.getByRole('button', { name: '繼續', exact: true }).waitFor();
   await page.getByTestId('pause').click();
-  await page.getByRole('combobox', { name: 'Selected agent' }).selectOption('Agent_04');
-  assert.equal(
-    await page.getByRole('combobox', { name: 'Selected agent' }).inputValue(),
-    'Agent_04',
-  );
-  await page.getByRole('button', { name: 'Reset camera' }).click();
+  await page.getByRole('combobox', { name: '所選角色' }).selectOption('Agent_04');
+  assert.equal(await page.getByRole('combobox', { name: '所選角色' }).inputValue(), 'Agent_04');
+  await page.getByRole('button', { name: '重設攝影機' }).click();
   await page.waitForTimeout(800);
   assert.equal(await page.locator('canvas').count(), 1);
   assert.equal(await page.evaluate(() => typeof window.require), 'undefined');
   assert.deepEqual(errors, []);
-  await page.screenshot({ path: 'docs/images/portable-build.png' });
+  await page.screenshot({ path: 'docs/images/zh-TW-portable-build.png' });
   await writeFile(
     'docs/qa/portable-results.json',
     JSON.stringify(
       {
         executablePath: exe,
         launch: 'PASS',
+        locale: 'zh-TW',
         canvas: 'PASS',
         pauseResumeRestartSelection: 'PASS',
         rendererNodeAccess: 'unavailable',

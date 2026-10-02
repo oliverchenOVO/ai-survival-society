@@ -1,5 +1,7 @@
 :root {
-  font-family: Inter, 'Segoe UI', sans-serif;
+  font-family:
+    Inter, 'Segoe UI', 'Microsoft JhengHei UI', 'Microsoft JhengHei', 'PingFang TC',
+    'Noto Sans CJK TC', 'Noto Sans TC', sans-serif;
   color: #e5edf0;
   background: #080f18;
   font-size: 12px;

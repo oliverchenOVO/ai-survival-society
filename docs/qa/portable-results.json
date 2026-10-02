@@ -1,6 +1,7 @@
 {
-  "executablePath": "C:\\Users\\oliver\\Desktop\\CodeX開發小東東\\AI Survival Society\\builds\\AI-Survival-Society-1.1.0.exe",
+  "executablePath": "C:\\Users\\oliver\\Desktop\\CodeX開發小東東\\AI Survival Society\\builds\\AI-Survival-Society-1.1.1.exe",
   "launch": "PASS",
+  "locale": "zh-TW",
   "canvas": "PASS",
   "pauseResumeRestartSelection": "PASS",
   "rendererNodeAccess": "unavailable",

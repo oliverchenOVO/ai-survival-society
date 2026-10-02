@@ -1,5 +1,7 @@
+import { useLocale } from '../i18n/LocaleProvider.jsx';
 import { memo } from 'react';
 export default memo(function SocialGraph({ state, selected, onSelect, expanded = false }) {
+  const { t } = useLocale();
   const points = state.agents.map((a, i) => ({
     ...a,
     cx: 155 + Math.cos((i / state.agents.length) * Math.PI * 2 - Math.PI / 2) * 112,
@@ -36,28 +38,25 @@ export default memo(function SocialGraph({ state, selected, onSelect, expanded =
       );
     }
   return (
-    <section
-      className={`social-panel ${expanded ? 'expanded' : ''}`}
-      aria-label="Relationship network"
-    >
+    <section className={`social-panel ${expanded ? 'expanded' : ''}`} aria-label={t('graph.label')}>
       <div className="panel-title">
-        <span>RELATIONSHIPS</span>
+        <span>{t('inspector.relationships')}</span>
         <div className="graph-legend">
           <span>
             <i className="mint-bg" />
-            Friend
+            {t('relation.legendFriend')}
           </span>
           <span>
             <i className="blue-bg" />
-            Ally
+            {t('relation.legendAlly')}
           </span>
           <span>
             <i className="coral-bg" />
-            Hostile
+            {t('relation.legendHostile')}
           </span>
         </div>
       </div>
-      <svg viewBox="0 0 310 190" role="img" aria-label="Live social network">
+      <svg viewBox="0 0 310 190" role="img" aria-label={t('graph.live')}>
         {edges}
         {points.map((a) => (
           <g
@@ -69,7 +68,9 @@ export default memo(function SocialGraph({ state, selected, onSelect, expanded =
             }}
             tabIndex="0"
             role="button"
-            aria-label={`Inspect ${a.name}`}
+            aria-label={t('inspector.inspect', {
+              name: a.name,
+            })}
             opacity={a.alive ? 1 : 0.3}
           >
             <circle

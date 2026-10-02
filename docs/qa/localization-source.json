@@ -1,0 +1,45 @@
+{
+  "method": "Babel JSX AST scan of rendered text and literal accessibility/tooltip attributes; dynamic copy also audited in the live browser",
+  "files": [
+    "src/main.jsx",
+    "src/App.jsx",
+    "src/components/Dialogs.jsx",
+    "src/components/Inspector.jsx",
+    "src/components/EventFeed.jsx",
+    "src/components/SocialGraph.jsx",
+    "src/components/Director.jsx",
+    "src/world/WorldView.jsx"
+  ],
+  "catalogKeys": 360,
+  "intentionalLiterals": [
+    {
+      "file": "src/App.jsx",
+      "text": "AI Survival Society"
+    },
+    {
+      "file": "src/App.jsx",
+      "text": "AI SURVIVAL SOCIETY"
+    },
+    {
+      "file": "src/App.jsx",
+      "text": "SEED"
+    },
+    {
+      "file": "src/components/Dialogs.jsx",
+      "text": "HP"
+    },
+    {
+      "file": "src/components/Dialogs.jsx",
+      "text": "Seed"
+    },
+    {
+      "file": "src/components/Director.jsx",
+      "text": "s"
+    },
+    {
+      "file": "src/world/WorldView.jsx",
+      "text": "N"
+    }
+  ],
+  "untranslated": []
+}
