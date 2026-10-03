@@ -55,6 +55,10 @@
     "live-service-v1.5.json": {
       "checkCount": 0,
       "rendererErrors": []
+    },
+    "development-v1.5.json": {
+      "checkCount": 4,
+      "rendererErrors": []
     }
   },
   "release": {

@@ -1,8 +1,13 @@
 import { spawn } from 'node:child_process';
 import { startServer } from '../server/index.mjs';
-const server = await startServer({ port: 4310, allowedOrigin: 'http://127.0.0.1:5173' });
-process.env.ALLOWED_ORIGIN = 'http://127.0.0.1:5173';
-const vite = spawn(process.execPath, ['node_modules/vite/bin/vite.js'], { stdio: 'inherit' });
+const devPort = Number(process.env.SOCIETY_DEV_PORT ?? 5173);
+const origin = `http://localhost:${devPort}`;
+const server = await startServer({ port: Number(process.env.PORT ?? 4310), allowedOrigin: origin });
+process.env.ALLOWED_ORIGIN = origin;
+const vite = spawn(process.execPath, ['node_modules/vite/bin/vite.js'], {
+  stdio: 'inherit',
+  env: { ...process.env, PORT: String(server.port) },
+});
 let stopped = false;
 async function stop() {
   if (stopped) return;

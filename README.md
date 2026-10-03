@@ -128,7 +128,7 @@ Open **http://localhost:4310**. For development with hot reload:
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173**. Stop a foreground server with Ctrl+C. The Windows launcher runs the production server in the background and writes its process ID/output under `.runtime/`.
+Open **http://localhost:5173**. Stop a foreground server with Ctrl+C. Before development, stop the background production server with `Stop-Society.cmd` to free port 4310. The Windows launcher writes its process ID/output under `.runtime/`. Development ports can be set with `PORT` (backend) and `SOCIETY_DEV_PORT` (Vite); QA uses isolated data and ports.
 
 ### Desktop build
 
