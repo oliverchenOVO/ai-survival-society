@@ -15,6 +15,23 @@ import {
   zoomTier,
   eventPriority,
 } from '../src/world/visual-state.mjs';
+test('instant completed slot interactions remain briefly visible without showing approach as use', () => {
+  const s = new Simulation({ seed: 7 }),
+    a = s.agents[0],
+    o = s.world.objects.find((o) => o.type === 'medical_station');
+  a.action = 'heal_at';
+  a.target = o.id;
+  const slot = reserveInteraction(s, a, o);
+  a.position = { x: slot.x, z: slot.z, y: slot.y ?? 0 };
+  const view = s.snapshot();
+  assert.equal(agentPose(a, view).interaction, false);
+  view.events = [
+    { actor: a.id, event: 'STATION_HEAL', timestamp: s.elapsed, data: { object: o.id } },
+  ];
+  assert.equal(agentPose(a, view).interaction, true);
+  view.elapsed += 1;
+  assert.equal(agentPose(a, view).interaction, false);
+});
 test('visual projections preserve snapshots and gameplay RNG', () => {
   const sim = new Simulation({ seed: 7 }),
     world = sim.world,

@@ -679,6 +679,7 @@ export default function WorldView({
         controls.update();
         renderer.info.reset();
         composer.render();
+        container._visual.renderedFrames = (container._visual.renderedFrames ?? 0) + 1;
       };
       render();
       return () => {

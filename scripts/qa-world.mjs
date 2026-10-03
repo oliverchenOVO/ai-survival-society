@@ -186,6 +186,7 @@ try {
       await page.evaluate(
         (speed) =>
           new Promise((resolve) => {
+            const firstRender = document.querySelector('.world-canvas')._visual.renderedFrames ?? 0;
             let start,
               count = 0;
             function frame(now) {
@@ -198,6 +199,14 @@ try {
                   elapsedMs: now - start,
                   frames: count,
                   fps: ((count - 1) * 1000) / (now - start),
+                  renderedFrames:
+                    (document.querySelector('.world-canvas')._visual.renderedFrames ?? 0) -
+                    firstRender,
+                  renderedFps:
+                    (((document.querySelector('.world-canvas')._visual.renderedFrames ?? 0) -
+                      firstRender) *
+                      1000) /
+                    (now - start),
                 });
             }
             requestAnimationFrame(frame);

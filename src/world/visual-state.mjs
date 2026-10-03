@@ -80,8 +80,28 @@ export function visualHistory(events, elapsed, limit = 96) {
 export function agentPose(a, s) {
   const object = s.world?.objects.find((o) => o.id === a.target);
   const other = s.agents.find((b) => b.id === a.target);
+  const completedHere =
+    object &&
+    (s.events ?? []).some(
+      (e) =>
+        e.actor === a.id &&
+        e.data?.object === object.id &&
+        [
+          'CONTAINER_SEARCHED',
+          'GENERATOR_REPAIRED',
+          'STATION_HEAL',
+          'BROADCAST_SENT',
+          'DOOR_OPENED',
+          'DOOR_FORCED',
+          'DOOR_CLOSED',
+        ].includes(e.event) &&
+        e.timestamp <= s.elapsed &&
+        s.elapsed - e.timestamp <= 0.75 &&
+        Math.hypot(a.position.x - object.position.x, a.position.z - object.position.z) < 1.7,
+    );
   const interaction =
     (!s.world?.spatial ||
+      completedHere ||
       s.world.spatial.slots.some((slot) => slot.agentId === a.id && slot.state === 'occupied')) &&
     [
       'search',
