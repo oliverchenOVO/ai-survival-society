@@ -72,7 +72,7 @@
     },
     "asar": false,
     "portable": {
-      "unpackDirName": false
+      "unpackDirName": true
     }
   },
   "author": "Oliver"
