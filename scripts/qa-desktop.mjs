@@ -2,8 +2,7 @@ import { _electron as electron } from 'playwright';
 import assert from 'node:assert/strict';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { closeElectron } from './qa-runtime.mjs';
 const executablePath = process.argv[2] ?? 'builds/win-unpacked/AI Survival Society.exe';
 const profile = path.resolve(`.qa/desktop-locale-${Date.now()}`);
 const env = { ...process.env, SOCIETY_USER_DATA_DIR: profile };
@@ -133,25 +132,5 @@ try {
     'PASS packaged zh-TW desktop, both resolutions, CJK fonts, controls, 3 launches, language persistence and sandbox',
   );
 } finally {
-  if (app) {
-    const ownedPid = app.process().pid;
-    let timeout;
-    const closed = await Promise.race([
-      app.close().then(
-        () => true,
-        () => false,
-      ),
-      new Promise((resolve) => {
-        timeout = setTimeout(() => resolve(false), 10000);
-      }),
-    ]);
-    clearTimeout(timeout);
-    if (!closed && ownedPid) {
-      // Only the launcher returned by this QA's electron.launch is owned here.
-      await promisify(execFile)('taskkill', ['/PID', String(ownedPid), '/T', '/F'], {
-        windowsHide: true,
-        timeout: 10000,
-      }).catch(() => {});
-    }
-  }
+  if (app) await closeElectron(app);
 }

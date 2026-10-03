@@ -1,4 +1,4 @@
-import { launchBrowser } from './qa-runtime.mjs';
+import { launchBrowser, closeElectron } from './qa-runtime.mjs';
 // Browser plugin not available: isolated Playwright Chrome / actual Electron QA.
 import { chromium, _electron as electron } from 'playwright';
 import assert from 'node:assert/strict';
@@ -42,7 +42,7 @@ try {
   if (desktop) {
     app = await electron.launch({
       executablePath: path.resolve('builds/win-unpacked/AI Survival Society.exe'),
-      args: process.env.SOCIETY_QA_SOFTWARE==='1'?['--use-angle=swiftshader']:[],
+      args: process.env.SOCIETY_QA_SOFTWARE === '1' ? ['--use-angle=swiftshader'] : [],
       env: { ...process.env, SOCIETY_USER_DATA_DIR: profile },
       timeout: 180000,
     });
@@ -244,7 +244,7 @@ try {
     app = null;
     app = await electron.launch({
       executablePath: path.resolve('builds/win-unpacked/AI Survival Society.exe'),
-      args: process.env.SOCIETY_QA_SOFTWARE==='1'?['--use-angle=swiftshader']:[],
+      args: process.env.SOCIETY_QA_SOFTWARE === '1' ? ['--use-angle=swiftshader'] : [],
       env: { ...process.env, SOCIETY_USER_DATA_DIR: profile },
       timeout: 180000,
     });
@@ -271,7 +271,7 @@ try {
     ),
   );
 } finally {
-  if (app) await app.close();
+  if (app) await closeElectron(app);
   if (browser) await browser.close();
   if (runtime) await runtime.close();
 }

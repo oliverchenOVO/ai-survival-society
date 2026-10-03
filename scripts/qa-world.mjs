@@ -1,5 +1,5 @@
 import { reserveInteraction, atInteractionSlot, releaseSlot } from '../core/spatial.mjs';
-import { launchBrowser } from './qa-runtime.mjs';
+import { launchBrowser, closeElectron } from './qa-runtime.mjs';
 // Browser plugin not available; isolated Playwright Chrome and actual Electron.
 import { chromium, _electron as electron } from 'playwright';
 import { Simulation } from '../core/simulation.mjs';
@@ -285,7 +285,7 @@ try {
   });
   throw error;
 } finally {
-  if (app) await app.close();
+  if (app) await closeElectron(app);
   if (browser) await browser.close();
   if (runtime) await runtime.close();
 }
