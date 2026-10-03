@@ -306,6 +306,28 @@ test('abstract goal inside furniture reaches its legal projection without endles
   assert.ok(walkable(s, a.position));
 });
 
+test('new hazard permits outward escape but still blocks inward movement and solid walls', () => {
+  const s = fixture(),
+    a = activate(s, 0, { x: 18.5, z: 2 });
+  s.world.hazards = [
+    { id: 'test_fire', type: 'fire', position: { x: 18, z: 2 }, radius: 2, until: 100 },
+  ];
+  assert.equal(walkable(s, a.position), false);
+  assert.ok(walkable(s, a.position, 0.35, null, { hazards: false }));
+  assert.ok(lineClear(s, a.position, { x: 18.7, z: 2 }, 0.35));
+  assert.equal(lineClear(s, a.position, { x: 18.3, z: 2 }, 0.35), false);
+  for (let i = 0; i < 40; i++) {
+    s.elapsed += 0.25;
+    revalidateSpatial(s);
+    moveAgent(s, a, { x: 22, z: 2 }, 0.25);
+  }
+  assert.ok(a.position.x > 20.5, JSON.stringify(a.position));
+  assert.ok(walkable(s, a.position));
+  const p = { x: -6.8, z: 6 };
+  s.world.hazards = [{ id: 'wall_fire', type: 'fire', position: p, radius: 3, until: 100 }];
+  assert.equal(lineClear(s, p, { x: -6, z: 6 }, 0.35), false);
+});
+
 test('opposing clinic doorway traffic yields, separates and releases short reservations', () => {
   const s = fixture();
   const door = s.world.objects.find((o) => o.id === 'clinic_door_0');

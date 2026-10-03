@@ -1,6 +1,6 @@
 import { Simulation } from '../core/simulation.mjs';
 import { walkable, spatialProfile } from '../core/spatial.mjs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 const performanceRuns = [];
@@ -25,6 +25,10 @@ for (const [name, start] of [
       const alive = s.agents.filter((a) => a.alive);
       for (let i = 0; i < alive.length; i++) {
         const a = alive[i];
+        assert.ok(
+          walkable(s, a.position, 0.35, null, { hazards: false }),
+          'Static penetration even within a hazard seed ' + seed,
+        );
         assert.ok(
           walkable(s, a.position) ||
             s.world.hazards.some(
@@ -118,8 +122,9 @@ else
     'v1.7 deterministic spatial golden changed: review gameplay before updating',
   );
 
+await mkdir('.qa', { recursive: true });
 await writeFile(
-  'docs/qa/spatial-v1.7-performance.json',
+  golden ? 'docs/qa/spatial-v1.7-performance.json' : '.qa/spatial-v1.7-performance-last.json',
   JSON.stringify(
     {
       date: new Date().toISOString(),

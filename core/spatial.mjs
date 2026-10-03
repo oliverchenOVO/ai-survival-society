@@ -170,7 +170,7 @@ function slopeAllowed(p) {
     ) || dist(p, { x: 2, z: -19 }) < 3
   );
 }
-export function walkable(sim, p, radius = AGENT_RADIUS, c = null) {
+export function walkable(sim, p, radius = AGENT_RADIUS, c = null, { hazards = true } = {}) {
   if (
     !p ||
     !Number.isFinite(p.x) ||
@@ -179,8 +179,10 @@ export function walkable(sim, p, radius = AGENT_RADIUS, c = null) {
     !slopeAllowed(p)
   )
     return false;
-  const candidates = c ? c.index.query(p, p, radius) : collisionShapes(sim);
-  return !candidates.some((s) => intersects(p, p, s, radius));
+  const candidates = (c ?? cache(sim)).index.query(p, p, radius);
+  return !candidates.some(
+    (s) => (hazards || !['fire', 'flood'].includes(s.kind)) && intersects(p, p, s, radius),
+  );
 }
 export function lineClear(
   sim,
@@ -189,8 +191,23 @@ export function lineClear(
   radius = 0,
   { hazards = true, ignoreObject = null, vision = false } = {},
 ) {
-  if (radius && (!walkable(sim, b, radius) || Math.hypot(a.x, a.z) > 28 - radius)) return false;
   const c = cache(sim);
+  if (
+    radius &&
+    (!walkable(sim, b, radius, c, { hazards: false }) || Math.hypot(a.x, a.z) > 28 - radius)
+  )
+    return false;
+  if (radius) {
+    const samples = Math.ceil(dist(a, b) / 0.3);
+    for (let i = 1; i < samples; i++)
+      if (
+        !slopeAllowed({
+          x: a.x + ((b.x - a.x) * i) / samples,
+          z: a.z + ((b.z - a.z) * i) / samples,
+        })
+      )
+        return false;
+  }
   return !c.index
     .query(a, b, radius)
     .some(

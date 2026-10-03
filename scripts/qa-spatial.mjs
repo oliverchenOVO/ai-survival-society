@@ -63,10 +63,11 @@ const camera = async (page, x = -3, z = 6) => {
   await page.waitForTimeout(800);
 };
 const historicalRoot = path.resolve('builds/win-unpacked/resources/app');
+const historicalVersion = await readFile(path.join(historicalRoot, 'package.json'), 'utf8')
+  .then((text) => JSON.parse(text).version)
+  .catch(() => null);
 // Capture the actual v1.6 packaged engine before v1.7 packaging overwrites win-unpacked.
-if (
-  JSON.parse(await readFile(path.join(historicalRoot, 'package.json'), 'utf8')).version === '1.6.0'
-) {
+if (historicalVersion === '1.6.0') {
   const { Simulation: Old } = await import(
     pathToFileURL(path.join(historicalRoot, 'core/simulation.mjs')).href
   );
@@ -92,7 +93,13 @@ if (
     await app.close();
   }
   await writeFile('.qa/spatial-before-evidence.json', JSON.stringify(evidence.before));
-} else evidence.before = JSON.parse(await readFile('.qa/spatial-before-evidence.json', 'utf8'));
+} else {
+  // A fresh checkout can rerun QA using the committed real historical capture.
+  // Never emulate v1.6 with the v1.7 engine or require an ignored local profile.
+  evidence.before = JSON.parse(
+    await readFile('docs/qa/spatial-browser-v1.7.json', 'utf8'),
+  ).evidence.before;
+}
 const runtime = await startServer({
   port: 0,
   dataDir: `.qa/spatial-browser-${Date.now()}`,
