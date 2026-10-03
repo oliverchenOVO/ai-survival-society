@@ -192,6 +192,15 @@ try {
     await page.getByRole('button', { name: '關閉視窗', exact: true }).click();
   }
   checks.push('Bilingual debug controls at both desktop resolutions');
+  const saved = await page.request
+    .post(`http://localhost:${runtime.port}/api/save`)
+    .then((r) => r.json());
+  await page.goto(`http://localhost:${runtime.port}/replay/${saved.id}?t=.25`);
+  await page.locator('.living-hud').waitFor();
+  await page.locator('.spatial-debug-inspector').waitFor();
+  checks.push(
+    'Sampled replay remains usable with persistent spatial debug, without full path data',
+  );
   assert.deepEqual(errors, []);
   await writeFile(
     out,

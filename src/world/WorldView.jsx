@@ -748,14 +748,14 @@ export default function WorldView({
                   {a.name} · {t('spatial.target')}: {a.target ?? '—'}
                 </p>
                 <p>
-                  {t('spatial.region')}: {a.spatial?.region} · {t('spatial.portal')}:{' '}
+                  {t('spatial.region')}: {a.spatial?.region ?? '—'} · {t('spatial.portal')}:{' '}
                   {a.spatial?.nextPortal ?? '—'}
                 </p>
                 <p>
                   {t('spatial.slot')}: {a.spatial?.slotId ?? '—'}
                 </p>
                 <p>
-                  {t('spatial.neighbors')}: {a.spatial?.neighbors.join(', ') || '—'}
+                  {t('spatial.neighbors')}: {a.spatial?.neighbors?.join(', ') || '—'}
                 </p>
                 <p>
                   {t('spatial.stuck')}: {(a.spatial?.stuckTimer ?? 0).toFixed(2)}s
@@ -763,7 +763,7 @@ export default function WorldView({
                 <p>
                   {t('spatial.path')}:{' '}
                   {a.spatial?.path
-                    .map((p) => `(${p.x.toFixed(1)},${(p.y ?? 0).toFixed(1)},${p.z.toFixed(1)})`)
+                    ?.map((p) => `(${p.x.toFixed(1)},${(p.y ?? 0).toFixed(1)},${p.z.toFixed(1)})`)
                     .join(' → ') || '—'}
                 </p>
               </div>
