@@ -1,4 +1,10 @@
 export const worldEntries = [
+  ['visual.cinematic', 'Cinematic', '電影式觀察'],
+  ['visual.observatory', 'Observatory', '觀測儀表'],
+  ['visual.labels', 'Toggle place labels', '切換地點標籤'],
+  ['visual.focused', 'Following {name}', '觀察焦點：{name}'],
+  ['visual.noEvent', 'Every decision leaves a mark.', '每一次選擇，都會留下痕跡。'],
+  ['visual.cluster', '{count} minds nearby', '此處有 {count} 個心智'],
   [
     'error.checkpoint',
     'Save has no living-world checkpoint',

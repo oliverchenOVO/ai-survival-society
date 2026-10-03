@@ -7,10 +7,12 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { Crosshair, Plus, Minus, Eye, Video, Move, RotateCcw } from 'lucide-react';
+import { Crosshair, Plus, Minus, Eye, Video, Move, RotateCcw, Tags } from 'lucide-react';
 import { createIsland, createOcean, createSky } from './island.mjs';
 import { terrainHeight } from '../../core/world.mjs';
 import { createLivingScene } from './living-scene.mjs';
+import { animateRobot } from './robot-motion.mjs';
+import { eventPriority, zoomTier } from './visual-state.mjs';
 const tmp = new THREE.Vector3();
 export default function WorldView({
   state,
@@ -23,7 +25,7 @@ export default function WorldView({
   graphVisible,
   audio,
 }) {
-  const { t, text, error: localizeError, locale } = useLocale();
+  const { t, text, event: localizeEvent, error: localizeError, locale } = useLocale();
   const host = useRef(null),
     runtime = useRef(null),
     latest = useRef({
@@ -65,6 +67,7 @@ export default function WorldView({
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.05;
+      renderer.info.autoReset = false;
       renderer.domElement.setAttribute('aria-label', t('world.canvas'));
       container.appendChild(renderer.domElement);
       const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1800);
@@ -99,7 +102,7 @@ export default function WorldView({
       const sky = createSky(scene);
       const livingScene = createLivingScene(scene, container);
       const ocean = createOcean(scene);
-      let island = createIsland(scene, latest.current.state.seed),
+      let island = createIsland(scene, latest.current.state.seed, latest.current.state.world?.pois),
         worldSeed = latest.current.state.seed;
       const ring = new THREE.Mesh(
         new THREE.TorusGeometry(1, 0.016, 6, 160),
@@ -147,6 +150,8 @@ export default function WorldView({
       const agents = new Map(),
         resources = new Map(),
         labels = new Map(),
+        bubbles = new Map(),
+        clusterLabels = new Map(),
         traces = [],
         loader = new GLTFLoader();
       const labelsHost = document.createElement('div');
@@ -240,6 +245,12 @@ export default function WorldView({
           let o = hit.object;
           while (o && !o.userData.agentId) o = o.parent;
           if (o) onSelect(o.userData.agentId);
+        } else {
+          const placeHit = raycaster.intersectObjects(livingScene.kit.root.children, true)[0];
+          let o = placeHit?.object;
+          while (o && !o.userData.poiId) o = o.parent;
+          const place = latest.current.state.world?.pois.find((p) => p.id === o?.userData.poiId);
+          if (place) camera.userData.focusPoi?.(place.position);
         }
       };
       renderer.domElement.addEventListener('pointerdown', pointerDown);
@@ -254,22 +265,36 @@ export default function WorldView({
           );
           const offset = camera.position.clone().sub(controls.target);
           if (offset.length() > 28) offset.setLength(25);
-          controls.target.copy(target);
-          camera.position.copy(target.clone().add(offset));
+          camera.userData.focusTarget = target;
+          camera.userData.focusPosition = target.clone().add(offset);
         }
       };
       runtime.current = {
         focus,
         zoom: (factor) => {
+          camera.userData.focusTarget = null;
+          camera.userData.userCameraUntil = performance.now() + 12000;
           camera.position.sub(controls.target).multiplyScalar(factor).add(controls.target);
         },
         reset: () => {
+          camera.userData.focusTarget = null;
           camera.position.set(37, 23, 43);
           controls.target.set(0, 3, 0);
         },
         renderer,
         camera,
       };
+      camera.userData.focusPoi = (p) => {
+        const target = new THREE.Vector3(p.x, terrainHeight(p.x, p.z) + 1, p.z);
+        camera.userData.focusTarget = target;
+        camera.userData.focusPosition = target.clone().add(new THREE.Vector3(12, 10, 14));
+      };
+      controls.addEventListener('start', () => {
+        camera.userData.focusTarget = null;
+        camera.userData.userCameraUntil = performance.now() + 12000;
+      });
+      // Read-only rendering diagnostics for visual QA, never simulation commands.
+      container._visual = { scene, camera, renderer, composer, agents, livingScene, controls };
       let prevSelected = latest.current.selected,
         lastMatch = '',
         lastEvent = 0,
@@ -291,17 +316,34 @@ export default function WorldView({
         if (s.seed !== worldSeed) {
           disposeObject(island.group);
           scene.remove(island.group);
-          island = createIsland(scene, s.seed);
+          island = createIsland(scene, s.seed, s.world?.pois);
           worldSeed = s.seed;
         }
         ocean.uniforms.time.value = time;
+        camera.userData.target = controls.target;
         livingScene.update(s, camera, time, latest.current.t);
         sky.uniforms.night.value = s.world?.timeOfDay === 'night' ? 1 : 0;
         ocean.uniforms.night.value = sky.uniforms.night.value;
         sunlight.intensity =
           s.world?.timeOfDay === 'night' ? 0.5 : s.world?.weather === 'storm' ? 1.4 : 3.7;
+        const twilight =
+          s.world?.timeOfDay === 'day'
+            ? Math.max(0, ((s.elapsed % 90) - 72) / 18)
+            : Math.max(0, 1 - (s.elapsed % 90) / 18);
+        sunlight.color.set(
+          s.world?.timeOfDay === 'night' ? '#a3bcdc' : twilight > 0.2 ? '#f4b57a' : '#ffd5a0',
+        );
+        scene.fog.color.set(
+          s.world?.weather === 'storm'
+            ? '#263d49'
+            : s.world?.timeOfDay === 'night'
+              ? '#182e40'
+              : '#536c70',
+        );
+        scene.fog.density = s.world?.weather === 'storm' ? 0.012 : 0.0045;
         renderer.toneMappingExposure = s.world?.timeOfDay === 'night' ? 0.75 : 1.05;
         island.artifact.rotation.y = time * 0.3;
+        island.update?.(s.elapsed, s.world?.weather);
         dust.rotation.y = time * 0.015;
         dust.position.y = Math.sin(time * 0.2) * 0.15;
         ring.scale.setScalar(s.safeRadius);
@@ -309,10 +351,50 @@ export default function WorldView({
         if (lastMatch !== s.matchId) {
           lastMatch = s.matchId;
           lastEvent = 0;
+          camera.userData.lastMajor = 0;
+          if (!s.visualEvents) {
+            const match = s.matchId;
+            fetch('/api/export')
+              .then((r) => r.json())
+              .then((data) => {
+                if (!disposed && latest.current.state.matchId === match && data.matchId === match)
+                  livingScene.seedHistory(data.events);
+              })
+              .catch(() => {});
+          }
         }
         if (prevSelected !== id) {
           focus(id);
           prevSelected = id;
+        }
+        for (const bubble of bubbles.values()) bubble.hidden = true;
+        const far = zoomTier(camera.position.distanceTo(controls.target)) === 'far';
+        const clusters = new Map();
+        if (far)
+          for (const a of s.agents.filter((a) => a.alive && a.id !== id)) {
+            const key = Math.floor(a.position.x / 8) + ':' + Math.floor(a.position.z / 8);
+            const c = clusters.get(key) ?? { x: 0, z: 0, count: 0 };
+            c.x += a.position.x;
+            c.z += a.position.z;
+            c.count++;
+            clusters.set(key, c);
+          }
+        for (const label of clusterLabels.values()) label.hidden = true;
+        for (const [key, c] of clusters) {
+          let label = clusterLabels.get(key);
+          if (!label) {
+            label = document.createElement('span');
+            label.className = 'cluster-marker';
+            labelsHost.append(label);
+            clusterLabels.set(key, label);
+          }
+          tmp
+            .set(c.x / c.count, terrainHeight(c.x / c.count, c.z / c.count) + 2, c.z / c.count)
+            .project(camera);
+          label.hidden = tmp.z > 1;
+          label.textContent = c.count;
+          label.title = latest.current.t('visual.cluster', { count: c.count });
+          label.style.transform = `translate(-50%,-50%) translate(${(tmp.x * 0.5 + 0.5) * container.clientWidth}px,${(-tmp.y * 0.5 + 0.5) * container.clientHeight}px)`;
         }
         for (const a of s.agents) {
           const wrapper = agents.get(a.id);
@@ -342,8 +424,6 @@ export default function WorldView({
               Math.atan2(dx, dz),
               Math.min(1, delta * 5),
             );
-          wrapper.scale.setScalar(a.alive ? 1 : 0.45);
-          wrapper.rotation.z = a.alive ? 0 : Math.PI / 2;
           if (wrapper.children[0]) {
             wrapper.children[0].position.y =
               a.alive && moving ? Math.sin(time * 11 + a.index) * 0.08 : 0;
@@ -352,13 +432,53 @@ export default function WorldView({
             if (a.alive && ['search', 'repair', 'heal_at', 'broadcast'].includes(a.action))
               wrapper.children[0].position.y += Math.sin(time * 7) * 0.06;
           }
+          animateRobot(wrapper, a, s, s.elapsed, delta, moving);
           const label = labels.get(a.id);
           tmp
             .copy(wrapper.position)
             .add(new THREE.Vector3(0, 2.4, 0))
             .project(camera);
           label.style.transform = `translate(-50%,-50%) translate(${(tmp.x * 0.5 + 0.5) * container.clientWidth}px,${(-tmp.y * 0.5 + 0.5) * container.clientHeight}px)`;
-          label.style.display = tmp.z < 1 && a.alive ? 'block' : 'none';
+          const tier = zoomTier(camera.position.distanceTo(controls.target));
+          label.style.display =
+            tmp.z < 1 && a.alive && (tier !== 'far' || a.id === id) ? 'block' : 'none';
+          const interaction = ['search', 'repair', 'heal_at', 'rest_at', 'broadcast'].includes(
+            a.action,
+          );
+          const labelText =
+            a.name.toUpperCase() +
+            (interaction && tier === 'close'
+              ? ' · ' + latest.current.t('action.' + a.action)
+              : '') +
+            (tier === 'close' && ['attack', 'betray', 'flee'].includes(a.action)
+              ? ' · ' + Math.round(a.hp) + '%'
+              : '');
+          if (label.textContent !== labelText) label.textContent = labelText;
+          label.dataset.action = a.action;
+          const dialogues = (s.events ?? [])
+            .filter(
+              (e) =>
+                e.event === 'CONVERSATION' &&
+                e.timestamp <= s.elapsed &&
+                s.elapsed - e.timestamp < 6,
+            )
+            .sort((x, y) => (y.actor === id) - (x.actor === id) || y.id - x.id)
+            .slice(0, 3);
+          const speech = dialogues.find((e) => e.actor === a.id);
+          if (speech && tier !== 'far') {
+            let bubble = bubbles.get(a.id);
+            if (!bubble) {
+              bubble = document.createElement('span');
+              bubble.className = 'agent-dialogue';
+              labelsHost.append(bubble);
+              bubbles.set(a.id, bubble);
+            }
+            bubble.hidden = false;
+            bubble.textContent = latest.current
+              .text(speech.data?.message ?? speech.result)
+              .slice(0, 110);
+            bubble.style.transform = `translate(-50%,0) translate(${(tmp.x * 0.5 + 0.5) * container.clientWidth}px,${(-tmp.y * 0.5 + 0.5) * container.clientHeight + 24}px)`;
+          }
           label.classList.toggle('selected', a.id === id);
           label.classList.toggle('fighting', ['attack', 'betray'].includes(a.action));
           label.title = `${a.name}: ${latest.current.text(a.goal)}`;
@@ -459,11 +579,37 @@ export default function WorldView({
                 expires: time + 0.75,
               });
             }
-            if (cinema && a && time - lastCinematic > 9) {
-              focus(a.id);
-              lastCinematic = time;
-            }
           }
+        }
+        const major = s.events
+          .filter(
+            (e) =>
+              e.id > (camera.userData.lastMajor ?? 0) &&
+              e.timestamp <= s.elapsed &&
+              s.elapsed - e.timestamp < 4 &&
+              eventPriority[e.event],
+          )
+          .sort((a, b) => eventPriority[b.event] - eventPriority[a.event])[0];
+        if (
+          major &&
+          cinema &&
+          time - lastCinematic > 10 &&
+          performance.now() > (camera.userData.userCameraUntil ?? 0)
+        ) {
+          if (major.data?.poi) {
+            const p = s.world?.pois.find((p) => p.id === major.data.poi);
+            if (p) camera.userData.focusPoi(p.position);
+          } else if (major.actor !== 'WORLD') focus(major.actor);
+          camera.userData.lastMajor = major.id;
+          lastCinematic = time;
+        }
+        if (camera.userData.focusTarget) {
+          const f = 1 - Math.exp(-delta * 3);
+          const drift = camera.userData.focusTarget.clone().sub(controls.target).multiplyScalar(f);
+          controls.target.add(drift);
+          camera.position.lerp(camera.userData.focusPosition, f);
+          if (controls.target.distanceTo(camera.userData.focusTarget) < 0.02)
+            camera.userData.focusTarget = null;
         }
         for (let i = traces.length - 1; i >= 0; i--)
           if (traces[i].expires < time) {
@@ -507,6 +653,7 @@ export default function WorldView({
             }
         }
         controls.update();
+        renderer.info.reset();
         composer.render();
       };
       render();
@@ -515,6 +662,8 @@ export default function WorldView({
         cancelAnimationFrame(frame);
         observer.disconnect();
         controls.dispose();
+        livingScene.dispose();
+        delete container._visual;
         renderer.domElement.removeEventListener('pointerdown', pointerDown);
         renderer.domElement.removeEventListener('pointerup', pointerUp);
         disposeObject(scene);
@@ -531,9 +680,37 @@ export default function WorldView({
   useEffect(() => {
     host.current?.querySelector('canvas')?.setAttribute('aria-label', t('world.canvas'));
   }, [locale]);
+  const major = state.events
+    ?.filter(
+      (e) =>
+        e.timestamp <= state.elapsed && state.elapsed - e.timestamp < 6 && eventPriority[e.event],
+    )
+    .sort((a, b) => eventPriority[b.event] - eventPriority[a.event])[0];
   return (
     <section className="world-panel" aria-label={t('world.label')}>
       <div className="world-canvas" ref={host} />
+      {cinematic ? (
+        <div className="cinematic-hud">
+          <strong>{t('visual.cinematic')}</strong>
+          <span>
+            {t('stats.alive')} {state.agents.filter((a) => a.alive).length} ·{' '}
+            {Math.floor(state.elapsed / 60)}:
+            {String(Math.floor(state.elapsed % 60)).padStart(2, '0')}
+          </span>
+          <span>
+            {t('weather.' + (state.world?.weather ?? 'clear'))} ·{' '}
+            {t('visual.focused', {
+              name: state.agents.find((a) => a.id === selected)?.name ?? '—',
+            })}
+          </span>
+        </div>
+      ) : null}
+      {major ? (
+        <div className="major-event-banner" role="status">
+          <strong>{t('type.' + major.event)}</strong>
+          <span>{localizeEvent(major)}</span>
+        </div>
+      ) : null}
       {error ? (
         <div className="world-error">
           {t('error.renderer', {
@@ -563,6 +740,16 @@ export default function WorldView({
           </div>
         </div>
         <div className="camera-tools">
+          <button
+            title={t('visual.labels')}
+            aria-label={t('visual.labels')}
+            onClick={() => {
+              const camera = runtime.current?.camera;
+              if (camera) camera.userData.hideLabels = !camera.userData.hideLabels;
+            }}
+          >
+            <Tags size={17} />
+          </button>
           <button
             title={t('camera.in')}
             aria-label={t('camera.in')}

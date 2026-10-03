@@ -451,7 +451,7 @@ small {
 }
 .weather-notice {
   position: absolute;
-  top: 45px;
+  top: 88px;
   left: 20px;
   font-size: 9px;
   letter-spacing: 1px;
@@ -1911,4 +1911,95 @@ small {
 }
 .living-labels {
   pointer-events: none;
+}
+.cinematic-mode .main-stage {
+  grid-template-columns: 1fr;
+}
+.app-shell.cinematic-mode {
+  grid-template-rows: 64px 34px minmax(0, 1fr) 0 0;
+  min-height: 100dvh;
+}
+.cinematic-mode .main-stage > .inspector,
+.cinematic-mode .lower-deck,
+.cinematic-mode .statusbar {
+  display: none;
+}
+.cinematic-mode .world-panel {
+  min-height: 0;
+}
+.cinematic-hud {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 45%;
+  padding: 12px 16px;
+  border-left: 2px solid #8ed9ca;
+  background: #0c1b25cf;
+  font-size: 12px;
+  pointer-events: none;
+  color: #d1e6e2;
+}
+.major-event-banner {
+  position: absolute;
+  left: 50%;
+  top: 94px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 60%;
+  padding: 10px 20px;
+  background: #0b1b25e6;
+  border-top: 2px solid #9ecdc4;
+  text-align: center;
+  pointer-events: none;
+  font-size: 12px;
+}
+.major-event-banner span {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #a8bfbd;
+}
+.agent-dialogue {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: 185px;
+  white-space: normal;
+  padding: 7px 10px;
+  border: 1px solid #688d92;
+  background: #102431ec;
+  line-height: 1.5;
+  color: #d8e6e1;
+  pointer-events: none;
+  font-size: 11px;
+  text-align: left;
+}
+.poi-label:focus-visible {
+  outline: 2px solid #b2e3d8;
+  outline-offset: 3px;
+}
+.cinematic-mode .top-stats > span:not(:first-child) {
+  display: none;
+}
+.cluster-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 24px;
+  height: 24px;
+  border: 1px solid #94c9c3;
+  border-radius: 50%;
+  background: #15303adb;
+  color: #cbe5df;
+  font-size: 11px;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
 }

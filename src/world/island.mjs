@@ -4,7 +4,7 @@ import { randomGenerator } from '../../core/random.mjs';
 import { terrainHeight } from '../../core/world.mjs';
 const mat = (color, extra = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true, ...extra });
-export function createIsland(scene, seed) {
+export function createIsland(scene, seed, places = []) {
   const rng = randomGenerator(seed),
     group = new THREE.Group();
   scene.add(group);
@@ -131,6 +131,7 @@ export function createIsland(scene, seed) {
       z = (rng() - 0.5) * 52;
     if (
       Math.hypot(x, z) > 27 ||
+      places.some((p) => Math.hypot(x - p.position.x, z - p.position.z) < 5) ||
       Math.abs(x - Math.sin(z * 0.16) * 3.7 - 1.5) < 2 ||
       Math.hypot(x + 10, z - 12) < 6 ||
       Math.hypot(x - 10, z + 10) < 5 ||
@@ -148,7 +149,11 @@ export function createIsland(scene, seed) {
       r = 8 + rng() * 20,
       x = Math.cos(a) * r,
       z = Math.sin(a) * r;
-    if (Math.abs(x - Math.sin(z * 0.16) * 3.7 - 1.5) < 2) continue;
+    if (
+      Math.abs(x - Math.sin(z * 0.16) * 3.7 - 1.5) < 2 ||
+      places.some((p) => Math.hypot(x - p.position.x, z - p.position.z) < 4.5)
+    )
+      continue;
     const o = addMesh(rockGeo, rockMat, x, terrainHeight(x, z) + 0.2, z, 0.25 + rng() * 1.2);
     o.scale.y *= 0.65;
     o.rotation.set(rng(), rng(), rng());
@@ -207,45 +212,8 @@ export function createIsland(scene, seed) {
         addMesh(new THREE.BoxGeometry(0.1, 0.8, 0.1), trunkMat, x + dx, y + 0.35, z + dz);
     }
   }
-  const stone = mat('#c6c2a7'),
-    roofMat = mat('#6d6452'),
-    walls = mat('#d2c3a0'),
-    window = mat('#ffce86', { emissive: '#e4a552', emissiveIntensity: 1.4 });
-  for (let i = 0; i < 6; i++) {
-    const x = -13 + (i % 3) * 3.3,
-      z = 10 + Math.floor(i / 3) * 4,
-      y = terrainHeight(x, z);
-    addMesh(new THREE.BoxGeometry(2.4, 1.9, 2.8), walls, x, y + 0.95, z);
-    const roof = addMesh(new THREE.ConeGeometry(2.1, 1.15, 4), roofMat, x, y + 2.45, z);
-    roof.rotation.y = Math.PI / 4;
-    roof.scale.z = 1.15;
-    addMesh(new THREE.BoxGeometry(0.55, 0.55, 0.03), window, x, y + 1.1, z + 1.415);
-    addMesh(new THREE.BoxGeometry(0.45, 0.8, 0.06), trunkMat, x + 0.65, y + 0.4, z + 1.43);
-  }
-  // Broken sanctuary columns and lintels, with a small glowing artifact.
-  for (let i = 0; i < 7; i++) {
-    const a = (i / 7) * Math.PI * 2,
-      x = 10 + Math.cos(a) * 3,
-      z = -10 + Math.sin(a) * 3,
-      y = terrainHeight(x, z),
-      h = 2 + rng() * 2;
-    addMesh(new THREE.CylinderGeometry(0.35, 0.45, h, 7), stone, x, y + h / 2, z);
-    addMesh(new THREE.BoxGeometry(0.9, 0.23, 0.9), stone, x, y + h, z);
-  }
-  addMesh(
-    new THREE.CylinderGeometry(3.6, 3.8, 0.4, 12),
-    stone,
-    10,
-    terrainHeight(10, -10) + 0.15,
-    -10,
-  );
-  const artifact = addMesh(
-    new THREE.OctahedronGeometry(0.55),
-    mat('#f4c48a', { emissive: '#c8833d', emissiveIntensity: 1 }),
-    10,
-    terrainHeight(10, -10) + 1.3,
-    -10,
-  );
+  // Physical kit owns landmarks; preserve the historical artifact API.
+  const artifact = new THREE.Group();
   const beacon = new THREE.Group();
   beacon.position.set(0, terrainHeight(0, 0), 0);
   group.add(beacon);
@@ -269,7 +237,49 @@ export function createIsland(scene, seed) {
   const light = new THREE.PointLight('#efba70', 20, 9, 2);
   light.position.set(0, 3, 0);
   beacon.add(light);
-  return { group, artifact, beacon };
+  // Instance repeated vegetation/rocks. Independent art RNG remains local.
+  const buckets = new Map();
+  for (const o of [...group.children]) {
+    if (!o.isMesh || o === top || o === skirt) continue;
+    const key = o.geometry.uuid + ':' + o.material.uuid;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(o);
+  }
+  for (const list of buckets.values()) {
+    if (list.length < 8) continue;
+    const mesh = new THREE.InstancedMesh(list[0].geometry, list[0].material, list.length);
+    list.forEach((o, i) => {
+      o.updateMatrix();
+      mesh.setMatrixAt(i, o.matrix);
+      group.remove(o);
+    });
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+  const wind = { value: 0 },
+    visualTime = { value: 0 };
+  for (const m of leafMats) {
+    m.onBeforeCompile = (shader) => {
+      shader.uniforms.visualWind = wind;
+      shader.uniforms.visualTime = visualTime;
+      shader.vertexShader =
+        'uniform float visualWind; uniform float visualTime;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\n transformed.x += sin(visualTime*1.7 + position.y)*visualWind*max(0.,position.y)*.1;',
+      );
+    };
+  }
+  return {
+    group,
+    artifact,
+    beacon,
+    update(time, weather) {
+      visualTime.value = time;
+      wind.value = weather === 'storm' ? 1.3 : 0.3;
+    },
+  };
 }
 export function createOcean(scene) {
   const material = new THREE.ShaderMaterial({
@@ -288,7 +298,7 @@ export function createSky(scene) {
     side: THREE.BackSide,
     uniforms: { night: { value: 0 } },
     vertexShader: `varying vec3 vWorld; void main(){vWorld=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-    fragmentShader: `uniform float night; varying vec3 vWorld; void main(){float h=normalize(vWorld).y; vec3 c=mix(vec3(.17,.085,.055),vec3(.035,.08,.13),smoothstep(-.04,.17,h));float alignment=max(0.,dot(normalize(vWorld),normalize(vec3(-.5,.025,-.7))));c+=vec3(1.,.58,.22)*pow(alignment,3600.)+vec3(.12,.045,.005)*pow(alignment,150.);c=mix(c,vec3(.012,.022,.045),night);gl_FragColor=vec4(c,1.);}`,
+    fragmentShader: `uniform float night; varying vec3 vWorld; void main(){vec3 dir=normalize(vWorld);float h=dir.y; vec3 c=mix(vec3(.17,.085,.055),vec3(.035,.08,.13),smoothstep(-.04,.17,h));float alignment=max(0.,dot(dir,normalize(vec3(-.5,.025,-.7))));c+=vec3(1.,.58,.22)*pow(alignment,3600.)+vec3(.12,.045,.005)*pow(alignment,150.);c=mix(c,vec3(.012,.022,.045),night);float moon=pow(max(0.,dot(dir,normalize(vec3(.3,.35,-.6)))),2400.);vec2 cell=floor(dir.xz*800.);float hash=fract(sin(dot(cell,vec2(127.1,311.7)))*43758.5453);float stars=step(.9985,hash)*smoothstep(.1,.4,h);c+=night*(vec3(.55,.67,.7)*moon+vec3(.3,.43,.5)*stars);gl_FragColor=vec4(c,1.);}`,
   });
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1000, 32, 20), material));
   const silhouettes = new THREE.Group();

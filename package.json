@@ -1,6 +1,6 @@
 {
   "name": "ai-survival-society",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "description": "A living 3D society of autonomous agents, with utility AI and optional local language models.",
   "type": "module",
@@ -22,7 +22,8 @@
     "test:desktop": "node scripts/qa-desktop.mjs",
     "demo:video": "node scripts/demo-video.mjs",
     "test:story": "node scripts/qa-stories.mjs",
-    "test:story:desktop": "node scripts/qa-stories.mjs --desktop"
+    "test:story:desktop": "node scripts/qa-stories.mjs --desktop",
+    "test:visual": "node scripts/qa-physical-world.mjs"
   },
   "dependencies": {
     "delaunator": "^5.1.0",

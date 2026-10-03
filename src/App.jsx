@@ -162,14 +162,45 @@ export default function App({ initialReplayId = null, initialReplayTime = 0 }) {
     if (!audio || !live || !audioContext.current) return;
     const event = live.events
       .filter((e) => e.id > seenEvent.current)
-      .find((e) => ['ATTACK', 'ALLIANCE_CREATED', 'SUPPLY_DROP', 'DEATH'].includes(e.event));
+      .find((e) =>
+        [
+          'ATTACK',
+          'ALLIANCE_CREATED',
+          'SUPPLY_DROP',
+          'DEATH',
+          'DOOR_OPENED',
+          'DOOR_CLOSED',
+          'CONTAINER_SEARCHED',
+          'GENERATOR_REPAIRED',
+          'BROADCAST_SENT',
+          'STATION_HEAL',
+          'CAMPFIRE_LIT',
+          'FIRE_STARTED',
+          'WEATHER_CHANGED',
+          'POI_CONTROLLED',
+        ].includes(e.event),
+      );
     seenEvent.current = live.eventCount;
     if (event) {
       const ctx = audioContext.current,
         osc = ctx.createOscillator(),
         gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.value = event.event === 'ATTACK' ? 140 : event.event === 'DEATH' ? 90 : 440;
+      osc.frequency.value =
+        {
+          ATTACK: 140,
+          DEATH: 90,
+          DOOR_OPENED: 180,
+          DOOR_CLOSED: 150,
+          CONTAINER_SEARCHED: 260,
+          GENERATOR_REPAIRED: 360,
+          BROADCAST_SENT: 620,
+          STATION_HEAL: 540,
+          CAMPFIRE_LIT: 110,
+          FIRE_STARTED: 80,
+          WEATHER_CHANGED: 65,
+          POI_CONTROLLED: 480,
+        }[event.event] ?? 440;
       gain.gain.setValueAtTime(0.035, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
       osc.connect(gain);
@@ -281,13 +312,14 @@ export default function App({ initialReplayId = null, initialReplayTime = 0 }) {
         ...frame?.agents.find((b) => b.id === a.id),
       })),
       events: replay.events.filter((e) => e.timestamp <= replayTime).slice(-100),
+      visualEvents: replay.events,
       eventCount: replay.events.filter((e) => e.timestamp <= replayTime).length,
       resources: [],
     };
   }
   const trust = Math.round(state.stats.averageTrust * 100);
   return (
-    <div className="app-shell">
+    <div className={'app-shell' + (cinematic ? ' cinematic-mode' : '')}>
       <nav className="nav-rail" aria-label={t('a11y.navigation')}>
         <button
           className="brand-symbol"
