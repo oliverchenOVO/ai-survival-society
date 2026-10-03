@@ -1988,6 +1988,24 @@ small {
 .cinematic-mode .top-stats > span:not(:first-child) {
   display: none;
 }
+.spatial-debug-inspector {
+  position: absolute;
+  left: 18px;
+  top: 100px;
+  z-index: 5;
+  max-width: min(420px, 45%);
+  max-height: 45%;
+  overflow: auto;
+  padding: 10px 12px;
+  background: #0a1824ee;
+  border: 1px solid #84d6ea;
+  color: #cee6ec;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.spatial-debug-inspector p {
+  margin: 5px 0;
+}
 .cluster-marker {
   position: absolute;
   top: 0;

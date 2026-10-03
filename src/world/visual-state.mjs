@@ -76,19 +76,22 @@ export function visualHistory(events, elapsed, limit = 96) {
 export function agentPose(a, s) {
   const object = s.world?.objects.find((o) => o.id === a.target);
   const other = s.agents.find((b) => b.id === a.target);
-  const interaction = [
-    'search',
-    'repair',
-    'heal_at',
-    'rest_at',
-    'broadcast',
-    'occupy',
-    'open',
-    'close',
-    'use',
-  ].includes(a.action);
+  const interaction =
+    (!s.world?.spatial ||
+      s.world.spatial.slots.some((slot) => slot.agentId === a.id && slot.state === 'occupied')) &&
+    [
+      'search',
+      'repair',
+      'heal_at',
+      'rest_at',
+      'broadcast',
+      'occupy',
+      'open',
+      'close',
+      'use',
+    ].includes(a.action);
   const target = interaction
-    ? object?.position
+    ? (a.spatial?.facing ?? object?.position)
     : ['attack', 'betray', 'talk', 'trade', 'ally', 'cooperate'].includes(a.action)
       ? other?.position
       : null;

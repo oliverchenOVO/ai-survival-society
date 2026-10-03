@@ -7,6 +7,13 @@ import { executeAction } from './actions.mjs';
 import { generateHistory } from './historian.mjs';
 import { safeRadiusAt } from './rules.mjs';
 import { createLivingWorld, updateWorld, setWeather, worldEvent, poiAt } from './living-world.mjs';
+import {
+  initializeSpatial,
+  revalidateSpatial,
+  releaseSlot,
+  nearestLegal,
+  walkable,
+} from './spatial.mjs';
 export const DIRECTOR_EVENTS = [
   'food_crisis',
   'supply_drop',
@@ -46,6 +53,7 @@ export class Simulation {
     this.world = createLivingWorld(this.config.seed);
     this.matchId = `${Date.now()}-${this.config.seed}`;
     for (let i = 0; i < 36; i++) this.resources.push(createResource(this));
+    initializeSpatial(this);
     this.event(
       'WORLD_STARTED',
       null,
@@ -116,6 +124,7 @@ export class Simulation {
   }
   kill(a, killer = null, cause = 'environment') {
     if (!a.alive) return;
+    releaseSlot(this, a);
     a.alive = false;
     a.hp = 0;
     a.diedAt = this.elapsed;
@@ -143,6 +152,7 @@ export class Simulation {
     if (this.status !== 'running') return;
     this.elapsed += dt;
     updateWorld(this, dt);
+    revalidateSpatial(this);
     this.safeRadius = safeRadiusAt(
       this.elapsed,
       this.config.matchDuration,
@@ -150,6 +160,8 @@ export class Simulation {
     );
     if (this.elapsed > this.nextResource && this.resources.length < 55) {
       const resource = createResource(this);
+      if (!walkable(this, resource.position))
+        resource.position = nearestLegal(this, resource.position);
       if (resource.type !== 'food' || this.effects.food_crisis <= this.elapsed || this.rng() >= 0.7)
         this.resources.push(resource);
       this.nextResource = this.elapsed + 5;
@@ -400,6 +412,14 @@ export class Simulation {
     Object.assign(sim, data.checkpoint);
     sim.rng.setState(data.checkpoint.rngState);
     delete sim.rngState;
+    if (sim.status !== 'finished' || sim.world.spatial) {
+      const legacy = !sim.world.spatial;
+      initializeSpatial(sim, { migration: true });
+      if (legacy)
+        sim.event('SPATIAL_MIGRATED', null, null, 'world.event.SPATIAL_MIGRATED', {
+          migrations: sim.world.spatial.migrations,
+        });
+    }
     return sim;
   }
 }

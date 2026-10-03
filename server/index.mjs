@@ -73,7 +73,7 @@ export async function startServer(options = {}) {
     return snapshot();
   };
   app.get('/api/health', (_, res) =>
-    res.json({ ok: true, app: 'AI Survival Society', version: '1.5.0' }),
+    res.json({ ok: true, app: 'AI Survival Society', version: '1.7.0' }),
   );
   app.get('/api/state', (_, res) => res.json(snapshot()));
   app.post('/api/load', async (req, res) => {
@@ -88,7 +88,7 @@ export async function startServer(options = {}) {
       store.identities.set(sim, {
         simulationId: data.simulation_id,
         startedAt: data.startedAt,
-        simulationVersion: '1.5.0',
+        simulationVersion: '1.7.0',
         finishedAt: null,
       });
       finishedAt = null;

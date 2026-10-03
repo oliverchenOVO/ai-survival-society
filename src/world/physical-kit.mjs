@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { terrainHeight } from '../../core/world.mjs';
+import collisionData from '../../public/assets/world-collision.json' with { type: 'json' };
 const colors = {
   concrete: '#91a9ab',
   wood: '#927457',
@@ -140,12 +141,31 @@ export function createPhysicalKit(scene) {
         } else if (p.type === 'depot') {
           for (const dx of [-2.8, 2.8]) {
             for (const h of [0.6, 1.5, 2.4])
-              piece('shelf', x + dx, y + h, z + 1.7, 0.75, 0.1, 2, 'metal');
+              piece(
+                'shelf',
+                x + dx,
+                y + h,
+                z + (world.spatial && dx > 0 ? 2.4 : 1.7),
+                0.75,
+                0.1,
+                world.spatial && dx > 0 ? 0.5 : 2,
+                'metal',
+              );
             for (const dz of [1, 2])
               piece('crate', x + dx, y + 0.9, z + dz, 0.55, 0.6, 0.6, 'wood');
           }
           piece('platform', x, y + 0.08, z - 4, 4, 0.15, 1.5, 'industrial');
-          for (const dx of [-3.8, 3.8]) piece('fence', x + dx, y + 0.6, z, 0.1, 1.2, 5, 'metal');
+          for (const dx of [-3.8, 3.8])
+            piece(
+              'fence',
+              x + dx,
+              y + 0.6,
+              z - (world.spatial && dx > 0 ? 0.9 : 0),
+              0.1,
+              1.2,
+              world.spatial && dx > 0 ? 3.2 : 5,
+              'metal',
+            );
         } else {
           for (const dx of [-2.8, 2.8]) piece('bed', x + dx, y + 0.4, z + 1.5, 0.5, 0.6, 2, 'wood');
         }
@@ -234,6 +254,53 @@ export function createPhysicalKit(scene) {
             );
         }
         piece('platform', x, y + 0.2, z - 3.8, 1.3, 0.12, 2, 'wood');
+      }
+      if (world.spatial) {
+        if (p.type === 'village')
+          for (const c of collisionData.colliders.filter((c) => c.kind === 'rock')) {
+            const rock = piece(
+              'debris',
+              c.x,
+              terrainHeight(c.x, c.z) + c.height / 2,
+              c.z,
+              c.radius,
+              c.height / 2,
+              c.radius,
+              'concrete',
+            );
+            rock.geometry = geometries.rock;
+          }
+        for (const c of collisionData.colliders.filter(
+          (c) => c.region === p.type && c.kind === 'wall',
+        ))
+          piece(
+            'wall',
+            c.x,
+            terrainHeight(c.x, c.z) + c.height / 2,
+            c.z,
+            c.width,
+            c.height,
+            c.depth,
+            'concrete',
+          );
+        for (const route of collisionData.verticalRoutes.filter((r) => r.id.startsWith(p.type))) {
+          for (let i = 1; i < route.nodes.length; i++) {
+            const a = route.nodes[i - 1],
+              b = route.nodes[i],
+              length = Math.hypot(b.x - a.x, b.z - a.z),
+              angle = Math.atan2(b.x - a.x, b.z - a.z),
+              count = Math.ceil(length / 0.25);
+            for (let j = 0; j < count; j++) {
+              const f = (j + 0.5) / count,
+                rx = a.x + (b.x - a.x) * f,
+                rz = a.z + (b.z - a.z) * f,
+                ry = terrainHeight(rx, rz) + a.y + (b.y - a.y) * f;
+              piece('platform', rx, ry, rz, route.width, 0.12, length / count, 'concrete', angle);
+            }
+          }
+          if (p.type === 'ruins')
+            piece('platform', 11, terrainHeight(11, -10) + 1.5, -10, 2.8, 0.2, 2.6, 'concrete');
+        }
       }
       flush(g);
       const control = new THREE.Group(),

@@ -1,12 +1,28 @@
 import { distance, clamp } from './random.mjs';
 import { relation, changeRelation } from './agents.mjs';
 import {
+  moveSpatial,
+  reserveInteraction,
+  atInteractionSlot,
+  lineClear,
+  releaseSlot,
+} from './spatial.mjs';
+import {
   WORLD_ACTIONS,
   navigationWaypoint,
   performInteraction,
   shelterAt,
 } from './living-world.mjs';
 export function moveAgent(sim, a, destination, dt) {
+  if (sim.world.spatial) {
+    const speed =
+      (sim.world.weather === 'storm' ? 1.25 : sim.world.weather === 'rain' ? 1.8 : 2.05) *
+      (sim.world.timeOfDay === 'night' ? 0.9 : 1) *
+      (0.65 + a.energy / 280);
+    const arrived = moveSpatial(sim, a, destination, dt, speed);
+    a.energy = clamp(a.energy - dt * 0.32, 0, 100);
+    return arrived;
+  }
   const finalDestination = destination;
   destination = navigationWaypoint(sim, a, destination);
   const dx = destination.x - a.position.x,
@@ -37,6 +53,7 @@ const spoken = (a, b) => {
   return `I am watching the ring. What is your plan, ${b.name}?`;
 };
 export function executeAction(sim, a, dt) {
+  if (sim.world.spatial && !WORLD_ACTIONS.includes(a.action)) releaseSlot(sim, a);
   if (WORLD_ACTIONS.includes(a.action)) {
     if (['hide', 'take_cover'].includes(a.action)) {
       if (a.destination && distance(a.position, a.destination) > 1)
@@ -50,6 +67,26 @@ export function executeAction(sim, a, dt) {
     const o = sim.world.objects.find((o) => o.id === a.target);
     if (!o) {
       a.nextDecision = sim.elapsed;
+      return;
+    }
+    if (sim.world.spatial) {
+      const slot = reserveInteraction(sim, a, o, dt);
+      if (!slot) return;
+      if (!atInteractionSlot(sim, a, o)) moveAgent(sim, a, slot, dt);
+      if (
+        distance(a.position, slot) < 0.18 &&
+        Math.abs((a.position.y ?? 0) - (slot.y ?? 0)) < 0.2 &&
+        !atInteractionSlot(sim, a, o)
+      ) {
+        sim.world.spatial.metrics.interactionApproachFailures++;
+        releaseSlot(sim, a);
+        a.nextDecision = sim.elapsed + 2;
+        return;
+      }
+      if (atInteractionSlot(sim, a, o) && !performInteraction(sim, a, o, dt)) {
+        releaseSlot(sim, a);
+        a.nextDecision = sim.elapsed + 0.5;
+      }
       return;
     }
     if (distance(a.position, o.position) > 1.65)
@@ -79,7 +116,10 @@ export function executeAction(sim, a, dt) {
       a.nextDecision = sim.elapsed;
       return;
     }
-    if (moveAgent(sim, a, r.position, dt)) {
+    if (
+      moveAgent(sim, a, r.position, dt) &&
+      lineClear(sim, a.position, r.position, 0, { hazards: false })
+    ) {
       if (r.type === 'weapon') a.weapon = 'Pulse blade';
       else a.inventory[r.type] += r.amount;
       sim.resources.splice(sim.resources.indexOf(r), 1);
@@ -131,6 +171,10 @@ export function executeAction(sim, a, dt) {
   }
   if (!b) {
     a.nextDecision = sim.elapsed + 0.5;
+    return;
+  }
+  if (!lineClear(sim, a.position, b.position, 0, { hazards: false })) {
+    moveAgent(sim, a, b.position, dt);
     return;
   }
   if (distance(a.position, b.position) > 2.7) {

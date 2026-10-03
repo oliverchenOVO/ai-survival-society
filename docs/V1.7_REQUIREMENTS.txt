@@ -1,0 +1,1953 @@
+你現在要在既有 AI Survival Society 專案上開發下一個正式版本：
+
+# AI Survival Society v1.7
+## Spatial Intelligence & Physical Interaction
+
+這不是新專案。
+
+請在目前既有 private GitHub repository、v1.6.0 程式碼、Living World、Physical World、Story、Replay、i18n、Browser、Electron 與 deterministic benchmark 架構上繼續迭代。
+
+---
+
+# 本版本核心目標
+
+讓 Agent 不只是「知道目標在哪裡」，
+
+而是真的必須：
+
+- 找到可走的路
+- 穿過門
+- 繞過牆
+- 繞過家具
+- 避免其他 Agent
+- 排隊進入狹窄空間
+- 站在正確互動位置
+- 使用有限容量的互動槽位
+- 不能穿牆
+- 不能穿人
+- 不能隔牆拿東西
+- 不能站在同一個座標疊成一團
+
+本版本核心一句話：
+
+> **The world must physically constrain behavior.**
+
+---
+
+# 最高原則
+
+SPATIAL CORRECTNESS
+>
+NEW CONTENT
+
+PHYSICAL PLAUSIBILITY
+>
+VISUAL SHORTCUTS
+
+NAVIGATION RELIABILITY
+>
+COMPLEX PHYSICS
+
+INTERACTION POSITIONING
+>
+ABSTRACT RANGE CHECKS
+
+本版本不要追求：
+
+AAA physics
+full rigid-body simulation
+complex ragdoll
+large-scale destruction
+
+目標是：
+
+穩定、可重現、可測試的空間智能。
+
+---
+
+# 嚴格限制
+
+不要重寫整個 simulation。
+
+不要把 Three.js renderer 變成 authoritative gameplay physics。
+
+Authoritative simulation 必須仍然在 core/server。
+
+Browser/Electron 只是 render / input / observer。
+
+如果使用碰撞資料：
+
+simulation 端也必須有對應簡化 collision representation。
+
+不要只讓畫面碰撞、實際 AI 還穿牆。
+
+---
+
+# Phase 1 — Inspect Existing Spatial Stack
+
+先閱讀並理解：
+
+- current world coordinates
+- movement system
+- visibility graph
+- door blockers
+- hazard blockers
+- POI positions
+- semi-interiors
+- world-kit GLB
+- Blender source
+- interactable positions
+- interaction range checks
+- replay positions
+- camera
+- save/load
+- deterministic benchmark
+- world QA
+
+建立：
+
+`docs/V1.7_PLAN.md`
+
+內容：
+
+1. current movement architecture
+2. current collision limitations
+3. current nav limitations
+4. proposed collision representation
+5. proposed navmesh/graph
+6. local avoidance
+7. interaction slots
+8. determinism implications
+9. save/replay implications
+10. benchmark strategy
+
+完成後直接開始實作。
+
+不要停在規劃。
+
+---
+
+# 核心功能 1 — Collision Geometry
+
+建立：
+
+Authoritative Collision Layer
+
+不要直接拿完整 Render Mesh 當碰撞。
+
+使用簡化：
+
+- box
+- capsule
+- circle
+- convex polygon
+- rectangle
+- portal
+- height zone
+
+每個 POI / 物件都可以有：
+
+collisionShape
+
+例如：
+
+{
+  "type": "box",
+  "x": 12,
+  "z": 8,
+  "width": 4,
+  "depth": 2
+}
+
+或：
+
+{
+  "type": "polygon",
+  "points": [...]
+}
+
+Render Mesh 和 Collision Mesh 必須分離。
+
+---
+
+# 核心功能 2 — Blender Collision Export
+
+擴充 Blender pipeline。
+
+建立或更新：
+
+`Art/Blender/generate_collision_data.py`
+
+或合理命名。
+
+每個重要 POI source 裡可以包含：
+
+COLLIDER_
+NAV_
+PORTAL_
+INTERACTION_
+
+命名節點。
+
+例如：
+
+COLLIDER_Clinic_Wall_A
+PORTAL_Clinic_Door_Main
+NAV_Clinic_Floor
+INTERACTION_MedStation_A
+
+匯出：
+
+JSON
+
+例如：
+
+`public/assets/world-collision.json`
+
+不要要求 simulation 端解析 GLB mesh。
+
+simulation 直接讀簡化 JSON。
+
+---
+
+# 核心功能 3 — Static Collision
+
+至少加入：
+
+- building walls
+- structural columns
+- fences
+- large rocks
+- bridge rails / edges
+- depot racks
+- clinic furniture
+- shelter furniture
+- tower supports
+- ruin walls
+- lake/deep-water boundary where appropriate
+
+不要對：
+
+grass
+small decorative debris
+tiny stones
+
+做 gameplay collision。
+
+---
+
+# 核心功能 4 — Character Collision Shape
+
+每個 Agent 有：
+
+capsule 或 circle collider。
+
+例如：
+
+radius
+height
+
+simulation 主要可用 2D XZ circle。
+
+角色不能：
+
+穿過 static collision
+
+穿過 closed door
+
+穿過其他 Agent
+
+---
+
+# 核心功能 5 — Dynamic Door Collision
+
+Door 狀態必須真的影響 path。
+
+Closed：
+
+blocking
+
+Open：
+
+portal passable
+
+Broken：
+
+passable 或部分 passable
+
+Locked：
+
+blocking
+
+Door visual transform 和 authoritative collider：
+
+必須一致。
+
+---
+
+# 核心功能 6 — Walkable Area
+
+建立：
+
+Walkable Surface
+
+不要讓 Agent 能走：
+
+- 建築牆裡
+- 深水
+- 懸崖外
+- 不合理坡面
+- POI 裝飾内部
+
+可以使用：
+
+2D polygon regions
+
+不需要 full 3D navmesh。
+
+世界目前主要在 XZ 平面，
+
+先做：
+
+2.5D navigation
+
+最可靠。
+
+---
+
+# 核心功能 7 — NavMesh / Polygon Navigation
+
+如果現有 visibility graph 已經夠接近：
+
+可以擴充。
+
+否則建立：
+
+polygon navigation mesh
+
+至少支援：
+
+- outdoor region
+- clinic interior
+- shelter interior
+- depot interior
+- ruins
+- bridge
+- tower base
+
+每個 region 有：
+
+walkable polygon
+
+彼此透過：
+
+portal
+
+連接。
+
+例如：
+
+Clinic exterior
+↓
+Clinic door portal
+↓
+Clinic interior
+
+---
+
+# 核心功能 8 — Portal System
+
+Doorway、bridge entrance、narrow passage：
+
+使用 Portal。
+
+Portal 至少包含：
+
+id
+position
+width
+fromRegion
+toRegion
+state
+capacity
+
+例如：
+
+{
+  "id": "clinic_main_door",
+  "from": "clinic_outdoor",
+  "to": "clinic_inside",
+  "width": 1.4
+}
+
+這會成為：
+
+pathfinding
+queue
+interaction
+
+的重要基礎。
+
+---
+
+# 核心功能 9 — A* Pathfinding
+
+建立穩定：
+
+A*
+
+可以：
+
+region graph
++
+portal graph
++
+local waypoint
+
+不要每 tick 重跑完整 path。
+
+只有：
+
+target changed
+door state changed
+hazard changed
+path blocked
+stuck
+
+才重新規劃。
+
+---
+
+# 核心功能 10 — Path Smoothing
+
+A* 結果不要像：
+
+直角機器人。
+
+加入：
+
+simple funnel
+或
+line-of-sight smoothing
+
+讓 Agent：
+
+自然通過門
+自然沿道路
+自然繞牆。
+
+---
+
+# 核心功能 11 — Dynamic Obstacles
+
+以下可成為 dynamic obstacle：
+
+- closed door
+- flood blocker
+- fire hazard
+- wreck / body if appropriate
+- occupied interaction zone
+- temporary barricade if future exists
+
+dynamic obstacle 改變時：
+
+affected agents
+
+重新規劃。
+
+避免：
+
+全世界 12 Agent 每次全部重算。
+
+---
+
+# 核心功能 12 — Agent-to-Agent Local Avoidance
+
+加入：
+
+Local Avoidance。
+
+不一定需要完整 ORCA library。
+
+可實作：
+
+- separation force
+- velocity obstacle approximation
+- neighbor prediction
+- personal radius
+- preferred velocity
+
+核心要求：
+
+Agent 不再互相穿過。
+
+---
+
+# 核心功能 13 — Personal Space
+
+每個 Agent 有：
+
+collisionRadius
+
+socialRadius
+
+interactionRadius
+
+三者不要混成同一個值。
+
+例如：
+
+collision：
+0.35m
+
+social：
+1.5m
+
+interaction：
+依物件
+
+避免現在常見：
+
+為了能聊天，所以角色實體疊在一起。
+
+---
+
+# 核心功能 14 — Narrow Passage Behavior
+
+門口、橋、狹窄走廊：
+
+多 Agent 同時進入時：
+
+不得全部穿越。
+
+加入：
+
+portal capacity
+
+例如：
+
+single width portal
+
+一次：
+
+1 Agent
+
+寬橋：
+
+2–3 Agent
+
+---
+
+# 核心功能 15 — Queueing
+
+互動區域容量有限。
+
+例如：
+
+Clinic treatment slot = 1
+
+Bed = 1
+
+Radio = 1
+
+Generator repair slots = 2
+
+Container search slots = 1
+
+如果滿：
+
+Agent 可以：
+
+- wait
+- choose another target
+- leave
+
+由 Utility 決定。
+
+不要硬 freeze 所有人。
+
+---
+
+# 核心功能 16 — Interaction Slots
+
+每個 interactable 建立：
+
+approach slots
+
+例如：
+
+Generator：
+
+slotA
+slotB
+
+Bed：
+
+useSlot
+
+Medical Station：
+
+patientSlot
+helperSlot optional
+
+Container：
+
+searchSlot
+
+Radio：
+
+operatorSlot
+
+Agent 必須：
+
+導航到 slot
+
+→
+正確 facing
+
+→
+才可以 perform interaction
+
+不能只判斷：
+
+distance < 2m
+
+---
+
+# 核心功能 17 — Slot Reservation
+
+Agent 決定前往某 interaction 時：
+
+可以 reserve slot。
+
+Reservation 有：
+
+agentId
+expiresAt
+state
+
+避免：
+
+五個 Agent 同時走向同一個床。
+
+Reservation 如果：
+
+Agent 改目標
+死亡
+被攻擊
+超時
+
+自動釋放。
+
+---
+
+# 核心功能 18 — Occupancy
+
+區分：
+
+reserved
+
+occupied
+
+free
+
+Agent 到達 slot：
+
+reserved → occupied
+
+Interaction 完成：
+
+occupied → free
+
+全部進 authoritative state。
+
+---
+
+# 核心功能 19 — Interaction Reachability
+
+Utility AI 評估物件時：
+
+不只看 Euclidean distance。
+
+要看：
+
+pathDistance
+
+reachable
+
+portal states
+
+danger cost
+
+例如：
+
+醫療站直線 5m，
+
+但隔著 locked door，
+
+不能假設很近。
+
+---
+
+# 核心功能 20 — Path Cost
+
+A* cost 可包含：
+
+distance
+
+terrain modifier
+
+hazard
+
+hostile POI
+
+crowding
+
+但不要把 social utility 全塞進 pathfinding。
+
+Pathfinding 只回答：
+
+怎麼走。
+
+Utility 決定：
+
+值不值得去。
+
+---
+
+# 核心功能 21 — Terrain Cost
+
+至少加入：
+
+Road
+Grass
+Forest
+Rocky
+Shallow Water
+
+不同 movement cost。
+
+例如：
+
+Road：
+0.9
+
+Grass：
+1.0
+
+Forest：
+1.15
+
+Rocky：
+1.25
+
+Shallow water：
+1.4
+
+Deep water：
+blocked
+
+不要大幅改 balance。
+
+---
+
+# 核心功能 22 — Slope / Height Constraint
+
+如果 terrain 有高度：
+
+Agent 不可直接：
+
+爬過過陡坡
+
+穿過懸崖。
+
+使用：
+
+slope threshold
+或
+precomputed blocked region
+
+不用做 full climbing physics。
+
+---
+
+# 核心功能 23 — Stairs / Ramps
+
+至少讓：
+
+Watchtower
+Ruins
+
+有真正：
+
+stair / ramp path
+
+Agent 必須沿 route 上去。
+
+不要 teleport 到 tower platform。
+
+---
+
+# 核心功能 24 — Vertical Node Support
+
+Navigation 支援：
+
+position = x, y, z
+
+即使規劃主要仍是 2.5D。
+
+重要節點：
+
+tower ground
+tower top
+ruins upper level
+
+透過：
+
+stairs edge
+
+連接。
+
+---
+
+# 核心功能 25 — Line of Sight Upgrade
+
+現在已有 simple blockers。
+
+升級使用同一 collision geometry。
+
+LOS ray / segment：
+
+碰到：
+
+wall
+closed door
+large blocker
+
+則看不到。
+
+不要 renderer raycast 當 gameplay truth。
+
+simulation 自己做 2D segment intersection。
+
+---
+
+# 核心功能 26 — Combat Line of Fire
+
+Attack：
+
+如果中間有：
+
+solid wall
+
+不應命中。
+
+Cover / partial obstruction：
+
+可以：
+
+降低 hit / damage
+
+但不要做 shooter 級 ballistic。
+
+最低要求：
+
+wall blocks attack。
+
+---
+
+# 核心功能 27 — Interaction Line of Sight
+
+Agent 不能：
+
+隔牆開箱
+隔牆醫療
+隔牆修理
+
+除了距離：
+
+還要：
+
+same region
+或
+interaction LOS
+
+---
+
+# 核心功能 28 — Stuck Detection
+
+Agent 若：
+
+N 秒幾乎沒有移動
+
+但仍有 path：
+
+檢測 stuck。
+
+處理：
+
+1. local avoidance retry
+2. slight waypoint offset
+3. replan
+4. abandon action
+
+禁止：
+
+直接 teleport
+
+除非 QA/debug special mode。
+
+---
+
+# 核心功能 29 — Deadlock Avoidance
+
+兩個 Agent 在窄門互堵：
+
+需要處理。
+
+例如：
+
+priority
+
+讓距離 portal 較近者通過
+
+另一方讓路。
+
+不要靠 randomness 解所有 deadlock。
+
+---
+
+# 核心功能 30 — Path Reservation Lite
+
+不需要完整 traffic system。
+
+但 portal / interaction slot：
+
+可以有：
+
+short reservation。
+
+這就足以大幅改善擁堵。
+
+---
+
+# 核心功能 31 — Visual Path Debug Mode
+
+新增開發者 debug overlay：
+
+可切換：
+
+- collision hull
+- nav polygons
+- portals
+- current path
+- interaction slots
+- reservations
+- avoidance radius
+
+不要預設顯示給普通玩家。
+
+Settings / dev flag。
+
+---
+
+# 核心功能 32 — Click Debug
+
+Dev mode 點 Agent：
+
+可以看到：
+
+Current target
+Current region
+Current path
+Next portal
+Reserved slot
+Avoidance neighbors
+Stuck timer
+
+方便 QA。
+
+---
+
+# 核心功能 33 — Render Collision Alignment
+
+重要要求：
+
+render geometry
+和
+collision
+
+不能差太多。
+
+例如：
+
+牆看起來在 x=10
+
+collider 不要在 x=12。
+
+建立 QA：
+
+collision visual overlay
+
+人工檢查。
+
+---
+
+# 核心功能 34 — Interaction Animation Alignment
+
+Agent 到 slot 後：
+
+動畫位置要對準。
+
+例如：
+
+修 generator：
+
+手真的面向機器。
+
+搜 crate：
+
+站在 crate 正面。
+
+睡床：
+
+Agent 在床上／床旁合理位置。
+
+---
+
+# 核心功能 35 — Door Animation Alignment
+
+門旋轉時：
+
+passability 改變。
+
+建議：
+
+開始開門：
+仍 blocking
+
+開到 >70%：
+portal passable
+
+或使用簡單 authoritative state transition。
+
+不要視覺門還半關：
+
+Agent 已穿過門板。
+
+---
+
+# 核心功能 36 — Replay Spatial Fidelity
+
+Replay：
+
+Agent 位置
+
+世界碰撞狀態
+
+door
+
+portal
+
+要一致。
+
+不要求 replay 重新跑 pathfinding。
+
+但：
+
+播放舊資料時不應出現：
+
+Agent 穿過當時 closed door
+
+如果 sample 資料不足：
+
+明確接受 sampled replay 限制。
+
+---
+
+# 核心功能 37 — Save / Load
+
+未完成局 checkpoint 保存：
+
+- agent position
+- current region
+- path target
+- path state if needed
+- reservations
+- slot occupancy
+- door state
+- dynamic blockers
+
+Load 後：
+
+必須：
+
+path revalidation
+
+避免恢復到 invalid reservation。
+
+---
+
+# 核心功能 38 — Determinism
+
+非常重要。
+
+v1.7 明確改 gameplay：
+
+路線
+碰撞
+交通
+
+因此：
+
+不要求 v1.6 golden 相同。
+
+建立：
+
+v1.7 golden benchmark
+
+50 primary
+50 holdout
+
+要求：
+
+同 seed 重跑完全一致。
+
+Local avoidance：
+
+不能使用 wall-clock randomness。
+
+所有 tie-breaking：
+
+使用 stable ID
+或 simulation RNG
+
+並且可重現。
+
+---
+
+# 核心功能 39 — Spatial Metrics
+
+新增 benchmark metrics：
+
+pathLength
+replans
+stuckEvents
+collisionsPrevented
+portalWaitTime
+slotWaitTime
+deadlockResolutions
+interactionApproachFailures
+unreachableTargets
+averagePathEfficiency
+
+---
+
+# 核心功能 40 — Acceptance Gates
+
+100 seeds 中：
+
+不得出現大量：
+
+Agent 永久卡死
+
+永遠排隊
+
+一直重算 path
+
+隔牆互動
+
+穿牆
+
+穿人
+
+interaction slot 重疊
+
+---
+
+# 核心功能 41 — Collision Regression Tests
+
+自動測試：
+
+Agent vs wall
+
+Agent vs closed door
+
+Agent vs open door
+
+Agent vs other Agent
+
+Agent vs furniture
+
+Agent vs lake/deep water
+
+Agent vs bridge edge
+
+---
+
+# 核心功能 42 — Navigation Tests
+
+測試：
+
+outside → clinic inside
+
+clinic inside → outside
+
+shelter
+
+depot
+
+bridge
+
+ruins upper
+
+watchtower top
+
+blocked bridge reroute
+
+closed door reroute
+
+open door direct path
+
+---
+
+# 核心功能 43 — Queue Tests
+
+例如：
+
+5 Agent 同時去 Clinic。
+
+驗證：
+
+slot 1 occupied
+
+其他人：
+
+wait / retarget
+
+不能：
+
+五人疊一起。
+
+---
+
+# 核心功能 44 — Local Avoidance Tests
+
+對向 2 Agent：
+
+應擦身而過。
+
+4 Agent 十字交會：
+
+不得互穿。
+
+狹門兩側：
+
+可解除 deadlock。
+
+---
+
+# 核心功能 45 — High Density Test
+
+建立 fixture：
+
+12 Agent
+
+同時前往：
+
+Supply Depot
+
+驗證：
+
+- no overlap
+- no infinite stuck
+- no crash
+- eventually resolves
+
+---
+
+# 核心功能 46 — Performance
+
+Pathfinding 不能每 frame 執行。
+
+目標：
+
+12 Agent
+10x simulation
+
+仍可正常執行。
+
+記錄：
+
+pathfinding calls/sec
+
+average A* nodes
+
+p95 path time
+
+avoidance cost
+
+---
+
+# 核心功能 47 — Spatial Index
+
+如果需要：
+
+建立：
+
+uniform grid
+或
+spatial hash
+
+用於：
+
+nearby collision
+avoidance neighbors
+interactable lookup
+
+避免 O(N×all world objects) 每 tick。
+
+---
+
+# 核心功能 48 — Collision Debug Screenshots
+
+必須產生：
+
+docs/images/v1.7-collision-debug.png
+
+docs/images/v1.7-navmesh-debug.png
+
+docs/images/v1.7-interaction-slots.png
+
+docs/images/v1.7-door-portal.png
+
+docs/images/v1.7-crowd-avoidance.png
+
+docs/images/v1.7-indoor-navigation.png
+
+---
+
+# 核心功能 49 — Visual Before / After
+
+同一個場景：
+
+v1.6：
+Agent 直接靠近物件
+
+v1.7：
+Agent 走門 → slot → interact
+
+建立：
+
+side-by-side evidence。
+
+---
+
+# 核心功能 50 — UI
+
+普通玩家不需要看到：
+
+navmesh
+colliders
+slots
+
+這些只在：
+
+Developer Spatial Debug
+
+模式。
+
+正式 UI 保持乾淨。
+
+---
+
+# Blender Requirements
+
+如果需要修改 POI：
+
+直接使用 Blender。
+
+主要目標：
+
+collision marker
+interaction slot marker
+portal marker
+
+不要為 v1.7 大量重做美術。
+
+v1.6 art 已經足夠。
+
+---
+
+# Collision Data Format
+
+建立 versioned：
+
+`collisionSchemaVersion`
+
+例如：
+
+1
+
+資料：
+
+{
+  "regions": [],
+  "colliders": [],
+  "portals": [],
+  "interactionSlots": [],
+  "terrainZones": []
+}
+
+不要把 binary GLB 當 authoritative collision database。
+
+---
+
+# Backward Compatibility
+
+v1.6 Story：
+
+正常。
+
+v1.6 Replay：
+
+正常。
+
+v1.6 Save：
+
+如果沒有 spatial checkpoint：
+
+可以 migration：
+
+重新定位到最近合法 walkable point
+
+但必須：
+
+明確記錄 migration。
+
+不要 silent teleport。
+
+已完成 Story 不需 migration。
+
+---
+
+# Story Integration
+
+Story 不必大改。
+
+但可以加入空間事件：
+
+- waited at clinic
+- blocked by flood
+- rerouted through ruins
+- died at bridge choke point
+
+不要把大量 path debug 資料放 Story。
+
+只保留有敘事價值的事件。
+
+---
+
+# Agent Life Story
+
+可加入：
+
+distance traveled
+
+most visited POI
+
+longest control
+
+但不是核心。
+
+---
+
+# Replay Integration
+
+如果 path debug 資料太大：
+
+不要全部存。
+
+Replay 只需：
+
+position
+world state
+interaction state
+
+不是 path debugger。
+
+---
+
+# Browser / Electron
+
+全部功能必須：
+
+Browser
+
+Electron
+
+portable
+
+一致。
+
+不要使用：
+
+Electron-only native physics。
+
+---
+
+# QA Resolution
+
+至少：
+
+1920×1080
+
+1366×768
+
+Story mobile：
+
+390×844
+
+Spatial debug：
+
+desktop only 即可。
+
+---
+
+# Existing Test Suites
+
+全部重跑：
+
+npm test
+test:i18n
+test:ui
+test:results
+test:story
+test:desktop
+test:story:desktop
+world QA
+visual QA
+
+---
+
+# New Test Suites
+
+建立：
+
+test:spatial
+
+test:navigation
+
+test:collision
+
+或合理整合。
+
+---
+
+# Benchmark
+
+建立：
+
+`scripts/benchmark-spatial.mjs`
+
+輸出：
+
+`docs/qa/spatial-v1.7-golden.json`
+
+至少：
+
+100 seeds。
+
+---
+
+# Documentation
+
+建立：
+
+`docs/V1.7_REPORT.md`
+
+章節：
+
+1. Goal
+2. Previous limitations
+3. Collision architecture
+4. Blender collision pipeline
+5. Walkable regions
+6. Portals
+7. Pathfinding
+8. Local avoidance
+9. Interaction slots
+10. Reservation / occupancy
+11. Terrain / verticality
+12. LOS / combat blocking
+13. Persistence
+14. Replay
+15. Determinism
+16. Benchmark
+17. Performance
+18. QA
+19. Known limitations
+
+---
+
+# README
+
+新增：
+
+Spatial Intelligence
+
+說明：
+
+- physical collision
+- indoor navigation
+- real door portals
+- local avoidance
+- interaction slots
+- queueing
+
+並加入 screenshots。
+
+---
+
+# Version
+
+更新：
+
+v1.7.0
+
+同步：
+
+package
+Electron metadata
+UI
+README
+Release
+
+---
+
+# Git
+
+開始前：
+
+git status
+
+不要覆蓋未知修改。
+
+合理 commits，例如：
+
+feat(spatial): add authoritative collision geometry
+
+feat(nav): add walkable regions and portal pathfinding
+
+feat(nav): add dynamic door and hazard blockers
+
+feat(agent): add local avoidance and personal space
+
+feat(world): add interaction slots and reservations
+
+feat(spatial): add indoor and vertical navigation
+
+feat(combat): enforce line of sight blocking
+
+feat(debug): add spatial diagnostics overlay
+
+test(spatial): add deterministic navigation regression
+
+docs(v1.7): add spatial intelligence report
+
+---
+
+# Release
+
+全部通過後：
+
+tag：
+
+v1.7.0
+
+Private GitHub Release
+
+Windows portable
+
+繁體中文 Release Notes。
+
+---
+
+# Acceptance Criteria
+
+結束前逐項確認：
+
+[ ] Render mesh 與 collision mesh 分離
+
+[ ] Collision data versioned
+
+[ ] Static walls 真正阻擋 Agent
+
+[ ] Closed door 阻擋
+
+[ ] Open door 可通過
+
+[ ] Broken door 正確
+
+[ ] Deep water 不可走
+
+[ ] Walkable regions 存在
+
+[ ] Clinic interior 可正常進出
+
+[ ] Shelter interior 可正常進出
+
+[ ] Depot interior 可正常進出
+
+[ ] Watchtower 不 teleport，可沿路徑上去
+
+[ ] Ruins vertical path 正常
+
+[ ] Portal graph 正常
+
+[ ] A* 正常
+
+[ ] Path smoothing 正常
+
+[ ] Dynamic blocker 會 replan
+
+[ ] Agent 不穿牆
+
+[ ] Agent 不互穿
+
+[ ] Agent 不長時間疊在一起
+
+[ ] 狹門不會永久 deadlock
+
+[ ] Local avoidance 正常
+
+[ ] Interaction slots 正常
+
+[ ] Slot reservation 正常
+
+[ ] Occupancy 正常
+
+[ ] 多 Agent 不會同時佔一張床
+
+[ ] 多 Agent 不會疊在 Generator 同一點
+
+[ ] pathDistance 進 utility reachability
+
+[ ] 隔牆不能互動
+
+[ ] 隔牆不能攻擊
+
+[ ] LOS 使用 authoritative collision
+
+[ ] Terrain cost 正常
+
+[ ] blocked bridge reroute
+
+[ ] stuck detection 正常
+
+[ ] 不使用 teleport 解正常 gameplay stuck
+
+[ ] Spatial debug overlay 正常
+
+[ ] Save/load 正常
+
+[ ] Replay 正常
+
+[ ] v1.6 Story 正常
+
+[ ] zh-TW 正常
+
+[ ] English 正常
+
+[ ] Browser 正常
+
+[ ] Electron 正常
+
+[ ] portable 正常
+
+[ ] 同 v1.7 Seed 可完全重現
+
+[ ] 100-seed golden 完成
+
+[ ] 無大量 stuck / deadlock
+
+[ ] 10x simulation 性能可接受
+
+[ ] README 更新
+
+[ ] V1.7_REPORT 完成
+
+[ ] Git clean
+
+[ ] push private repo
+
+[ ] v1.7.0 Release 完成
+
+任何失敗：
+
+繼續 Debug。
+
+不要把：
+
+PARTIAL
+
+寫成：
+
+COMPLETE。
+
+---
+
+# Stretch Goals
+
+只有所有核心功能完成後：
+
+- true capsule-vs-polygon resolution
+- crowd flow field
+- door yielding animation
+- climb ladder animation
+- local navmesh baking
+- room occupancy heatmap
+- path visualization in replay
+- carrying bulky objects affects avoidance radius
+- prone / crouch clearance
+- narrow-gap body-size checks
+
+不要為 stretch 犧牲：
+
+determinism
+stability
+compatibility
+performance
+
+---
+
+# 最重要的產品目標
+
+完成 v1.7 後，
+
+使用者應該能直接看出：
+
+「Agent 不是在平面座標上移動。」
+
+而是：
+
+「Agent 真的生活在這個地方。」
+
+例如：
+
+Nova 想治療。
+
+她不會穿過診所外牆。
+
+她會：
+
+走向入口
+
+→
+等前面的 Agent 通過門
+
+→
+進入診所
+
+→
+走到醫療站的有效 slot
+
+→
+面向設備
+
+→
+開始治療
+
+如果醫療位有人：
+
+她可能等待，
+
+也可能重新決策去別處。
+
+另一邊：
+
+Pax 被火災堵住原路，
+
+重新規劃穿過 Ruins。
+
+Bridge 因 flood 封閉後，
+
+角色真的走另一條路。
+
+這才是本版本成功。
+
+現在直接開始：
+
+Inspect current repository
+
+→
+
+Design authoritative collision schema
+
+→
+
+Export collision / portal / slot data from Blender
+
+→
+
+Implement walkable regions
+
+→
+
+Implement A*
+
+→
+
+Implement dynamic blockers
+
+→
+
+Implement local avoidance
+
+→
+
+Implement interaction slots / reservations
+
+→
+
+Upgrade indoor / vertical navigation
+
+→
+
+Upgrade LOS
+
+→
+
+Save / Replay integration
+
+→
+
+Spatial debug tools
+
+→
+
+Deterministic benchmark
+
+→
+
+Stress QA
+
+→
+
+Browser / Electron / portable QA
+
+→
+
+Documentation
+
+→
+
+Git
+
+→
+
+Release v1.7.0
+
+不要停在規劃。
+
+做到真正可交付完成品。

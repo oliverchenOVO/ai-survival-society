@@ -1,6 +1,7 @@
 import { clamp, distance, randomGenerator } from './random.mjs';
 import { relation } from './agents.mjs';
 import { remember } from './events.mjs';
+import { lineClear, pathDistance, atInteractionSlot, releaseSlot, findPath } from './spatial.mjs';
 
 export const WORLD_ACTIONS = [
   'interact',
@@ -213,10 +214,13 @@ export function blockers(sim, navigation = false) {
 export function canSee(sim, a, position, hidden = false) {
   return (
     distance(a.position, position) < perceptionRadius(sim, a) * (hidden ? 0.5 : 1) &&
-    !blockers(sim).some((r) => cuts(a.position, position, r))
+    (sim.world.spatial
+      ? lineClear(sim, a.position, position, 0, { hazards: false, vision: true })
+      : !blockers(sim).some((r) => cuts(a.position, position, r)))
   );
 }
 export function navigationWaypoint(sim, a, destination) {
+  if (sim.world.spatial) return findPath(sim, a.position, destination)?.[0] ?? a.position;
   const obstacles = blockers(sim, true).filter(
     (r) => Math.abs(a.position.x - r.x) > r.hx || Math.abs(a.position.z - r.z) > r.hz,
   );
@@ -304,7 +308,21 @@ export function observeWorld(sim, a) {
   a.worldKnowledge ??= {};
   a.placeStats ??= {};
   for (const p of sim.world.pois)
-    if (canSee(sim, a, p.position)) {
+    if (
+      canSee(sim, a, p.position) ||
+      (sim.world.spatial &&
+        sim.world.objects.some(
+          (o) =>
+            o.poi === p.id &&
+            o.type === 'door' &&
+            distance(a.position, o.position) < perceptionRadius(sim, a) &&
+            lineClear(sim, a.position, o.position, 0, {
+              hazards: false,
+              ignoreObject: o.id,
+              vision: true,
+            }),
+        ))
+    ) {
       const previous = a.worldKnowledge[p.id];
       a.worldKnowledge[p.id] = {
         id: p.id,
@@ -363,6 +381,19 @@ export function canInteract(sim, a, o, action = a.action, requireRange = true) {
   )
     return false;
   if (requireRange && distance(a.position, o.position) > 1.7) return false;
+  if (requireRange && sim.world.spatial && !atInteractionSlot(sim, a, o)) return false;
+  if (
+    o.type === 'door' &&
+    action === 'close' &&
+    sim.world.spatial &&
+    sim.agents.some(
+      (b) =>
+        b.alive &&
+        Math.abs(b.position.x - o.position.x) < 1.2 &&
+        Math.abs(b.position.z - o.position.z) < 0.42,
+    )
+  )
+    return false;
   if (o.metadata.occupants.filter((id) => id !== a.id).length >= o.capacity) return false;
   if (
     o.type === 'door' &&
@@ -381,7 +412,15 @@ export function canInteract(sim, a, o, action = a.action, requireRange = true) {
   return true;
 }
 export function getUtility(sim, a, o, p) {
-  const d = distance(a.position, o.position),
+  const approaches = sim.world.spatial?.slots.filter(
+    (s) => s.objectId === o.id && (!s.agentId || s.agentId === a.id),
+  );
+  const approach = approaches?.sort((x, y) => distance(a.position, x) - distance(a.position, y))[0];
+  const d = sim.world.spatial
+      ? approach
+        ? pathDistance(sim, a, approach)
+        : Infinity
+      : distance(a.position, o.position),
     danger =
       (p?.danger ?? 0) * 0.6 +
       accessRisk(a, p) +
@@ -396,6 +435,13 @@ export function getUtility(sim, a, o, p) {
     case 'door':
       action = o.state === 'open' ? 'close' : 'open';
       score = o.state === 'open' ? (storm ? 0.75 : 0.05) : 0.55 + trait.curiosity * 0.3;
+      if (
+        sim.world.spatial &&
+        o.state !== 'open' &&
+        ['clinic', 'shelter', 'village'].includes(p?.type) &&
+        (storm || night || a.hp < 60)
+      )
+        score += 1.2;
       break;
     case 'container':
       action = 'search';
@@ -439,6 +485,7 @@ export function worldCandidates(sim, a) {
     if (distance(k.position, { x: 0, z: 0 }) > sim.safeRadius - 1) continue;
     for (const o of k.objects ?? []) {
       const c = getUtility(sim, a, o, k);
+      if (!Number.isFinite(c.score)) continue;
       if (!canInteract(sim, a, o, c.action, false)) continue;
       const stale = knowledgeState(k, sim.elapsed) === 'stale';
       out.push({
@@ -452,7 +499,8 @@ export function worldCandidates(sim, a) {
     }
     if (
       (sim.world.weather === 'storm' || sim.world.timeOfDay === 'night' || a.hp < 40) &&
-      k.shelter > 0.6
+      k.shelter > 0.6 &&
+      (!sim.world.spatial || Number.isFinite(pathDistance(sim, a, k.position)))
     )
       out.push({
         action: 'take_cover',
@@ -517,6 +565,7 @@ export function performInteraction(sim, a, o, dt) {
           record('DOOR_FORCED');
         } else {
           o.state = 'open';
+          o.metadata.passableAt = sim.elapsed + 0.6;
           record('DOOR_OPENED');
         }
       }
@@ -606,6 +655,7 @@ export function performInteraction(sim, a, o, dt) {
       break;
   }
   o.cooldown = sim.elapsed + (o.type === 'radio' ? 35 : o.type === 'container' ? 5 : 1);
+  if (sim.world.spatial) releaseSlot(sim, a);
   a.nextDecision = sim.elapsed;
   return true;
 }

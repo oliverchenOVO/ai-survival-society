@@ -6,3 +6,5 @@ if (!(Test-Path -LiteralPath $taskBlender)) { throw 'Set BLENDER_PATH to your bl
 if ($LASTEXITCODE -ne 0) { throw 'Asset generation failed.' }
 & $taskBlender --background --python 'Art/Blender/generate_world_assets.py'
 if ($LASTEXITCODE -ne 0) { throw 'Physical world asset generation failed.' }
+& $taskBlender --background --python 'Art/Blender/generate_collision_data.py'
+if ($LASTEXITCODE -ne 0) { throw 'Authoritative collision export failed.' }

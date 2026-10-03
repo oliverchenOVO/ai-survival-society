@@ -14,6 +14,7 @@ import { createLivingScene } from './living-scene.mjs';
 import { animateRobot } from './robot-motion.mjs';
 import { assembleRobot } from './robot-kit.mjs';
 import { eventPriority, zoomTier } from './visual-state.mjs';
+import { createSpatialDebug, readSpatialDebug } from './spatial-debug.mjs';
 const tmp = new THREE.Vector3();
 export default function WorldView({
   state,
@@ -26,6 +27,12 @@ export default function WorldView({
   graphVisible,
   audio,
 }) {
+  const [spatialDebug, setSpatialDebug] = useState(readSpatialDebug);
+  useEffect(() => {
+    const changed = (e) => setSpatialDebug(e.detail);
+    window.addEventListener('society-spatial-debug', changed);
+    return () => window.removeEventListener('society-spatial-debug', changed);
+  }, []);
   const { t, text, event: localizeEvent, error: localizeError, locale } = useLocale();
   const host = useRef(null),
     runtime = useRef(null),
@@ -39,6 +46,7 @@ export default function WorldView({
     }),
     [error, setError] = useState('');
   latest.current = {
+    spatialDebug,
     state,
     selected,
     follow,
@@ -102,6 +110,7 @@ export default function WorldView({
       scene.add(sunlight);
       const sky = createSky(scene);
       const livingScene = createLivingScene(scene, container);
+      const debugScene = createSpatialDebug(scene);
       const ocean = createOcean(scene);
       let island = createIsland(scene, latest.current.state.seed, latest.current.state.world?.pois),
         worldSeed = latest.current.state.seed;
@@ -326,6 +335,7 @@ export default function WorldView({
         ocean.uniforms.time.value = time;
         camera.userData.target = controls.target;
         livingScene.update(s, camera, time, latest.current.t);
+        debugScene.update(s, latest.current.spatialDebug);
         sky.uniforms.night.value = s.world?.timeOfDay === 'night' ? 1 : 0;
         ocean.uniforms.night.value = sky.uniforms.night.value;
         sunlight.intensity =
@@ -407,11 +417,12 @@ export default function WorldView({
             a.position.x,
             terrainHeight(a.position.x, a.position.z) +
               (a.alive ? 0.08 : 0) +
-              (s.world?.objects.some(
-                (o) => o.type === 'watchtower' && o.metadata.occupants.includes(a.id),
-              )
-                ? 3.2
-                : 0),
+              (a.position.y ??
+                (s.world?.objects.some(
+                  (o) => o.type === 'watchtower' && o.metadata.occupants.includes(a.id),
+                )
+                  ? 3.2
+                  : 0)),
             a.position.z,
           );
           if (!wrapper.userData.placed) {
@@ -671,6 +682,7 @@ export default function WorldView({
         observer.disconnect();
         controls.dispose();
         livingScene.dispose();
+        debugScene.dispose();
         delete container._visual;
         renderer.domElement.removeEventListener('pointerdown', pointerDown);
         renderer.domElement.removeEventListener('pointerup', pointerUp);
@@ -718,6 +730,39 @@ export default function WorldView({
           <strong>{t('type.' + major.event)}</strong>
           <span>{localizeEvent(major)}</span>
         </div>
+      ) : null}
+      {Object.values(spatialDebug).some(Boolean) && state.world?.spatial ? (
+        <aside className="spatial-debug-inspector">
+          <strong>{t('spatial.debug')}</strong>
+          {state.agents
+            .filter((a) => a.id === selected)
+            .map((a) => (
+              <div key={a.id}>
+                <p>
+                  {a.name} · {t('spatial.target')}: {a.target ?? '—'}
+                </p>
+                <p>
+                  {t('spatial.region')}: {a.spatial?.region} · {t('spatial.portal')}:{' '}
+                  {a.spatial?.nextPortal ?? '—'}
+                </p>
+                <p>
+                  {t('spatial.slot')}: {a.spatial?.slotId ?? '—'}
+                </p>
+                <p>
+                  {t('spatial.neighbors')}: {a.spatial?.neighbors.join(', ') || '—'}
+                </p>
+                <p>
+                  {t('spatial.stuck')}: {(a.spatial?.stuckTimer ?? 0).toFixed(2)}s
+                </p>
+                <p>
+                  {t('spatial.path')}:{' '}
+                  {a.spatial?.path
+                    .map((p) => `(${p.x.toFixed(1)},${(p.y ?? 0).toFixed(1)},${p.z.toFixed(1)})`)
+                    .join(' → ') || '—'}
+                </p>
+              </div>
+            ))}
+        </aside>
       ) : null}
       {error ? (
         <div className="world-error">

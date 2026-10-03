@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { X, Download, Trophy, Skull, Play, ArrowRight, Save } from 'lucide-react';
 import { request, formatTime } from '../api.mjs';
 import { RobotPortrait } from './Inspector.jsx';
+import { DEBUG_KEY, DEBUG_LAYERS, readSpatialDebug } from '../world/spatial-debug-settings.mjs';
 export function Modal({ title, onClose, children, wide = false }) {
   const { t } = useLocale();
   return (
@@ -30,6 +31,7 @@ export function Modal({ title, onClose, children, wide = false }) {
   );
 }
 export function Settings({ onClose, onError, state, onControl }) {
+  const [spatialDebug, setSpatialDebug] = useState(readSpatialDebug);
   const { t, error: localizeError, locale, setLanguage, preferenceError } = useLocale();
   const [config, setConfig] = useState(null),
     [saving, setSaving] = useState(false),
@@ -104,6 +106,28 @@ export function Settings({ onClose, onError, state, onControl }) {
           {t('settings.continuous')}
         </label>
         <p className="muted">{t('settings.continuousHelp')}</p>
+      </div>
+      <div className="settings-block">
+        <h3>{t('spatial.debug')}</h3>
+        <p className="muted">{t('spatial.debugHelp')}</p>
+        {DEBUG_LAYERS.map((layer) => (
+          <label className="check-label" key={layer}>
+            <input
+              type="checkbox"
+              data-testid={'spatial-' + layer}
+              checked={!!spatialDebug[layer]}
+              onChange={(e) => {
+                const next = { ...spatialDebug, [layer]: e.target.checked };
+                setSpatialDebug(next);
+                try {
+                  localStorage.setItem(DEBUG_KEY, JSON.stringify(next));
+                } catch {}
+                window.dispatchEvent(new CustomEvent('society-spatial-debug', { detail: next }));
+              }}
+            />
+            {t('spatial.' + layer)}
+          </label>
+        ))}
       </div>
       <form onSubmit={save} className="settings-block">
         <h3>{t('settings.models')}</h3>

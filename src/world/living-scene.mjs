@@ -62,7 +62,7 @@ export function createLivingScene(scene, host) {
     labelHost.hidden = !w;
     hud.hidden = !w;
     if (!w) return;
-    hud.textContent = `v1.6.0 · ${t('world.title')} · ${t('weather.' + w.timeOfDay)} · ${t('weather.' + w.weather)}`;
+    hud.textContent = `v1.7.0 · ${t('world.title')} · ${t('weather.' + w.timeOfDay)} · ${t('weather.' + w.weather)}`;
     if (lastElapsed > s.elapsed || (lastWorld && lastWorld !== s.matchId)) eventCache.clear();
     lastElapsed = s.elapsed;
     for (const e of s.visualEvents ?? s.events ?? [])
@@ -83,7 +83,7 @@ export function createLivingScene(scene, host) {
         mesh.material.dispose();
       }
       walls.length = 0;
-      for (const r of w.walls) {
+      for (const r of w.spatial ? [] : w.walls) {
         const m = box(r.hx * 2, 1.6, r.hz * 2, '#536c73');
         m.position.set(r.x, terrainHeight(r.x, r.z) + 0.8, r.z);
         group.add(m);
@@ -109,7 +109,7 @@ export function createLivingScene(scene, host) {
       item.setObject(o);
       item.g.position.set(
         o.position.x,
-        terrainHeight(o.position.x, o.position.z) + 0.1,
+        terrainHeight(o.position.x, o.position.z) + (o.position.y ?? 0) + 0.1,
         o.position.z,
       );
       item.update(w, s.agents, s.elapsed);
