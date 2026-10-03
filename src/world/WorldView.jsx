@@ -269,6 +269,7 @@ export default function WorldView({
           if (offset.length() > 28) offset.setLength(25);
           camera.userData.focusTarget = target;
           camera.userData.focusPosition = target.clone().add(offset);
+          camera.userData.focusStarted = performance.now();
         }
       };
       runtime.current = {
@@ -290,6 +291,7 @@ export default function WorldView({
         const target = new THREE.Vector3(p.x, terrainHeight(p.x, p.z) + 1, p.z);
         camera.userData.focusTarget = target;
         camera.userData.focusPosition = target.clone().add(new THREE.Vector3(12, 10, 14));
+        camera.userData.focusStarted = performance.now();
       };
       controls.addEventListener('start', () => {
         camera.userData.focusTarget = null;
@@ -610,7 +612,11 @@ export default function WorldView({
           const drift = camera.userData.focusTarget.clone().sub(controls.target).multiplyScalar(f);
           controls.target.add(drift);
           camera.position.lerp(camera.userData.focusPosition, f);
-          if (controls.target.distanceTo(camera.userData.focusTarget) < 0.02)
+          if (
+            (controls.target.distanceTo(camera.userData.focusTarget) < 0.02 &&
+              camera.position.distanceTo(camera.userData.focusPosition) < 0.02) ||
+            performance.now() - (camera.userData.focusStarted ?? 0) > 2000
+          )
             camera.userData.focusTarget = null;
         }
         for (let i = traces.length - 1; i >= 0; i--)
