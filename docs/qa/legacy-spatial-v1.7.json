@@ -1,0 +1,9 @@
+{
+  "source": ".qa/story-browser-1791033001688/saves/1760000000000-7.json",
+  "checks": [
+    "Actual completed historical archive remains unmigrated",
+    "All completed agent positions preserved",
+    "All replay sample positions preserved",
+    "Historical Story public serialization succeeds"
+  ]
+}

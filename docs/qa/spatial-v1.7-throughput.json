@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-03T19:20:25.829Z",
+  "sourceRevision": "5268a6dad7b9e9c4c64a3c9cfe900174e15ee57e",
+  "seed": 7,
+  "agents": 12,
+  "simulatedSeconds": 60,
+  "wallSeconds": 3.8056810000000003,
+  "simulationRatio": 15.765903658241454,
+  "pathfindingCallsPerWallSecond": 293.50857310426176,
+  "pathfindingCalls": 1117,
+  "averageAStarNodes": 76.43240823634736,
+  "p95PathMs": 11.845000000000027,
+  "avoidanceMs": 484.9058000000048,
+  "method": "Authoritative headless 12-agent 60s throughput; wall timing includes current host load and is independent of renderer FPS"
+}

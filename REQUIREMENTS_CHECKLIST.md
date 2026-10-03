@@ -434,132 +434,132 @@
 
 完整原文：docs/V1.7_REQUIREMENTS.txt。所有核心項目逐項驗收；Stretch 僅核心完成後考慮。
 
-- [ ] 本版本核心目標
-- [ ] 最高原則
-- [ ] 嚴格限制
+- [x] 本版本核心目標
+- [x] 最高原則
+- [x] 嚴格限制
 - [x] Phase 1 — Inspect Existing Spatial Stack
 - [x] 核心功能 1 — Collision Geometry
 - [x] 核心功能 2 — Blender Collision Export
 - [x] 核心功能 3 — Static Collision
 - [x] 核心功能 4 — Character Collision Shape
 - [x] 核心功能 5 — Dynamic Door Collision
-- [ ] 核心功能 6 — Walkable Area
-- [ ] 核心功能 7 — NavMesh / Polygon Navigation
+- [x] 核心功能 6 — Walkable Area
+- [x] 核心功能 7 — NavMesh / Polygon Navigation
 - [x] 核心功能 8 — Portal System
-- [ ] 核心功能 9 — A* Pathfinding
+- [x] 核心功能 9 — A* Pathfinding
 - [x] 核心功能 10 — Path Smoothing
-- [ ] 核心功能 11 — Dynamic Obstacles
+- [x] 核心功能 11 — Dynamic Obstacles
 - [x] 核心功能 12 — Agent-to-Agent Local Avoidance
 - [x] 核心功能 13 — Personal Space
-- [ ] 核心功能 14 — Narrow Passage Behavior
+- [x] 核心功能 14 — Narrow Passage Behavior
 - [x] 核心功能 15 — Queueing
 - [x] 核心功能 16 — Interaction Slots
 - [x] 核心功能 17 — Slot Reservation
 - [x] 核心功能 18 — Occupancy
-- [ ] 核心功能 19 — Interaction Reachability
-- [ ] 核心功能 20 — Path Cost
-- [ ] 核心功能 21 — Terrain Cost
-- [ ] 核心功能 22 — Slope / Height Constraint
-- [ ] 核心功能 23 — Stairs / Ramps
-- [ ] 核心功能 24 — Vertical Node Support
+- [x] 核心功能 19 — Interaction Reachability
+- [x] 核心功能 20 — Path Cost
+- [x] 核心功能 21 — Terrain Cost
+- [x] 核心功能 22 — Slope / Height Constraint
+- [x] 核心功能 23 — Stairs / Ramps
+- [x] 核心功能 24 — Vertical Node Support
 - [x] 核心功能 25 — Line of Sight Upgrade
 - [x] 核心功能 26 — Combat Line of Fire
 - [x] 核心功能 27 — Interaction Line of Sight
-- [ ] 核心功能 28 — Stuck Detection
-- [ ] 核心功能 29 — Deadlock Avoidance
-- [ ] 核心功能 30 — Path Reservation Lite
-- [ ] 核心功能 31 — Visual Path Debug Mode
-- [ ] 核心功能 32 — Click Debug
-- [ ] 核心功能 33 — Render Collision Alignment
-- [ ] 核心功能 34 — Interaction Animation Alignment
-- [ ] 核心功能 35 — Door Animation Alignment
-- [ ] 核心功能 36 — Replay Spatial Fidelity
-- [ ] 核心功能 37 — Save / Load
-- [ ] 核心功能 38 — Determinism
-- [ ] 核心功能 39 — Spatial Metrics
-- [ ] 核心功能 40 — Acceptance Gates
+- [x] 核心功能 28 — Stuck Detection
+- [x] 核心功能 29 — Deadlock Avoidance
+- [x] 核心功能 30 — Path Reservation Lite
+- [x] 核心功能 31 — Visual Path Debug Mode
+- [x] 核心功能 32 — Click Debug
+- [x] 核心功能 33 — Render Collision Alignment
+- [x] 核心功能 34 — Interaction Animation Alignment
+- [x] 核心功能 35 — Door Animation Alignment
+- [x] 核心功能 36 — Replay Spatial Fidelity
+- [x] 核心功能 37 — Save / Load
+- [x] 核心功能 38 — Determinism
+- [x] 核心功能 39 — Spatial Metrics
+- [x] 核心功能 40 — Acceptance Gates
 - [x] 核心功能 41 — Collision Regression Tests
-- [ ] 核心功能 42 — Navigation Tests
+- [x] 核心功能 42 — Navigation Tests
 - [x] 核心功能 43 — Queue Tests
 - [x] 核心功能 44 — Local Avoidance Tests
 - [x] 核心功能 45 — High Density Test
-- [ ] 核心功能 46 — Performance
-- [ ] 核心功能 47 — Spatial Index
-- [ ] 核心功能 48 — Collision Debug Screenshots
-- [ ] 核心功能 49 — Visual Before / After
-- [ ] 核心功能 50 — UI
-- [ ] Blender Requirements
+- [x] 核心功能 46 — Performance
+- [x] 核心功能 47 — Spatial Index
+- [x] 核心功能 48 — Collision Debug Screenshots
+- [x] 核心功能 49 — Visual Before / After
+- [x] 核心功能 50 — UI
+- [x] Blender Requirements
 - [x] Collision Data Format
-- [ ] Backward Compatibility
-- [ ] Story Integration
-- [ ] Agent Life Story
-- [ ] Replay Integration
-- [ ] Browser / Electron
-- [ ] QA Resolution
-- [ ] Existing Test Suites
-- [ ] New Test Suites
-- [ ] Benchmark
-- [ ] Documentation
-- [ ] README
-- [ ] Version
+- [x] Backward Compatibility — 真實舊 archive 座標／重播取樣保留；checkpoint migration 測試通過
+- [x] Story Integration
+- [x] Agent Life Story — optional 擴充已評估，沿用重要地點，未加入 distance／longest control
+- [x] Replay Integration
+- [x] Browser / Electron
+- [x] QA Resolution
+- [x] Existing Test Suites — 最終 core 48 tests / 48 pass / 0 fail
+- [x] New Test Suites
+- [x] Benchmark
+- [x] Documentation
+- [x] README
+- [x] Version
 - [ ] Git
 - [ ] Release
-- [ ] Acceptance Criteria
-- [ ] Stretch Goals
-- [ ] 最重要的產品目標
+- [x] Acceptance Criteria
+- [x] Stretch Goals — optional，未犧牲核心驗收追加功能
+- [x] 最重要的產品目標
 
 ### v1.7 最終驗收
 
-- [ ] Render mesh 與 collision mesh 分離
-- [ ] Collision data versioned
-- [ ] Static walls 真正阻擋 Agent
-- [ ] Closed door 阻擋
-- [ ] Open door 可通過
-- [ ] Broken door 正確
-- [ ] Deep water 不可走
-- [ ] Walkable regions 存在
-- [ ] Clinic interior 可正常進出
-- [ ] Shelter interior 可正常進出
-- [ ] Depot interior 可正常進出
-- [ ] Watchtower 不 teleport，可沿路徑上去
-- [ ] Ruins vertical path 正常
-- [ ] Portal graph 正常
-- [ ] A* 正常
-- [ ] Path smoothing 正常
-- [ ] Dynamic blocker 會 replan
-- [ ] Agent 不穿牆
-- [ ] Agent 不互穿
-- [ ] Agent 不長時間疊在一起
-- [ ] 狹門不會永久 deadlock
-- [ ] Local avoidance 正常
-- [ ] Interaction slots 正常
-- [ ] Slot reservation 正常
-- [ ] Occupancy 正常
-- [ ] 多 Agent 不會同時佔一張床
-- [ ] 多 Agent 不會疊在 Generator 同一點
-- [ ] pathDistance 進 utility reachability
-- [ ] 隔牆不能互動
-- [ ] 隔牆不能攻擊
-- [ ] LOS 使用 authoritative collision
-- [ ] Terrain cost 正常
-- [ ] blocked bridge reroute
-- [ ] stuck detection 正常
-- [ ] 不使用 teleport 解正常 gameplay stuck
-- [ ] Spatial debug overlay 正常
-- [ ] Save/load 正常
-- [ ] Replay 正常
-- [ ] v1.6 Story 正常
-- [ ] zh-TW 正常
-- [ ] English 正常
-- [ ] Browser 正常
-- [ ] Electron 正常
-- [ ] portable 正常
-- [ ] 同 v1.7 Seed 可完全重現
-- [ ] 100-seed golden 完成
-- [ ] 無大量 stuck / deadlock
-- [ ] 10x simulation 性能可接受
-- [ ] README 更新
-- [ ] V1.7_REPORT 完成
+- [x] Render mesh 與 collision mesh 分離
+- [x] Collision data versioned
+- [x] Static walls 真正阻擋 Agent
+- [x] Closed door 阻擋
+- [x] Open door 可通過
+- [x] Broken door 正確
+- [x] Deep water 不可走
+- [x] Walkable regions 存在
+- [x] Clinic interior 可正常進出
+- [x] Shelter interior 可正常進出
+- [x] Depot interior 可正常進出
+- [x] Watchtower 不 teleport，可沿路徑上去
+- [x] Ruins vertical path 正常
+- [x] Portal graph 正常
+- [x] A* 正常
+- [x] Path smoothing 正常
+- [x] Dynamic blocker 會 replan
+- [x] Agent 不穿牆
+- [x] Agent 不互穿
+- [x] Agent 不長時間疊在一起
+- [x] 狹門不會永久 deadlock
+- [x] Local avoidance 正常
+- [x] Interaction slots 正常
+- [x] Slot reservation 正常
+- [x] Occupancy 正常
+- [x] 多 Agent 不會同時佔一張床
+- [x] 多 Agent 不會疊在 Generator 同一點
+- [x] pathDistance 進 utility reachability
+- [x] 隔牆不能互動
+- [x] 隔牆不能攻擊
+- [x] LOS 使用 authoritative collision
+- [x] Terrain cost 正常
+- [x] blocked bridge reroute
+- [x] stuck detection 正常
+- [x] 不使用 teleport 解正常 gameplay stuck
+- [x] Spatial debug overlay 正常
+- [x] Save/load 正常
+- [x] Replay 正常
+- [x] v1.6 Story 正常
+- [x] zh-TW 正常
+- [x] English 正常
+- [x] Browser 正常
+- [x] Electron 正常
+- [x] portable 正常
+- [x] 同 v1.7 Seed 可完全重現
+- [x] 100-seed golden 完成
+- [x] 無大量 stuck / deadlock
+- [x] 10x simulation 性能可接受
+- [x] README 更新
+- [x] V1.7_REPORT 完成
 - [ ] Git clean
 - [ ] push private repo
 - [ ] v1.7.0 Release 完成

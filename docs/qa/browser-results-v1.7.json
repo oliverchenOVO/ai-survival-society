@@ -1,0 +1,78 @@
+{
+  "browser": "154.0.8037.58",
+  "base": "http://localhost:12533",
+  "viewports": [
+    {
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "checks": [
+    {
+      "name": "Identity, meaningful UI, loaded 3D canvas, no framework overlay",
+      "result": "PASS"
+    },
+    {
+      "name": "Pause holds simulation time",
+      "result": "PASS"
+    },
+    {
+      "name": "Resume advances time",
+      "result": "PASS"
+    },
+    {
+      "name": "Speed changes authoritative simulation",
+      "result": "PASS"
+    },
+    {
+      "name": "Restart resets world, seed and statistics",
+      "result": "PASS"
+    },
+    {
+      "name": "Autonomous movement, resource collection, conversations and alliances",
+      "result": "PASS"
+    },
+    {
+      "name": "Selection, focus, follow, cinematic toggle, orbit, pan and zoom",
+      "result": "PASS"
+    },
+    {
+      "name": "Live relationship graph renders from simulation data",
+      "result": "PASS"
+    },
+    {
+      "name": "All six Director buttons modify world and emit events",
+      "result": "PASS"
+    },
+    {
+      "name": "Seed settings restart works",
+      "result": "PASS"
+    },
+    {
+      "name": "Full run reaches combat, deaths, betrayal, winner and historian",
+      "result": "PASS"
+    },
+    {
+      "name": "Complete JSON export and save archive",
+      "result": "PASS"
+    },
+    {
+      "name": "Saved-run replay timeline, playback and return-live",
+      "result": "PASS"
+    },
+    {
+      "name": "Mobile 390px layout has no horizontal overflow and settings usable",
+      "result": "PASS"
+    },
+    {
+      "name": "No page errors, console errors or failed asset/API requests",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}

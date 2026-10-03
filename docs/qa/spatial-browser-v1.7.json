@@ -1,0 +1,160 @@
+{
+  "date": "2026-10-03T18:52:13.182Z",
+  "checks": [
+    "Default debug hidden; actual Settings toggles collision hulls",
+    "Polygon regions, vertical routes and authoritative portals rendered",
+    "Real v1.6 engine versus v1.7: same Seed, starting position, medical goal and camera; wall crossing removed",
+    "Twelve-agent crowd fixture, reserved slots and collision circles",
+    "Bilingual debug controls at both desktop resolutions",
+    "Sampled replay remains usable with persistent spatial debug, without full path data"
+  ],
+  "errors": [],
+  "evidence": {
+    "before": {
+      "elapsed": 1.5,
+      "points": [
+        {
+          "x": -7,
+          "z": 6,
+          "y": 0
+        },
+        {
+          "x": -6.522507943167786,
+          "z": 6,
+          "y": 0
+        },
+        {
+          "x": -6.045208073835571,
+          "z": 6,
+          "y": 0
+        },
+        {
+          "x": -5.568100392003357,
+          "z": 6,
+          "y": 0
+        },
+        {
+          "x": -5.091184897671143,
+          "z": 6,
+          "y": 0
+        },
+        {
+          "x": -4.614461590838928,
+          "z": 6,
+          "y": 0
+        },
+        {
+          "x": -4.614461590838928,
+          "z": 6,
+          "y": 0
+        }
+      ]
+    },
+    "after": {
+      "elapsed": 4.75,
+      "points": [
+        {
+          "x": -7,
+          "z": 6,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 5.522507943167786,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 5.045208073835571,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 4.568100392003357,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 4.091184897671143,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 3.614461590838929,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 3.1379304715067144,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 2.6615915396745002,
+          "y": 0
+        },
+        {
+          "x": -7,
+          "z": 2.5,
+          "y": 0
+        },
+        {
+          "x": -6.524045443167786,
+          "z": 2.5,
+          "y": 0
+        },
+        {
+          "x": -6.048283073835572,
+          "z": 2.5,
+          "y": 0
+        },
+        {
+          "x": -5.605579748893815,
+          "z": 2.673726117591566,
+          "y": 0
+        },
+        {
+          "x": -5.163055329292453,
+          "z": 2.8473820289559546,
+          "y": 0
+        },
+        {
+          "x": -4.720709815031485,
+          "z": 3.0209677340931655,
+          "y": 0
+        },
+        {
+          "x": -4.278543206110912,
+          "z": 3.194483233003199,
+          "y": 0
+        },
+        {
+          "x": -3.8365555025307345,
+          "z": 3.367928525686055,
+          "y": 0
+        },
+        {
+          "x": -3.5,
+          "z": 3.5,
+          "y": 0
+        },
+        {
+          "x": -3.3517562508304684,
+          "z": 3.9506609974753766,
+          "y": 0
+        },
+        {
+          "x": -3.2035725555631585,
+          "z": 4.401139431087998,
+          "y": 0
+        },
+        {
+          "x": -3.055448914198071,
+          "z": 4.8514353008378635,
+          "y": 0
+        }
+      ]
+    }
+  },
+  "method": "Isolated explicit-goal acceptance fixtures; no production scripting"
+}

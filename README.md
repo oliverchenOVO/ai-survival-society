@@ -1,5 +1,28 @@
 # AI Survival Society
 
+**v1.7.0 — Spatial Intelligence & Physical Interaction。** 世界現在真正限制行為：角色繞過實體牆、家具與深水，從門口進入診所、避讓迎面角色，在有限的互動槽位前等待，沿樓梯登塔與走上遺跡。碰撞、視線、戰鬥與尋路均由 core/server 計算；Browser／Electron 只顯示狀態。
+
+設定中的「開發者空間診斷」可個別顯示碰撞體、可行走區域、入口、路徑、互動槽位、預約與避讓半徑，預設全部關閉。點角色可查看目標、區域、路線、入口、預約與受阻時間。正常介面保持原有冷色觀測站風格，繁體中文／English 設定可持久保存。
+
+本版刻意改變 gameplay，建立獨立的 50 primary + 50 holdout deterministic golden；保留 v1.5／v1.6 歷史資料。未完成舊存檔會明確記錄空間遷移；已完成 Story／Replay 保留當時座標，重播使用五秒取樣資料，沒有重跑尋路。詳見 [v1.7 報告](docs/V1.7_REPORT.md)。
+
+![實體碰撞診斷](docs/images/v1.7-collision-debug.png)
+![角色在入口避讓](docs/images/v1.7-crowd-avoidance.png)
+
+Windows portable：[私人 v1.7.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.7.0)。舊版 Release 與存檔仍保留。
+
+### Spatial Intelligence
+
+版本化的 `public/assets/world-collision.json` 由 Blender 標記輸出，包含 83 個簡化碰撞體、9 個區域、8 個入口、26 個互動槽位、5 種地表與3條上下樓路線。`Art/Blender/world_collision.blend` 保留 COLLIDER_／NAV_／PORTAL_／INTERACTION_ 節點。重建：
+
+`"C:/Program Files/Blender Foundation/Blender 3.1/blender.exe" --background --python Art/Blender/generate_collision_data.py`
+
+A* 以 0.5m 格點規劃、視線平滑路徑，門／災害變動時重新驗證。空間 hash 查詢附近碰撞體；角色以掃掠圓與穩定 ID 優先權避讓。門口與互動位使用短預約，過期、死亡、被攻擊或改目標會釋放；滿位可等待或改決策。床與醫療位一次一人、發電機有兩個維修位。
+
+驗收：`npm run test:spatial`（含上下樓）、`test:navigation`、`test:collision`、`node scripts/qa-spatial.mjs`。`npm test` 包含完整 100-seed 回歸，不應為了讓測試通過而無條件更新 golden。效能計時另存，避免 wall-clock 資料污染 determinism。
+
+[同場景 v1.6／v1.7 對照](docs/V1.7_COMPARISON.md)。
+
 **v1.6.0 — Physical World & Visual Polish Update。** 八個地標現在有可辨識的實體構造；門以鉸鏈開啟，箱蓋與內容物反映耗盡，發電機有維修火花、進度與運轉馬達，醫療站／營火有清楚狀態。角色會面向互動對象並使用程序式手腳動作；戰鬥留下痕跡，死亡留下停機殘骸。新增半室內空間、據點旗幟、雨與風、夜間照明及電影式觀察模式。
 
 鏡頭工具的影片圖示切換「觀測儀表／電影式觀察」，標籤圖示切換地點名稱；靠近時以物件與互動狀態為主，遠處顯示地標與角色群集。點地標或其實體構造可平滑聚焦。音效按鈕開啟既有程序式音效。設定仍可持久切換繁體中文／English。重播顯示當時物件狀態與事件痕跡，倒退不保留未來狀態。
@@ -40,7 +63,7 @@ Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://loc
 
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
-最新單檔桌面版：[私人 Release v1.6.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.6.0)，下載 `AI-Survival-Society-1.6.0.exe` 即可執行。舊版 Release 保留。
+最新單檔桌面版：[私人 Release v1.7.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.7.0)，下載 `AI-Survival-Society-1.7.0.exe` 即可執行。舊版 Release 保留。
 
 遊戲啟動後自動運行。上方可暫停／繼續／重新開始、設定速度。設定可切換語言、改 Seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
 

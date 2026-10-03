@@ -1,0 +1,184 @@
+{
+  "browser": "Playwright Chrome (Browser plugin unavailable)",
+  "checks": [
+    "Fresh profile defaults to zh-TW with real generated social events",
+    "Windows actually renders CJK glyphs with Microsoft JhengHei fallback",
+    "Switch/reload preserves English and all paused simulation data",
+    "Archive loading, saved run, replay and return-live are translated",
+    "Winner, extinction and templated Historian contain no untranslated fixed prose",
+    "Preference save failure is localized and never blocks the simulation",
+    "Dropped live connection shows the localized reconnecting state",
+    "Offline initial loading and network failure messages are Traditional Chinese"
+  ],
+  "layouts": [
+    {
+      "label": "world 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "角色 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "紀錄 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "關係網 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "導演模式 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "模擬檔案庫 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "設定 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "help 1920",
+      "width": 1920,
+      "height": 1080,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "world 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "角色 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "紀錄 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "關係網 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "導演模式 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "模擬檔案庫 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "設定 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "help 1366",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "replay",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "winner historian",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "extinction historian",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    },
+    {
+      "label": "invalid replay error",
+      "width": 1366,
+      "height": 768,
+      "pageOverflow": false,
+      "clipped": [],
+      "overlaps": []
+    }
+  ],
+  "fonts": [
+    {
+      "familyName": "Microsoft JhengHei UI",
+      "postScriptName": "MicrosoftJhengHeiUIRegular",
+      "isCustomFont": false,
+      "glyphCount": 16
+    }
+  ],
+  "rendererErrors": []
+}

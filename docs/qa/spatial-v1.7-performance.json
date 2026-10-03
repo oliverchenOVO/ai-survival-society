@@ -1,0 +1,807 @@
+{
+  "date": "2026-10-03T19:46:41.652Z",
+  "wallSeconds": 2983.3466968000002,
+  "method": "Timing excluded from deterministic golden; path calls include utility reachability queries",
+  "runs": [
+    {
+      "seed": 1,
+      "simulationSeconds": 346,
+      "pathfindingCalls": 4609,
+      "averageAStarNodes": 100.548095703125,
+      "p95PathMs": 7.6273999999993976,
+      "avoidanceMs": 498.3474000000007
+    },
+    {
+      "seed": 2,
+      "simulationSeconds": 380,
+      "pathfindingCalls": 3887,
+      "averageAStarNodes": 58.640854129148444,
+      "p95PathMs": 4.751899999999296,
+      "avoidanceMs": 428.2013000000097
+    },
+    {
+      "seed": 3,
+      "simulationSeconds": 400,
+      "pathfindingCalls": 2678,
+      "averageAStarNodes": 218.5175504107543,
+      "p95PathMs": 26.710399999999936,
+      "avoidanceMs": 384.1332999999504
+    },
+    {
+      "seed": 4,
+      "simulationSeconds": 389,
+      "pathfindingCalls": 3512,
+      "averageAStarNodes": 110.80153758542141,
+      "p95PathMs": 6.300600000002305,
+      "avoidanceMs": 275.7399999999325
+    },
+    {
+      "seed": 5,
+      "simulationSeconds": 486.75,
+      "pathfindingCalls": 4642,
+      "averageAStarNodes": 306.43017578125,
+      "p95PathMs": 23.5538000000015,
+      "avoidanceMs": 285.4748999998774
+    },
+    {
+      "seed": 6,
+      "simulationSeconds": 410.5,
+      "pathfindingCalls": 2820,
+      "averageAStarNodes": 111.23617021276596,
+      "p95PathMs": 11.890400000003865,
+      "avoidanceMs": 849.5384999998932
+    },
+    {
+      "seed": 7,
+      "simulationSeconds": 466.5,
+      "pathfindingCalls": 3708,
+      "averageAStarNodes": 117.7467637540453,
+      "p95PathMs": 11.009799999999814,
+      "avoidanceMs": 750.2588000001706
+    },
+    {
+      "seed": 8,
+      "simulationSeconds": 429,
+      "pathfindingCalls": 4834,
+      "averageAStarNodes": 214.119384765625,
+      "p95PathMs": 12.86380000000645,
+      "avoidanceMs": 454.7462999999698
+    },
+    {
+      "seed": 9,
+      "simulationSeconds": 414.25,
+      "pathfindingCalls": 3752,
+      "averageAStarNodes": 133.1913646055437,
+      "p95PathMs": 5.500299999999697,
+      "avoidanceMs": 276.38580000039656
+    },
+    {
+      "seed": 10,
+      "simulationSeconds": 378.25,
+      "pathfindingCalls": 2747,
+      "averageAStarNodes": 175.49508554787042,
+      "p95PathMs": 6.303399999989779,
+      "avoidanceMs": 287.52650000002177
+    },
+    {
+      "seed": 11,
+      "simulationSeconds": 366,
+      "pathfindingCalls": 1915,
+      "averageAStarNodes": 96.49869451697128,
+      "p95PathMs": 5.78179999999702,
+      "avoidanceMs": 63.856799999819486
+    },
+    {
+      "seed": 12,
+      "simulationSeconds": 318.75,
+      "pathfindingCalls": 6707,
+      "averageAStarNodes": 191.450927734375,
+      "p95PathMs": 9.719100000002072,
+      "avoidanceMs": 578.7710000002699
+    },
+    {
+      "seed": 13,
+      "simulationSeconds": 427.25,
+      "pathfindingCalls": 5143,
+      "averageAStarNodes": 93.75927734375,
+      "p95PathMs": 11.785699999978533,
+      "avoidanceMs": 818.9651999996131
+    },
+    {
+      "seed": 14,
+      "simulationSeconds": 404,
+      "pathfindingCalls": 5011,
+      "averageAStarNodes": 103.049560546875,
+      "p95PathMs": 19.513799999986077,
+      "avoidanceMs": 2257.903900000907
+    },
+    {
+      "seed": 15,
+      "simulationSeconds": 430,
+      "pathfindingCalls": 5331,
+      "averageAStarNodes": 140.255615234375,
+      "p95PathMs": 18.60000000000582,
+      "avoidanceMs": 1107.0440999998245
+    },
+    {
+      "seed": 16,
+      "simulationSeconds": 434,
+      "pathfindingCalls": 3625,
+      "averageAStarNodes": 151.6096551724138,
+      "p95PathMs": 35.25340000001597,
+      "avoidanceMs": 1278.903999999573
+    },
+    {
+      "seed": 17,
+      "simulationSeconds": 442.25,
+      "pathfindingCalls": 3731,
+      "averageAStarNodes": 76.86920396676494,
+      "p95PathMs": 87.64499999998952,
+      "avoidanceMs": 7936.9416999996465
+    },
+    {
+      "seed": 18,
+      "simulationSeconds": 385,
+      "pathfindingCalls": 3015,
+      "averageAStarNodes": 84.67893864013267,
+      "p95PathMs": 36.26979999995092,
+      "avoidanceMs": 2820.6958000009763
+    },
+    {
+      "seed": 19,
+      "simulationSeconds": 361.25,
+      "pathfindingCalls": 4158,
+      "averageAStarNodes": 140.27978515625,
+      "p95PathMs": 60.99750000005588,
+      "avoidanceMs": 1656.4924000036553
+    },
+    {
+      "seed": 20,
+      "simulationSeconds": 404.25,
+      "pathfindingCalls": 6397,
+      "averageAStarNodes": 120.064453125,
+      "p95PathMs": 10.898799999966286,
+      "avoidanceMs": 2297.5661000022665
+    },
+    {
+      "seed": 21,
+      "simulationSeconds": 321.75,
+      "pathfindingCalls": 4239,
+      "averageAStarNodes": 146.412841796875,
+      "p95PathMs": 32.62319999997271,
+      "avoidanceMs": 1926.7009000017424
+    },
+    {
+      "seed": 22,
+      "simulationSeconds": 407.75,
+      "pathfindingCalls": 3866,
+      "averageAStarNodes": 103.73021210553544,
+      "p95PathMs": 24.098699999973178,
+      "avoidanceMs": 1590.4741999995895
+    },
+    {
+      "seed": 23,
+      "simulationSeconds": 473.5,
+      "pathfindingCalls": 4563,
+      "averageAStarNodes": 82.65625,
+      "p95PathMs": 17.68989999999758,
+      "avoidanceMs": 2086.802699998778
+    },
+    {
+      "seed": 24,
+      "simulationSeconds": 363.5,
+      "pathfindingCalls": 4701,
+      "averageAStarNodes": 77.909423828125,
+      "p95PathMs": 21.12529999995604,
+      "avoidanceMs": 2004.341499998758
+    },
+    {
+      "seed": 25,
+      "simulationSeconds": 472.75,
+      "pathfindingCalls": 4487,
+      "averageAStarNodes": 90.733642578125,
+      "p95PathMs": 10.516199999954551,
+      "avoidanceMs": 662.2951000005123
+    },
+    {
+      "seed": 26,
+      "simulationSeconds": 352.5,
+      "pathfindingCalls": 1020,
+      "averageAStarNodes": 59.674509803921566,
+      "p95PathMs": 5.153700000024401,
+      "avoidanceMs": 169.11630000092555
+    },
+    {
+      "seed": 27,
+      "simulationSeconds": 371,
+      "pathfindingCalls": 3906,
+      "averageAStarNodes": 125.46415770609319,
+      "p95PathMs": 7.2497999999905005,
+      "avoidanceMs": 321.6505999993533
+    },
+    {
+      "seed": 28,
+      "simulationSeconds": 298,
+      "pathfindingCalls": 4618,
+      "averageAStarNodes": 86.03271484375,
+      "p95PathMs": 6.217900000046939,
+      "avoidanceMs": 151.74909999815281
+    },
+    {
+      "seed": 29,
+      "simulationSeconds": 409.5,
+      "pathfindingCalls": 4774,
+      "averageAStarNodes": 108.962158203125,
+      "p95PathMs": 12.369000000064261,
+      "avoidanceMs": 596.4595000003465
+    },
+    {
+      "seed": 30,
+      "simulationSeconds": 417.5,
+      "pathfindingCalls": 5234,
+      "averageAStarNodes": 48.140625,
+      "p95PathMs": 5.141600000089966,
+      "avoidanceMs": 655.0238000032259
+    },
+    {
+      "seed": 31,
+      "simulationSeconds": 428,
+      "pathfindingCalls": 7201,
+      "averageAStarNodes": 73.92529296875,
+      "p95PathMs": 9.55239999992773,
+      "avoidanceMs": 1560.1037000032375
+    },
+    {
+      "seed": 32,
+      "simulationSeconds": 410.75,
+      "pathfindingCalls": 5602,
+      "averageAStarNodes": 212.993896484375,
+      "p95PathMs": 17.15769999998156,
+      "avoidanceMs": 489.1285000005737
+    },
+    {
+      "seed": 33,
+      "simulationSeconds": 381.25,
+      "pathfindingCalls": 4544,
+      "averageAStarNodes": 151.117919921875,
+      "p95PathMs": 16.20539999997709,
+      "avoidanceMs": 1118.9904000010574
+    },
+    {
+      "seed": 34,
+      "simulationSeconds": 385.25,
+      "pathfindingCalls": 3535,
+      "averageAStarNodes": 22.383875530410183,
+      "p95PathMs": 3.9811000000918284,
+      "avoidanceMs": 322.94600000290666
+    },
+    {
+      "seed": 35,
+      "simulationSeconds": 369.5,
+      "pathfindingCalls": 7156,
+      "averageAStarNodes": 211.57958984375,
+      "p95PathMs": 22.65439999999944,
+      "avoidanceMs": 1855.0917999988887
+    },
+    {
+      "seed": 36,
+      "simulationSeconds": 407.75,
+      "pathfindingCalls": 5950,
+      "averageAStarNodes": 65.710205078125,
+      "p95PathMs": 7.588300000061281,
+      "avoidanceMs": 549.4266999977408
+    },
+    {
+      "seed": 37,
+      "simulationSeconds": 409.25,
+      "pathfindingCalls": 4027,
+      "averageAStarNodes": 31.88477775018624,
+      "p95PathMs": 3.3084999999264255,
+      "avoidanceMs": 182.587399999029
+    },
+    {
+      "seed": 38,
+      "simulationSeconds": 460,
+      "pathfindingCalls": 5824,
+      "averageAStarNodes": 118.986328125,
+      "p95PathMs": 13.991099999984726,
+      "avoidanceMs": 593.7781000017421
+    },
+    {
+      "seed": 39,
+      "simulationSeconds": 456.5,
+      "pathfindingCalls": 3045,
+      "averageAStarNodes": 136.78620689655173,
+      "p95PathMs": 9.353200000012293,
+      "avoidanceMs": 810.8336000032723
+    },
+    {
+      "seed": 40,
+      "simulationSeconds": 422.5,
+      "pathfindingCalls": 4658,
+      "averageAStarNodes": 96.306640625,
+      "p95PathMs": 7.845100000035018,
+      "avoidanceMs": 1141.08029999875
+    },
+    {
+      "seed": 41,
+      "simulationSeconds": 383.75,
+      "pathfindingCalls": 3162,
+      "averageAStarNodes": 101.9493991144845,
+      "p95PathMs": 8.063800000003539,
+      "avoidanceMs": 216.95470000093337
+    },
+    {
+      "seed": 42,
+      "simulationSeconds": 456,
+      "pathfindingCalls": 4932,
+      "averageAStarNodes": 105.364501953125,
+      "p95PathMs": 10.065100000007078,
+      "avoidanceMs": 885.0633999974234
+    },
+    {
+      "seed": 43,
+      "simulationSeconds": 487.5,
+      "pathfindingCalls": 4402,
+      "averageAStarNodes": 65.49267578125,
+      "p95PathMs": 13.591699999989942,
+      "avoidanceMs": 1983.9897000006167
+    },
+    {
+      "seed": 44,
+      "simulationSeconds": 323.25,
+      "pathfindingCalls": 2988,
+      "averageAStarNodes": 100.89692101740295,
+      "p95PathMs": 8.179499999969266,
+      "avoidanceMs": 138.2596000022022
+    },
+    {
+      "seed": 45,
+      "simulationSeconds": 431,
+      "pathfindingCalls": 5827,
+      "averageAStarNodes": 280.085693359375,
+      "p95PathMs": 40.37780000001658,
+      "avoidanceMs": 1478.3885000016307
+    },
+    {
+      "seed": 46,
+      "simulationSeconds": 378.25,
+      "pathfindingCalls": 3785,
+      "averageAStarNodes": 86.17384412153237,
+      "p95PathMs": 21.7546999999322,
+      "avoidanceMs": 1082.6558999991976
+    },
+    {
+      "seed": 47,
+      "simulationSeconds": 339,
+      "pathfindingCalls": 4046,
+      "averageAStarNodes": 79.40138408304499,
+      "p95PathMs": 27.417499999981374,
+      "avoidanceMs": 1516.9644000001717
+    },
+    {
+      "seed": 48,
+      "simulationSeconds": 403.75,
+      "pathfindingCalls": 2313,
+      "averageAStarNodes": 177.07306528318202,
+      "p95PathMs": 50.99039999989327,
+      "avoidanceMs": 834.6970999984769
+    },
+    {
+      "seed": 49,
+      "simulationSeconds": 405.75,
+      "pathfindingCalls": 5195,
+      "averageAStarNodes": 110.922607421875,
+      "p95PathMs": 23.552900000009686,
+      "avoidanceMs": 2449.2943000022788
+    },
+    {
+      "seed": 50,
+      "simulationSeconds": 462.75,
+      "pathfindingCalls": 4833,
+      "averageAStarNodes": 207.212158203125,
+      "p95PathMs": 29.3408000000054,
+      "avoidanceMs": 1616.385499998345
+    },
+    {
+      "seed": 1001,
+      "simulationSeconds": 411,
+      "pathfindingCalls": 2809,
+      "averageAStarNodes": 151.3930224279103,
+      "p95PathMs": 14.246799999964423,
+      "avoidanceMs": 321.8857999983011
+    },
+    {
+      "seed": 1002,
+      "simulationSeconds": 418.5,
+      "pathfindingCalls": 5087,
+      "averageAStarNodes": 148.81689453125,
+      "p95PathMs": 69.69169999996666,
+      "avoidanceMs": 4754.190800001845
+    },
+    {
+      "seed": 1003,
+      "simulationSeconds": 381.25,
+      "pathfindingCalls": 3654,
+      "averageAStarNodes": 72.16967706622879,
+      "p95PathMs": 76.89569999999367,
+      "avoidanceMs": 4217.505099993665
+    },
+    {
+      "seed": 1004,
+      "simulationSeconds": 411.75,
+      "pathfindingCalls": 4939,
+      "averageAStarNodes": 96.947998046875,
+      "p95PathMs": 60.420699999900535,
+      "avoidanceMs": 4666.8059999994
+    },
+    {
+      "seed": 1005,
+      "simulationSeconds": 436.75,
+      "pathfindingCalls": 4000,
+      "averageAStarNodes": 114.7505,
+      "p95PathMs": 78.58350000018254,
+      "avoidanceMs": 4974.421699995641
+    },
+    {
+      "seed": 1006,
+      "simulationSeconds": 427.5,
+      "pathfindingCalls": 4574,
+      "averageAStarNodes": 161.0908203125,
+      "p95PathMs": 54.070300000021234,
+      "avoidanceMs": 4661.691700002644
+    },
+    {
+      "seed": 1007,
+      "simulationSeconds": 456,
+      "pathfindingCalls": 4751,
+      "averageAStarNodes": 55.701171875,
+      "p95PathMs": 5.885299999965355,
+      "avoidanceMs": 1395.7453000028618
+    },
+    {
+      "seed": 1008,
+      "simulationSeconds": 414.5,
+      "pathfindingCalls": 5912,
+      "averageAStarNodes": 214.4638671875,
+      "p95PathMs": 71.05839999997988,
+      "avoidanceMs": 4111.412700007437
+    },
+    {
+      "seed": 1009,
+      "simulationSeconds": 406.75,
+      "pathfindingCalls": 3602,
+      "averageAStarNodes": 72.07218212104387,
+      "p95PathMs": 11.951099999947473,
+      "avoidanceMs": 1725.887400001986
+    },
+    {
+      "seed": 1010,
+      "simulationSeconds": 461.5,
+      "pathfindingCalls": 5341,
+      "averageAStarNodes": 72.765625,
+      "p95PathMs": 13.921300000045449,
+      "avoidanceMs": 1065.9779000042472
+    },
+    {
+      "seed": 1011,
+      "simulationSeconds": 445,
+      "pathfindingCalls": 6623,
+      "averageAStarNodes": 30.29833984375,
+      "p95PathMs": 6.110100000165403,
+      "avoidanceMs": 1989.6206999986898
+    },
+    {
+      "seed": 1012,
+      "simulationSeconds": 421.5,
+      "pathfindingCalls": 5445,
+      "averageAStarNodes": 58.557373046875,
+      "p95PathMs": 7.545299999881536,
+      "avoidanceMs": 899.3457999967504
+    },
+    {
+      "seed": 1013,
+      "simulationSeconds": 451,
+      "pathfindingCalls": 5672,
+      "averageAStarNodes": 202.49658203125,
+      "p95PathMs": 29.583199999993667,
+      "avoidanceMs": 1012.6410000042524
+    },
+    {
+      "seed": 1014,
+      "simulationSeconds": 426,
+      "pathfindingCalls": 4169,
+      "averageAStarNodes": 142.8779296875,
+      "p95PathMs": 15.939100000075996,
+      "avoidanceMs": 418.51339999516495
+    },
+    {
+      "seed": 1015,
+      "simulationSeconds": 365.5,
+      "pathfindingCalls": 5577,
+      "averageAStarNodes": 44.289794921875,
+      "p95PathMs": 4.976100000087172,
+      "avoidanceMs": 971.2813999964856
+    },
+    {
+      "seed": 1016,
+      "simulationSeconds": 376,
+      "pathfindingCalls": 7193,
+      "averageAStarNodes": 207.715087890625,
+      "p95PathMs": 17.118699999991804,
+      "avoidanceMs": 895.6976999905892
+    },
+    {
+      "seed": 1017,
+      "simulationSeconds": 444.25,
+      "pathfindingCalls": 4066,
+      "averageAStarNodes": 122.85809149040827,
+      "p95PathMs": 15.510400000028312,
+      "avoidanceMs": 1514.4276999998838
+    },
+    {
+      "seed": 1018,
+      "simulationSeconds": 289.5,
+      "pathfindingCalls": 4879,
+      "averageAStarNodes": 52.880859375,
+      "p95PathMs": 3.98589999997057,
+      "avoidanceMs": 376.31410000124015
+    },
+    {
+      "seed": 1019,
+      "simulationSeconds": 376.5,
+      "pathfindingCalls": 3505,
+      "averageAStarNodes": 179.1055634807418,
+      "p95PathMs": 117.187099999981,
+      "avoidanceMs": 4420.9625000003725
+    },
+    {
+      "seed": 1020,
+      "simulationSeconds": 430.75,
+      "pathfindingCalls": 5073,
+      "averageAStarNodes": 68.10107421875,
+      "p95PathMs": 16.568199999863282,
+      "avoidanceMs": 5516.044299996924
+    },
+    {
+      "seed": 1021,
+      "simulationSeconds": 395.75,
+      "pathfindingCalls": 3618,
+      "averageAStarNodes": 113.4878385848535,
+      "p95PathMs": 36.23699999996461,
+      "avoidanceMs": 451.07599999010563
+    },
+    {
+      "seed": 1022,
+      "simulationSeconds": 414.75,
+      "pathfindingCalls": 5540,
+      "averageAStarNodes": 38.58984375,
+      "p95PathMs": 7.822500000009313,
+      "avoidanceMs": 3678.8884000040125
+    },
+    {
+      "seed": 1023,
+      "simulationSeconds": 387.5,
+      "pathfindingCalls": 2631,
+      "averageAStarNodes": 103.02128468263018,
+      "p95PathMs": 34.353499999968335,
+      "avoidanceMs": 4638.058799995808
+    },
+    {
+      "seed": 1024,
+      "simulationSeconds": 408,
+      "pathfindingCalls": 5098,
+      "averageAStarNodes": 281.4130859375,
+      "p95PathMs": 51.98379999981262,
+      "avoidanceMs": 2660.512999999104
+    },
+    {
+      "seed": 1025,
+      "simulationSeconds": 420.5,
+      "pathfindingCalls": 5111,
+      "averageAStarNodes": 126.429931640625,
+      "p95PathMs": 12.412599999923259,
+      "avoidanceMs": 337.6969999996945
+    },
+    {
+      "seed": 1026,
+      "simulationSeconds": 402,
+      "pathfindingCalls": 6482,
+      "averageAStarNodes": 113.80126953125,
+      "p95PathMs": 41.97759999986738,
+      "avoidanceMs": 4979.1058000025805
+    },
+    {
+      "seed": 1027,
+      "simulationSeconds": 348.5,
+      "pathfindingCalls": 3785,
+      "averageAStarNodes": 49.303038309114925,
+      "p95PathMs": 8.149499999824911,
+      "avoidanceMs": 1334.0011000037193
+    },
+    {
+      "seed": 1028,
+      "simulationSeconds": 413.75,
+      "pathfindingCalls": 4390,
+      "averageAStarNodes": 32.467529296875,
+      "p95PathMs": 5.117000000085682,
+      "avoidanceMs": 5324.887800000142
+    },
+    {
+      "seed": 1029,
+      "simulationSeconds": 437.75,
+      "pathfindingCalls": 3742,
+      "averageAStarNodes": 140.56921432389098,
+      "p95PathMs": 59.648300000000745,
+      "avoidanceMs": 10728.640500008129
+    },
+    {
+      "seed": 1030,
+      "simulationSeconds": 447,
+      "pathfindingCalls": 7739,
+      "averageAStarNodes": 356.536376953125,
+      "p95PathMs": 101.45729999989271,
+      "avoidanceMs": 7831.244900025427
+    },
+    {
+      "seed": 1031,
+      "simulationSeconds": 307,
+      "pathfindingCalls": 3327,
+      "averageAStarNodes": 275.7920048091374,
+      "p95PathMs": 45.873000000137836,
+      "avoidanceMs": 2090.415599982254
+    },
+    {
+      "seed": 1032,
+      "simulationSeconds": 383,
+      "pathfindingCalls": 6470,
+      "averageAStarNodes": 168.0283203125,
+      "p95PathMs": 49.26740000024438,
+      "avoidanceMs": 1904.1138999820687
+    },
+    {
+      "seed": 1033,
+      "simulationSeconds": 411.75,
+      "pathfindingCalls": 3410,
+      "averageAStarNodes": 145.38533724340175,
+      "p95PathMs": 37.977399999741465,
+      "avoidanceMs": 1268.833499995526
+    },
+    {
+      "seed": 1034,
+      "simulationSeconds": 437.5,
+      "pathfindingCalls": 6427,
+      "averageAStarNodes": 49.16796875,
+      "p95PathMs": 23.388300000224262,
+      "avoidanceMs": 2509.6636000131257
+    },
+    {
+      "seed": 1035,
+      "simulationSeconds": 438.5,
+      "pathfindingCalls": 3867,
+      "averageAStarNodes": 110.07033876389967,
+      "p95PathMs": 43.007800000254065,
+      "avoidanceMs": 793.1365000098012
+    },
+    {
+      "seed": 1036,
+      "simulationSeconds": 423,
+      "pathfindingCalls": 7020,
+      "averageAStarNodes": 126.501708984375,
+      "p95PathMs": 16.574899999890476,
+      "avoidanceMs": 2298.108599998057
+    },
+    {
+      "seed": 1037,
+      "simulationSeconds": 472.75,
+      "pathfindingCalls": 3419,
+      "averageAStarNodes": 42.07692307692308,
+      "p95PathMs": 2.921200000215322,
+      "avoidanceMs": 205.94100000150502
+    },
+    {
+      "seed": 1038,
+      "simulationSeconds": 366,
+      "pathfindingCalls": 2957,
+      "averageAStarNodes": 113.63544132566791,
+      "p95PathMs": 5.792900000233203,
+      "avoidanceMs": 233.30749999638647
+    },
+    {
+      "seed": 1039,
+      "simulationSeconds": 375.75,
+      "pathfindingCalls": 2505,
+      "averageAStarNodes": 100.4243512974052,
+      "p95PathMs": 4.701700000092387,
+      "avoidanceMs": 315.17549999430776
+    },
+    {
+      "seed": 1040,
+      "simulationSeconds": 326,
+      "pathfindingCalls": 3288,
+      "averageAStarNodes": 98.97414841849148,
+      "p95PathMs": 6.11269999993965,
+      "avoidanceMs": 392.2385999946855
+    },
+    {
+      "seed": 1041,
+      "simulationSeconds": 329,
+      "pathfindingCalls": 2829,
+      "averageAStarNodes": 107.74655355249205,
+      "p95PathMs": 10.769300000276417,
+      "avoidanceMs": 584.2945000058971
+    },
+    {
+      "seed": 1042,
+      "simulationSeconds": 391.5,
+      "pathfindingCalls": 3399,
+      "averageAStarNodes": 53.75198587819947,
+      "p95PathMs": 3.7331000003032386,
+      "avoidanceMs": 434.1140999989584
+    },
+    {
+      "seed": 1043,
+      "simulationSeconds": 419,
+      "pathfindingCalls": 6997,
+      "averageAStarNodes": 277.21435546875,
+      "p95PathMs": 15.380700000096112,
+      "avoidanceMs": 659.8080999851227
+    },
+    {
+      "seed": 1044,
+      "simulationSeconds": 343.25,
+      "pathfindingCalls": 1684,
+      "averageAStarNodes": 88.03206650831353,
+      "p95PathMs": 7.823799999896437,
+      "avoidanceMs": 180.42960000084713
+    },
+    {
+      "seed": 1045,
+      "simulationSeconds": 461,
+      "pathfindingCalls": 5544,
+      "averageAStarNodes": 152.733154296875,
+      "p95PathMs": 22.738600000273436,
+      "avoidanceMs": 1420.3781000161543
+    },
+    {
+      "seed": 1046,
+      "simulationSeconds": 472.75,
+      "pathfindingCalls": 3839,
+      "averageAStarNodes": 47.46783016410524,
+      "p95PathMs": 6.596400000154972,
+      "avoidanceMs": 371.6883000084199
+    },
+    {
+      "seed": 1047,
+      "simulationSeconds": 406,
+      "pathfindingCalls": 4646,
+      "averageAStarNodes": 87.99853515625,
+      "p95PathMs": 10.560899999924004,
+      "avoidanceMs": 523.2218000064604
+    },
+    {
+      "seed": 1048,
+      "simulationSeconds": 371.25,
+      "pathfindingCalls": 4712,
+      "averageAStarNodes": 165.30517578125,
+      "p95PathMs": 29.554699999745935,
+      "avoidanceMs": 1742.670099996496
+    },
+    {
+      "seed": 1049,
+      "simulationSeconds": 365.75,
+      "pathfindingCalls": 3077,
+      "averageAStarNodes": 191.95580110497238,
+      "p95PathMs": 54.426099999807775,
+      "avoidanceMs": 793.2421999895014
+    },
+    {
+      "seed": 1050,
+      "simulationSeconds": 471.75,
+      "pathfindingCalls": 5652,
+      "averageAStarNodes": 149.45947265625,
+      "p95PathMs": 27.115499999839813,
+      "avoidanceMs": 2073.2064999947324
+    }
+  ]
+}
