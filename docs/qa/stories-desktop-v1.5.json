@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-03T08:17:43.361Z",
+  "browserPath": "Browser plugin not available; Playwright",
+  "checks": [
+    "Story routes, winner, 12 portraits, bilingual UI, collapsed timeline and three viewport sizes",
+    "Agent biography/personality/memories and keyboard-accessible relationship interaction timeline",
+    "Timeline category/type/agent/time filtering and pagination",
+    "Local link scope and clipboard copy",
+    "1200×630 PNG download and complete Markdown export",
+    "Moment deep-link seek and return Story reuse existing replay",
+    "Reload, extinction ties, legacy migration, unknown and corrupt stories",
+    "Untrusted LLM prose preserved as escaped text without execution",
+    "Unified library search/sort/actions and permanent delete",
+    "Actual desktop close/relaunch retains story ID and route on new server port",
+    "No renderer exceptions"
+  ],
+  "layouts": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "overflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

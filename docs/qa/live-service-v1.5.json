@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-03T08:40:30.9201436Z",
+  "health": {
+    "ok": true,
+    "app": "AI Survival Society",
+    "version": "1.5.0"
+  },
+  "url": "http://localhost:4310/",
+  "seed": 2048,
+  "before": 0.5,
+  "after": 2.5,
+  "status": "running",
+  "autoRestart": true,
+  "worldSchema": 1,
+  "processId": 66768
+}

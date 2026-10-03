@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-03T08:26:28.606Z",
+  "browserPath": "Browser plugin not available; Playwright",
+  "checks": [
+    "World desktop layouts, identity, meaningful content and no overlay",
+    "Authority fixtures: day/night, generator restoration, clinic control, storm shelter and fire rendered",
+    "Saved world resumes intact and remains intact after reload",
+    "Actual authoritative 1x and 10x run progression",
+    "Deep-linked replay uses sampled night/storm/hazard world",
+    "Story World Moments at desktop and mobile sizes",
+    "Life Story displays recorded important places",
+    "English world labels and bilingual Story",
+    "No renderer/console errors"
+  ],
+  "frameRates": [
+    {
+      "speed": 1,
+      "elapsedMs": 2011.6999999999998,
+      "frames": 122,
+      "fps": 60.148133419495956
+    },
+    {
+      "speed": 10,
+      "elapsedMs": 2011.4999999999995,
+      "frames": 132,
+      "fps": 65.12552821277654
+    }
+  ],
+  "layouts": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "overflow": false,
+      "overlappingPlaces": []
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "overflow": false,
+      "overlappingPlaces": []
+    }
+  ],
+  "errors": []
+}

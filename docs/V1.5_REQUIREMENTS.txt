@@ -1,0 +1,1901 @@
+你現在要在既有 AI Survival Society 專案上開發下一個正式版本：
+
+# AI Survival Society v1.5
+## Living World Update
+
+這不是新專案。
+
+請在目前既有 private GitHub repository、既有 v1.4.0 程式碼與現有資料架構上繼續迭代。
+
+禁止重寫整個專案。
+禁止破壞既有 Story / Replay / i18n / Browser / Electron / deterministic simulation。
+禁止為了視覺效果犧牲 simulation stability。
+
+目前專案已具有：
+
+- 12 名自主 Agent
+- 3D 島嶼
+- Utility AI
+- Optional LLM
+- Personality
+- Memory
+- Relationship
+- Trade
+- Alliance
+- Betrayal
+- Combat
+- Director Mode
+- Winner / Extinction
+- Historian
+- Replay
+- Shareable Story
+- Agent Life Story
+- Relationship History
+- PNG / Markdown Share
+- Browser
+- Electron
+- zh-TW / English
+- deterministic regression benchmark
+
+本次核心任務：
+
+> 把世界從「Agent 移動與取資源的背景」，升級成「可以被操作、改變、佔領、破壞、修復、記住，並實際影響 Agent 決策的 Living World」。
+
+完成後，使用者應該能看到：
+
+Agent 不只是走到某個座標。
+
+而是真的：
+
+- 開門
+- 搜櫃子
+- 使用床
+- 點燃營火
+- 治療
+- 修理發電機
+- 搶佔建築
+- 控制據點
+- 設置簡單障礙
+- 利用高地
+- 躲避危險
+- 因天氣改變路線
+- 因別人控制某區而重新思考行動
+
+世界必須開始具有歷史。
+
+---
+
+# 最高原則
+
+WORLD STATE
+>
+STATIC SCENERY
+
+MEANINGFUL INTERACTION
+>
+DECORATIVE ANIMATION
+
+AGENT CONSEQUENCE
+>
+VISUAL GIMMICK
+
+EMERGENT USE
+>
+SCRIPTED SCENES
+
+所有新場景互動都必須至少滿足其中之一：
+
+1. 改變 Agent utility
+2. 改變路徑或風險
+3. 改變資源取得方式
+4. 改變社交關係
+5. 改變空間控制
+6. 產生可記錄事件
+7. 進入 Story / Replay
+
+如果某個新物件只是：
+
+看起來很好看
+
+但 Agent 不會使用，
+
+不要把它列為 P0。
+
+---
+
+# Phase 1 — Inspect Existing World System
+
+先完整閱讀並理解目前：
+
+- world data
+- Three.js scene
+- resource system
+- agent movement
+- pathing
+- interaction radius
+- Utility AI
+- memory
+- relationships
+- Event Bus
+- Director Mode
+- Replay snapshots
+- Story schema
+- Save / persistence
+- i18n
+- QA
+
+建立：
+
+docs/V1.5_PLAN.md
+
+內容簡潔記錄：
+
+- current world model
+- current agent-world interaction
+- current spatial limitations
+- proposed interaction architecture
+- persistence implications
+- replay implications
+- Story implications
+- benchmark strategy
+
+寫完後直接繼續實作。
+
+禁止停在規劃。
+
+---
+
+# 核心功能 1 — Interactable World Object System
+
+建立統一：
+
+World Interactable System
+
+不要每個物件各自寫死。
+
+每個 interactable 至少具有：
+
+id
+type
+position
+state
+capacity
+durability
+owner / controller
+cooldown
+usable
+visible
+metadata
+
+例如：
+
+{
+  "id": "med_station_01",
+  "type": "medical_station",
+  "position": {"x": 12, "z": -8},
+  "state": "available",
+  "durability": 100,
+  "controller": "agent_04",
+  "capacity": 2
+}
+
+支援統一 interaction contract：
+
+canInteract(agent, object)
+
+getUtility(agent, object, worldState)
+
+performInteraction(agent, object)
+
+emitEvents()
+
+不要讓 Agent 直接任意改物件狀態。
+
+所有行為經 simulation authority。
+
+---
+
+# 核心功能 2 — 第一批可互動物件
+
+至少加入：
+
+## Door
+
+狀態：
+
+open
+closed
+locked
+broken
+
+Agent 可以：
+
+open
+close
+force
+
+Door 影響：
+
+movement
+line of sight
+shelter
+control
+
+不要做複雜 key system。
+
+MVP 可：
+
+某些門需要 force 或 repair。
+
+---
+
+## Container / Supply Cache
+
+可包含：
+
+Food
+Water
+Medicine
+Weapon
+Wood
+Rare Supply
+
+狀態：
+
+full
+partial
+empty
+searched
+
+Agent 可以：
+
+search
+take
+leave
+
+Container 必須 depletion。
+
+不要無限供應。
+
+---
+
+## Bed / Rest Spot
+
+Agent 使用後：
+
+energy recovery 增加。
+
+但有：
+
+occupancy
+
+如果被其他角色使用：
+
+需要等待、離開或產生社交選擇。
+
+---
+
+## Campfire
+
+Agent 可以：
+
+light
+use
+extinguish
+
+效果：
+
+提高附近 resting efficiency
+夜間可見度
+小幅社交誘因
+
+Storm 可熄滅。
+
+不要讓火焰只是 particle effect。
+
+---
+
+## Medical Station
+
+Agent 可以：
+
+heal
+
+需要：
+
+Medicine
+
+或 station 自帶有限 charge。
+
+同一時間有限容量。
+
+醫療站可以成為重要戰略據點。
+
+---
+
+## Generator
+
+狀態：
+
+online
+offline
+damaged
+
+Agent 可以：
+
+repair
+
+效果可影響某一建築群：
+
+lighting
+medical station
+radio
+door control
+
+不要一開始做複雜電網。
+
+建立簡化 local power zone 即可。
+
+---
+
+## Watchtower
+
+Agent 可以：
+
+occupy
+
+效果：
+
+增加 perception radius
+降低 ambush risk
+看見更遠 POI
+
+高處 Agent 不要無敵。
+
+---
+
+## Radio / Broadcast Station
+
+Agent 可以：
+
+broadcast
+
+向附近或全部 Agent 送出：
+
+公開訊息 / rumor / warning
+
+要進 Event Bus。
+
+這會與社會系統產生很好連結。
+
+---
+
+# 核心功能 3 — POI System
+
+建立真正有功能差異的：
+
+Points of Interest
+
+至少：
+
+Village
+Clinic
+Watchtower
+Ruins
+Supply Depot
+Shelter
+Bridge
+Lake / Water Source
+
+POI 不只是 label。
+
+每個 POI 具有：
+
+type
+risk
+resources
+interactables
+occupancy
+controller
+recentEvents
+
+Agent 可以評估：
+
+resource value
+safety
+enemy presence
+social value
+distance
+weather risk
+
+例如：
+
+Clinic：
+
+high medical value
+high strategic value
+higher contest probability
+
+Watchtower：
+
+low resources
+high information value
+
+Shelter：
+
+high rest value
+high storm protection
+
+---
+
+# 核心功能 4 — Occupation / Control
+
+建立輕量級：
+
+POI Control
+
+不要做完整 RTS。
+
+當某一 Agent 或 Alliance 在某 POI 停留並滿足條件：
+
+POI 可顯示：
+
+Controlled by NOVA
+
+或：
+
+Controlled by NOVA + LYRA Alliance
+
+控制狀態會影響其他 Agent utility。
+
+例如：
+
+如果控制者 trust 很高：
+
+可降低進入風險。
+
+如果 hostility 很高：
+
+提高進入風險。
+
+Agent 可以：
+
+avoid
+approach
+negotiate
+challenge
+
+不要把控制當成硬性禁止進入。
+
+---
+
+# 核心功能 5 — Territory Memory
+
+Agent 必須能記住：
+
+誰控制哪裡。
+
+例如：
+
+"Atlas and Lyra currently control the clinic."
+
+"Rune attacked me near the northern bridge."
+
+"The village was dangerous recently."
+
+Memory 必須有：
+
+location / POI
+
+讓空間與社會行為連結。
+
+Agent 決策至少考慮：
+
+recent danger
+known controller
+past conflict
+known resources
+
+---
+
+# 核心功能 6 — Dynamic World State
+
+加入世界狀態。
+
+至少：
+
+## Day / Night Cycle
+
+影響：
+
+visibility
+perception radius
+movement confidence
+lighting
+campfire value
+shelter value
+
+不要讓夜晚只是畫面變暗。
+
+---
+
+## Weather
+
+至少：
+
+Clear
+Rain
+Storm
+
+Rain：
+
+small movement penalty
+
+Storm：
+
+larger movement penalty
+lower perception
+extinguish campfire chance
+shelter value increases
+
+Director Storm 應整合到同一 weather system。
+
+避免兩套 Storm 邏輯。
+
+---
+
+# 核心功能 7 — Dynamic Hazards
+
+加入至少 2 種：
+
+Fire
+Flood
+Collapse
+
+但不必全部做成 P0。
+
+優先：
+
+## Fire
+
+可在：
+
+Village
+Forest
+Ruins
+
+發生。
+
+Fire 有：
+
+area
+duration
+damage
+spread chance
+
+Agent 可以：
+
+avoid
+flee
+
+如果有簡單能力：
+
+extinguish
+
+Fire 必須進 path risk。
+
+---
+
+## Flood
+
+主要影響：
+
+River / Bridge / lowland
+
+可能：
+
+降低 bridge usability
+提高 crossing cost
+
+不要做真實 fluid simulation。
+
+使用 gameplay state + visual effect。
+
+---
+
+## Collapse
+
+Ruins 某路徑暫時阻塞。
+
+迫使：
+
+reroute
+
+這很好用來測試 spatial intelligence。
+
+---
+
+# 核心功能 8 — Shelter
+
+建立：
+
+Shelter value
+
+來源：
+
+building
+campfire
+safe house
+covered structure
+
+Shelter 在：
+
+storm
+night
+low HP
+
+時增加 utility。
+
+Agent 不應全部永遠追求 shelter。
+
+必須權衡：
+
+resource need
+distance
+enemy
+urgency
+
+---
+
+# 核心功能 9 — Perception / Line of Sight
+
+現在 Agent 如果直接知道附近全部資訊：
+
+請升級。
+
+至少加入：
+
+perception radius
+
+並受：
+
+night
+storm
+watchtower
+terrain / building
+
+影響。
+
+不必做完整 3D ray tracing AI vision。
+
+可以使用：
+
+distance
+simple blockers
+POI visibility modifier
+
+核心目標：
+
+Agent 不再全知。
+
+---
+
+# 核心功能 10 — World Information Fog
+
+Agent 對世界資訊分為：
+
+Known
+Recently Seen
+Unknown
+Stale
+
+例如：
+
+Agent 知道：
+
+Clinic 曾經有 Medicine
+
+但：
+
+不代表現在還有。
+
+Known controller 也會過期。
+
+建立：
+
+world knowledge memory
+
+但不要使用大型向量資料庫。
+
+---
+
+# 核心功能 11 — World Actions
+
+新增合法 Agent Actions：
+
+interact
+open
+close
+search
+use
+rest_at
+heal_at
+repair
+occupy
+broadcast
+hide
+take_cover
+
+如果已有 action system：
+
+整合。
+
+不要建立第二套完全獨立 action executor。
+
+---
+
+# 核心功能 12 — Utility AI Integration
+
+新功能必須真正進 Utility AI。
+
+例如：
+
+HEAL_AT_CLINIC：
+
+utility =
+
+low HP
+×
+known medicine availability
+×
+distance
+×
+enemy risk
+×
+clinic controller relationship
+×
+weather
+
+OCCUPY_WATCHTOWER：
+
+utility =
+
+threat level
+×
+information need
+×
+riskTolerance
+×
+current visibility
+
+REST_AT_SHELTER：
+
+utility =
+
+low energy
+×
+storm/night
+×
+shelter quality
+×
+local threat
+
+不得使用固定劇本：
+
+if storm:
+  all go shelter
+
+要保留 personality 與不同結果。
+
+---
+
+# 核心功能 13 — Social Interaction Around Space
+
+空間控制必須與社會互動。
+
+例如：
+
+Agent 到達由盟友控制的 Clinic：
+
+可能：
+
+request access
+share medicine
+rest together
+
+Agent 到敵人控制的 Supply Depot：
+
+可能：
+
+avoid
+steal
+negotiate
+attack
+
+Agent 看到空 POI：
+
+可能：
+
+occupy
+
+Agent 看到弱勢角色進入自己的基地：
+
+可能依人格：
+
+help
+ignore
+expel
+attack
+
+---
+
+# 核心功能 14 — Simple Access Rules
+
+不要做複雜法律系統。
+
+簡化：
+
+public
+friendly
+contested
+hostile-controlled
+
+用 Utility / relationship 決定行為。
+
+不需要真正硬鎖玩家。
+
+---
+
+# 核心功能 15 — Environmental Change History
+
+所有重要世界變化：
+
+必須進 Event Bus。
+
+例如：
+
+DOOR_OPENED
+CONTAINER_SEARCHED
+CAMPFIRE_LIT
+GENERATOR_REPAIRED
+POI_CONTROLLED
+POI_CONTESTED
+FIRE_STARTED
+FIRE_EXTINGUISHED
+BRIDGE_BLOCKED
+WEATHER_CHANGED
+BROADCAST_SENT
+
+Story 系統可使用。
+
+---
+
+# 核心功能 16 — Story Integration
+
+v1.4 Story 必須升級。
+
+加入：
+
+WORLD MOMENTS
+
+例如：
+
+03:12
+CLINIC CLAIMED
+Nova and Lyra took control of the clinic.
+
+06:48
+POWER RESTORED
+Atlas repaired the village generator.
+
+09:11
+BRIDGE LOST
+Flooding blocked the northern bridge.
+
+12:22
+CLINIC FALLS
+Pax drove Nova from the clinic.
+
+Major Moment ranking：
+
+世界事件必須有合理權重。
+
+不要搶走所有 social event。
+
+---
+
+# 核心功能 17 — Agent Biography Integration
+
+Life Story 可以加入：
+
+Important Places
+
+例如：
+
+Most visited POI
+
+Place of death
+
+Place of final victory
+
+重要事件：
+
+"Spent 4 minutes controlling the clinic."
+
+"Repaired the generator."
+
+"Was killed near the northern bridge."
+
+全部依資料生成。
+
+不要捏造。
+
+---
+
+# 核心功能 18 — Replay World State
+
+Replay 必須至少能重播：
+
+weather
+POI control
+important interactable states
+hazards
+
+不要求：
+
+每一扇門每一 frame 都完美 deterministic。
+
+但 replay timeline 必須能表現重要世界狀態。
+
+如果需要：
+
+擴充 replay samples。
+
+保持：
+
+schemaVersion migration。
+
+舊 Story / Replay 仍能讀。
+
+---
+
+# 核心功能 19 — Visual Feedback
+
+場景互動一定要看得出來。
+
+至少：
+
+Door open / close
+Container state
+Campfire flame
+Generator light
+Clinic active indicator
+Watchtower occupant
+POI controller marker
+Fire
+Rain / storm
+Night lighting
+
+但不要過量 UI。
+
+讓世界自己表達狀態。
+
+---
+
+# 核心功能 20 — Agent Interaction Animation
+
+現有 Robot 如果動畫有限：
+
+加入簡單 procedural feedback。
+
+例如：
+
+search：
+靠近箱子 + brief pulse
+
+repair：
+手臂 / body bob + sparks
+
+heal：
+soft effect
+
+broadcast：
+radio pulse
+
+occupy：
+flag / hologram marker
+
+不要為了 animation rig 大量重做 Blender。
+
+可使用：
+
+Three.js procedural animation。
+
+---
+
+# 核心功能 21 — Navigation Improvements
+
+現在場景變動後：
+
+Agent 必須能：
+
+reroute
+
+如果：
+
+door closed
+bridge blocked
+fire area dangerous
+
+不能繼續穿過。
+
+不要求 A* 大型 navmesh 重寫。
+
+可以建立：
+
+zone / graph navigation
+
+例如：
+
+POI nodes
+bridge edges
+hazard weights
+
+如果目前 movement architecture 適合：
+
+在既有系統上做最小可靠升級。
+
+---
+
+# 核心功能 22 — Choke Points
+
+至少讓地圖出現：
+
+1–2 個真正有意義的 choke points
+
+例如：
+
+Bridge
+
+Village gate
+
+Narrow ruin entrance
+
+讓 Agent 的碰面：
+
+部分由地形自然產生。
+
+不要直接強制角色 teleport 相遇。
+
+---
+
+# 核心功能 23 — Resource Economy Upgrade
+
+資源不再全部散落。
+
+部分重要資源改由：
+
+Container
+POI
+Station
+
+提供。
+
+例如：
+
+Medicine mostly from Clinic
+Weapons mostly from Ruins / Depot
+Food from Village / Forest
+Water from Lake
+
+但保持：
+
+不同 Seed 仍有隨機差異。
+
+---
+
+# 核心功能 24 — Resource Depletion
+
+重要 POI：
+
+會被搜空。
+
+Agent world knowledge：
+
+可能過時。
+
+例如：
+
+Agent 走到 Supply Depot
+
+才發現：
+
+已經被搜光。
+
+產生：
+
+DISAPPOINTED_SEARCH
+
+或合理 event。
+
+這種資訊落差很重要。
+
+---
+
+# 核心功能 25 — Hide / Cover
+
+加入簡化：
+
+hide
+
+take_cover
+
+效果：
+
+降低被偵測機率
+降低某些攻擊風險
+
+代價：
+
+movement reduced
+resource gain reduced
+
+不要做完整 shooter cover system。
+
+---
+
+# Director Mode Integration
+
+現有 Director Mode：
+
+整合 Living World。
+
+例如：
+
+Storm：
+
+使用正式 weather system
+
+Food Crisis：
+
+影響 food regeneration
+
+Supply Drop：
+
+生成可互動 Supply Cache
+
+Plague：
+
+Medical Station 價值提升
+
+Treasure：
+
+放入 POI / Container
+
+Rumor：
+
+可透過 Broadcast 系統顯示為 world information
+
+新增 Director Event 若時間充足：
+
+Blackout
+
+效果：
+
+Generator / powered POI offline
+
+Wildfire
+
+效果：
+
+指定區域著火
+
+Bridge Collapse
+
+效果：
+
+封鎖 crossing
+
+但只有 P0 完成後才加入。
+
+---
+
+# LLM Integration
+
+LLM context 可加入：
+
+nearby interactables
+known POIs
+known hazards
+known controllers
+weather
+time of day
+
+例如：
+
+{
+  "nearby_objects": [],
+  "known_locations": [],
+  "weather": "storm",
+  "time_of_day": "night"
+}
+
+但：
+
+不要讓 prompt 無限膨脹。
+
+只提供：
+
+relevant nearby
+high importance memory
+
+LLM action 仍需：
+
+legal validation
+
+invalid world interaction：
+
+fallback Utility AI。
+
+---
+
+# Performance
+
+新增世界系統不能讓：
+
+browser FPS
+
+simulation tick
+
+明顯崩潰。
+
+避免：
+
+每 frame 對 12 agents × 全物件做大量 expensive search。
+
+使用：
+
+spatial buckets
+POI list
+nearby cache
+
+如果需要。
+
+目標：
+
+12 Agent
+
+正常 1x–10x speed
+
+仍流暢。
+
+---
+
+# World State Persistence
+
+Save 必須保存：
+
+interactable states
+POI controllers
+weather
+time of day
+hazards
+resource depletion
+world knowledge if needed
+
+Reload：
+
+必須恢復一致。
+
+不要只恢復 Agent。
+
+---
+
+# Determinism
+
+非常重要：
+
+utility-only deterministic benchmark
+
+不可因新增：
+
+visual effects
+ID generation
+UI
+Story
+
+改變不相關 RNG。
+
+如果 Living World 本身屬 gameplay 改變：
+
+v1.5 benchmark 不可能與 v1.4 完全相同。
+
+因此：
+
+建立新：
+
+v1.5 golden benchmark
+
+但必須做到：
+
+同一 v1.5 Seed
+
+反覆跑結果一致。
+
+建立：
+
+50 primary
+50 holdout
+
+記錄：
+
+winner/extinction
+duration
+trades
+alliances
+betrayals
+combat
+POI interactions
+controls
+hazards
+
+不要錯誤宣稱：
+
+v1.4 benchmark unchanged
+
+因為本版本明確改變 gameplay。
+
+---
+
+# Emergence Metrics
+
+新增 benchmark：
+
+每局至少統計：
+
+POI visits
+interactions
+containers searched
+rest uses
+medical station uses
+generator repairs
+POI control changes
+shelter usage
+hazard avoidance
+broadcasts
+
+以及：
+
+social events
+
+目標不是：
+
+每局每一種事件都必須出現。
+
+但 100 seeds 中：
+
+世界互動不能幾乎為零。
+
+---
+
+# Anti-Scripted Gate
+
+不得：
+
+強制某 Agent 去 Clinic
+
+強制某時間發生攻城
+
+強制某人佔塔
+
+世界事件可以隨 Seed 發生。
+
+Agent 回應必須由：
+
+Utility AI / LLM
+
+決定。
+
+---
+
+# QA
+
+至少測試：
+
+Door open/close
+Container depletion
+Bed occupancy
+Campfire
+Medical station
+Generator repair
+Watchtower
+Broadcast
+POI control
+Control transfer
+Day
+Night
+Rain
+Storm
+Fire
+Blocked bridge
+Hazard avoidance
+Shelter
+Perception
+World knowledge stale
+Save/load
+Replay
+Story world moments
+Director integration
+Browser
+Electron
+zh-TW
+English
+
+---
+
+# Regression
+
+重新執行：
+
+npm test
+test:i18n
+test:ui
+test:results
+test:story
+test:desktop
+test:story:desktop
+
+所有 v1.4 Story 功能必須保持。
+
+---
+
+# New Tests
+
+加入：
+
+world interactable unit tests
+
+POI utility tests
+
+weather tests
+
+hazard tests
+
+control tests
+
+world persistence
+
+world replay
+
+world story ranking
+
+navigation reroute
+
+deterministic v1.5 seed tests
+
+---
+
+# Visual QA
+
+至少檢查：
+
+1920×1080
+
+1366×768
+
+390×844 Story / mobile
+
+實際場景：
+
+day
+night
+storm
+fire
+controlled clinic
+generator online/offline
+
+---
+
+# Screenshots
+
+新增：
+
+docs/images/v1.5-day-world.png
+
+docs/images/v1.5-night-world.png
+
+docs/images/v1.5-clinic-control.png
+
+docs/images/v1.5-storm-shelter.png
+
+docs/images/v1.5-fire-event.png
+
+如果合理：
+
+新增短影片：
+
+docs/images/v1.5-living-world.mp4
+
+---
+
+# Documentation
+
+建立：
+
+docs/V1.5_REPORT.md
+
+至少：
+
+1. Goal
+2. Architecture
+3. Interactable system
+4. POI system
+5. Utility integration
+6. Territory memory
+7. Weather
+8. Hazards
+9. Perception
+10. Navigation
+11. Persistence
+12. Replay
+13. Story integration
+14. Determinism
+15. Benchmark
+16. Performance
+17. QA
+18. Known limitations
+
+---
+
+# README
+
+更新：
+
+Living World
+
+新增展示：
+
+Agents now interact with:
+
+doors
+containers
+beds
+campfires
+medical stations
+generators
+watchtowers
+POIs
+
+更新 screenshots。
+
+---
+
+# Git
+
+在現有 private repo 工作。
+
+開始前：
+
+git status
+
+如果不是 clean：
+
+不要覆蓋未知修改。
+
+合理分 commit。
+
+例如：
+
+feat(world): add unified interactable system
+
+feat(world): add functional POIs
+
+feat(world): add day night weather and shelter
+
+feat(world): add dynamic hazards and rerouting
+
+feat(ai): integrate world state into utility decisions
+
+feat(world): add control and territory memory
+
+feat(replay): persist living world state
+
+feat(story): add world moments and important places
+
+test(world): add deterministic living-world benchmark
+
+docs(v1.5): add living world report
+
+實際可依內容調整。
+
+---
+
+# Version
+
+正式升級：
+
+v1.5.0
+
+package.json
+Electron metadata
+UI version
+README
+Release
+
+保持一致。
+
+---
+
+# Release
+
+全部通過後：
+
+tag
+
+v1.5.0
+
+建立 private GitHub Release。
+
+附：
+
+Windows portable
+
+保留所有舊 release。
+
+Release Notes 使用繁體中文。
+
+---
+
+# Acceptance Criteria
+
+完成前逐項確認：
+
+[ ] World Interactable architecture 存在
+
+[ ] Door 可互動
+
+[ ] Container 可 depletion
+
+[ ] Rest spot 有實際效果
+
+[ ] Campfire 有 gameplay 效果
+
+[ ] Medical Station 有 gameplay 效果
+
+[ ] Generator 可 repair
+
+[ ] Watchtower 提高 perception
+
+[ ] Broadcast 有事件
+
+[ ] POI 有功能差異
+
+[ ] POI control 正常
+
+[ ] Agent 記得 controller
+
+[ ] Agent 記得危險位置
+
+[ ] Day/Night 影響 AI
+
+[ ] Weather 影響 AI
+
+[ ] Shelter 影響 AI
+
+[ ] 至少一種 hazard 正常影響 path
+
+[ ] Agent 會 reroute
+
+[ ] Resource depletion 正常
+
+[ ] Stale knowledge 存在
+
+[ ] Utility AI 真的使用 world state
+
+[ ] LLM context 支援 world state
+
+[ ] Invalid LLM world action fallback 正常
+
+[ ] Save/load world state 正常
+
+[ ] Replay 可顯示 world state
+
+[ ] Story 可顯示 World Moments
+
+[ ] Agent Life Story 可顯示重要地點
+
+[ ] Director Mode 整合新 world system
+
+[ ] Browser 正常
+
+[ ] Electron 正常
+
+[ ] zh-TW 正常
+
+[ ] English 正常
+
+[ ] v1.4 Story 不退化
+
+[ ] v1.5 deterministic seeds 可重現
+
+[ ] 100-seed benchmark 完成
+
+[ ] 性能無明顯退化
+
+[ ] README 更新
+
+[ ] V1.5_REPORT 完成
+
+[ ] Git clean
+
+[ ] push private repo
+
+[ ] v1.5.0 Release 完成
+
+任何一項失敗：
+
+繼續 Debug。
+
+不要在最後報告中把 PARTIAL 寫成 COMPLETE。
+
+---
+
+# Stretch Goals
+
+所有核心功能完成後才考慮：
+
+Agent-built barricade
+
+Agent-built camp
+
+Trap
+
+Storage ownership
+
+Alliance base
+
+Territory map
+
+Dynamic wildfire spread
+
+Flooded terrain visual deformation
+
+Destructible bridge
+
+Repairable bridge
+
+NPC wildlife
+
+Footprints / environmental traces
+
+Graffiti / messages
+
+Long-term abandoned structures
+
+不要為 stretch 犧牲：
+
+simulation stability
+
+determinism
+
+Story
+
+Replay
+
+---
+
+# 最重要的產品目標
+
+完成 v1.5 後：
+
+玩家不應該只看到：
+
+「12 個 Agent 在一張 3D 地圖上移動。」
+
+而應該看到：
+
+「12 個 Agent 正在使用、爭奪、改變這個世界。」
+
+例如一局可能自然出現：
+
+Nova 和 Lyra 先佔領 Clinic。
+
+暴風雨後，所有角色開始尋找 Shelter。
+
+Atlas 修復 Village Generator，使診所重新運作。
+
+Pax 發現北橋被洪水阻斷，被迫穿越 Ruins。
+
+Rune 佔領 Watchtower，較早發現 Supply Drop。
+
+Nova 離開 Clinic 後，Pax 趁機取得控制。
+
+Lyra 試圖重新進入時爆發戰鬥。
+
+最後 Story 裡可以看到：
+
+不只誰背叛誰，
+
+而是：
+
+誰控制了哪裡，
+
+哪些地方改變了局勢，
+
+哪些環境事件迫使 Agent 改變策略。
+
+現在直接開始：
+
+Inspect repository
+
+→
+
+Design world interaction model
+
+→
+
+Implement interactables
+
+→
+
+Implement POIs
+
+→
+
+Integrate Utility AI
+
+→
+
+Add control / territory memory
+
+→
+
+Add day/night/weather
+
+→
+
+Add hazards
+
+→
+
+Upgrade navigation
+
+→
+
+Persistence
+
+→
+
+Replay
+
+→
+
+Story integration
+
+→
+
+Benchmark
+
+→
+
+Visual QA
+
+→
+
+Electron QA
+
+→
+
+Documentation
+
+→
+
+Git
+
+→
+
+Release v1.5.0
+
+不要停在規劃階段。
+
+直接做到可交付完成品。

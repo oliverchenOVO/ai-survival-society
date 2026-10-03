@@ -1,0 +1,61 @@
+{
+  "version": "1.5.0",
+  "applicationRevision": "b118945",
+  "date": "2026-10-03T08:42:45.256264+00:00",
+  "unitIntegrationTests": {
+    "passed": 27,
+    "failed": 0
+  },
+  "deterministicSeeds": {
+    "primary": 50,
+    "holdout": 50,
+    "goldenRepeat": "identical"
+  },
+  "reports": {
+    "browser-results-v1.5.json": {
+      "checkCount": 15,
+      "rendererErrors": []
+    },
+    "localization-browser-v1.5.json": {
+      "checkCount": 8,
+      "rendererErrors": []
+    },
+    "results-v1.5.json": {
+      "checkCount": 5,
+      "rendererErrors": []
+    },
+    "stories-browser-v1.5.json": {
+      "checkCount": 10,
+      "rendererErrors": []
+    },
+    "desktop-results-v1.5.json": {
+      "checkCount": 3,
+      "rendererErrors": []
+    },
+    "stories-desktop-v1.5.json": {
+      "checkCount": 11,
+      "rendererErrors": []
+    },
+    "world-browser-v1.5.json": {
+      "checkCount": 9,
+      "rendererErrors": []
+    },
+    "world-desktop-v1.5.json": {
+      "checkCount": 8,
+      "rendererErrors": []
+    },
+    "portable-results-v1.5.json": {
+      "checkCount": 0,
+      "rendererErrors": []
+    },
+    "package-integrity-v1.5.json": {
+      "checkCount": 0,
+      "rendererErrors": []
+    },
+    "live-service-v1.5.json": {
+      "checkCount": 0,
+      "rendererErrors": []
+    }
+  },
+  "release": "pending publication"
+}

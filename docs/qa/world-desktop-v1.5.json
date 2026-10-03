@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-03T08:33:07.195Z",
+  "browserPath": "Browser plugin not available; Playwright",
+  "checks": [
+    "World desktop layouts, identity, meaningful content and no overlay",
+    "Saved world resumes intact and remains intact after reload",
+    "Actual authoritative 1x and 10x run progression",
+    "Deep-linked replay uses sampled night/storm/hazard world",
+    "Story World Moments at desktop and mobile sizes",
+    "Life Story displays recorded important places",
+    "English world labels and bilingual Story",
+    "No renderer/console errors"
+  ],
+  "frameRates": [
+    {
+      "speed": 1,
+      "elapsedMs": 2005.6,
+      "frames": 153,
+      "fps": 75.78779417630635
+    },
+    {
+      "speed": 10,
+      "elapsedMs": 2005.6,
+      "frames": 147,
+      "fps": 72.79617072197847
+    }
+  ],
+  "layouts": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "overflow": false,
+      "overlappingPlaces": []
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "overflow": false,
+      "overlappingPlaces": []
+    }
+  ],
+  "errors": []
+}

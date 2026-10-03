@@ -1,0 +1,10 @@
+{
+  "executablePath": "F:\\CodeX開發小東東\\AI Survival Society\\builds\\AI-Survival-Society-1.5.0.exe",
+  "launch": "PASS",
+  "locale": "zh-TW",
+  "canvas": "PASS",
+  "pauseResumeRestartSelection": "PASS",
+  "rendererNodeAccess": "unavailable",
+  "rendererErrors": [],
+  "verificationMethod": "Real portable executable launched, then attached through Chromium DevTools. NSIS does not forward the stderr awaited by electron.launch."
+}

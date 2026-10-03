@@ -1,5 +1,16 @@
 # AI Survival Society
 
+**v1.5.0 — Living World Update。** 角色現在會搜索有限補給箱、開門或破門、使用休息處與營火、修復發電機、使用醫療站、登塔與廣播。八種據點可被控制、爭奪與放棄；夜晚、雨、暴風雨、火災與北橋洪水會影響視野、風險與路線。世界認知有時效，角色不再知道全島即時補給。
+
+在角色觀察器展開「世界認知」查看已知／過期資訊。世界上方顯示時間與天候；據點標記顯示控制者，自動避讓避免重疊；指向細線保留地點位置，滑鼠停留可查看完整控制者名單。速度選單新增 10×。「檔案庫」中有 v1.5 checkpoint 的未完成局可按「繼續已保存的模擬」恢復，先暫停供檢視，再按「繼續」。已完成局的 Story 新增 World Moments，角色生平新增重要地點；可從事件跳至包含當時世界狀態的重播。
+
+本版改變 gameplay；v1.5 基準為 **50 primary + 50 holdout**，`npm run test:benchmark` 比對完整事件／角色／世界／結局 SHA-256 golden。v1.4 基準仍保留作歷史紀錄。舊 Story／Replay 仍可讀，但舊檔沒有 RNG checkpoint，不能捏造續跑狀態。100 局平均約 24 次世界互動、110 次社交事件，沒有零互動局。完整回歸隨 `npm test` 執行；專項 UI 使用 `node scripts/qa-world.mjs`／`--desktop`，封裝後可用 `node scripts/qa-package.mjs` 比對 101 個 runtime／資產檔案。詳細架構、效能與限制見 [v1.5 報告](docs/V1.5_REPORT.md)。
+
+![Living World 白晝](docs/images/v1.5-day-world.png)
+![診所控制](docs/images/v1.5-clinic-control.png)
+
+最新 Windows portable：[私人 v1.5.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0)。需要有倉庫存取權；公開網站部署仍須 Node backend 與持久化 DATA_DIR。
+
 **Twelve minds. A smaller tomorrow.** A living 3D island where autonomous robots build trust, exchange supplies, form alliances and sometimes betray each other to survive.
 
 **v1.1 已完成模擬品質與結算修正。** 100個 utility-only deterministic seeds 全部有交易、聯盟及戰鬥，無零社交全滅；平均交易由11.30提升至14.82次（同一50-seed cohort）。連續模式結算與匯出固定在完成的局，全滅使用EXTINCTION EVENT。完整量測、限制及驗收見 [v1.1 report](docs/V1.1_REPORT.md)。`npm test` 已包含兩組50-seed防退化基準，`npm run test:results`驗證結算UI。
@@ -10,13 +21,13 @@
 
 ## 快速開始
 
-Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://127.0.0.1:4310`。第一次啟動會安裝套件並建置。停止使用 **`Stop-Society.cmd`**。需要 Node.js 22.12+；本機驗證版本為 24.13.0。
+Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://localhost:4310`。第一次啟動會安裝套件並建置。停止使用 **`Stop-Society.cmd`**。需要 Node.js 22.12+；本機驗證版本為 24.13.0。
 
 背景服務透過 Windows WMI 以隱藏程序獨立啟動，避免開發工具回收終端機程序樹時一起結束。啟動腳本確認健康狀態並記錄真正的 Node PID；重複啟動會沿用現有服務。這不會建立開機自啟動或排程工作；電腦重新開機後請再次執行 `Start-Society.cmd`。
 
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
-最新單檔桌面版：[私人 Release v1.4.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.4.0)，下載 `AI-Survival-Society-1.4.0.exe` 即可執行。舊版 Release 保留。
+最新單檔桌面版：[私人 Release v1.5.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0)，下載 `AI-Survival-Society-1.5.0.exe` 即可執行。舊版 Release 保留。
 
 遊戲啟動後自動運行。上方可暫停／繼續／重新開始、設定速度。設定可切換語言、改 Seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
 
@@ -111,7 +122,7 @@ npm run build
 npm start
 ```
 
-Open **http://127.0.0.1:4310**. For development with hot reload:
+Open **http://localhost:4310**. For development with hot reload:
 
 ```powershell
 npm run dev

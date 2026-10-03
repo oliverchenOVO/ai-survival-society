@@ -258,3 +258,53 @@
 
 
 
+# v1.5 Living World Update — 2026-10-03
+
+來源：`docs/V1.5_REQUIREMENTS.txt`（完整 v1.5 使用者要求）。以下項目只有實作並驗證後才勾選；沿用既有專案，不重寫。
+
+- [x] 檢查 world、Three.js、movement、resources、Utility、memory、relationships、Event Bus、Director、Replay、Story、persistence、i18n、QA；完成 docs/V1.5_PLAN.md。
+- [x] 統一 World Interactable contract：id/type/position/state/capacity/durability/owner/controller/cooldown/usable/visible/metadata；canInteract/getUtility/performInteraction/events，權威端執行。
+- [x] Door open/closed/locked/broken；open/close/force，移動、視線、庇護、控制有後果。
+- [x] Container full/partial/empty/searched；search/take/leave，有限 Food/Water/Medicine/Weapon/Wood/Rare Supply。
+- [x] Bed/rest spot 能量恢復、有限佔用、競爭與社交選擇。
+- [x] Campfire light/use/extinguish；休息、夜間視野、社交、storm 熄火。
+- [x] Medical station 有限 charge/medicine、容量、治療與戰略價值。
+- [x] Generator online/offline/damaged、repair、簡化 local power zone 影響設施。
+- [x] Watchtower occupy、perception/ambush risk/POI 視野提升；不無敵。
+- [x] Radio broadcast；公開訊息/警告进入 Event Bus 與 knowledge。
+- [x] Village/Clinic/Watchtower/Ruins/Supply Depot/Shelter/Bridge/Lake 功能不同；risk/resources/interactables/occupancy/controller/recentEvents。
+- [x] POI control 含 Agent/Alliance，停留條件、轉移、避免/靠近/協商/挑戰，關係影響 utility，無硬性禁入。
+- [x] Territory memory 有 location/POI、controller、recent danger、past conflict、known resources；容量有限。
+- [x] Day/night 真正影響 perception、movement、lighting、campfire/shelter utility。
+- [x] Clear/Rain/Storm 影響 movement/perception/shelter；Director storm 使用同一系統。
+- [x] 至少兩種 gameplay hazards（Fire/Flood）；area/duration/damage/spread/crossing cost，進 path risk、可逃離/避開，事件有記錄。
+- [x] Shelter 在 storm/night/low HP 增值，權衡距離、敵人、資源、urgency、personality。
+- [x] Perception radius 受 night/storm/watchtower/building/terrain/simple blockers；Agent 不全知。
+- [x] World knowledge Known/Recently Seen/Unknown/Stale；資源與控制資訊過期，不用向量資料庫。
+- [x] interact/open/close/search/use/rest_at/heal_at/repair/occupy/broadcast/hide/take_cover 整合原 action executor。
+- [x] Utility 真正使用世界狀態，有限知識、危險、控制關係；沒有固定角色/時間腳本或 teleport。
+- [x] 空間社交與 existing trade/cooperate/ally/attack 接合；public/friendly/contested/hostile-controlled access 是 utility 影響。
+- [x] 世界重要變化進 Event Bus：door/cache/fire/power/control/hazard/weather/broadcast 等。
+- [x] Story World Moments、合理 ranking 不壓過 social；舊 Story 仍可讀。
+- [x] Agent Life Story Important Places、most visited/death/victory/control duration/repair，完全依資料。
+- [x] Replay 保存 weather/control/interactables/hazards，版本 migration/legacy fallback。
+- [x] Three.js 顯示門、cache、火、電力、醫療、tower occupancy、controller、雨/夜；search/repair/heal/broadcast procedural feedback。
+- [x] Navigation reroute closed door/blocked bridge/fire，至少 1–2 真正 choke points，不做大型 navmesh 重寫。
+- [x] Economy 部分 medicine/weapon/food/water 移入 POI/stations/caches；seed 差異、depletion、stale search event。
+- [x] hide/take_cover 降 detection/damage，代價 movement/resource opportunity。
+- [x] Director food crisis/drop/plague/treasure/rumor 全部接合 Living World；可選 blackout/wildfire/collapse 僅核心完成後。
+- [x] LLM relevant nearby objects/known locations/hazards/controllers/weather/time，限制 context；invalid interaction fallback Utility。
+- [x] 12 agents、1x–10x 性能量測；無昂貴每 frame 全世界查詢。
+- [x] Save/load 完整恢復 objects/control/weather/day/hazards/depletion/knowledge/RNG；保持舊 save/replay/story 可讀。
+- [x] 50 primary + 50 holdout v1.5 golden，同 seed 重跑一致；記錄 winner/extinction/duration/social/combat/world/hazards。
+- [x] Emergence metrics：visits/interactions/search/rest/heal/repair/control/shelter/avoidance/broadcast/social；100 seeds world 使用不接近零。
+- [x] 新 unit/integration tests：interactables/POI utility/weather/hazard/control/persistence/replay/story/navigation/determinism。
+- [x] 完整 QA：Door、depletion、occupancy、fire、heal、repair、tower、radio、control/transfer、day/night/rain/storm/hazards/bridge/avoidance/shelter/perception/stale/save/replay/story/director。
+- [x] npm test、test:i18n、test:ui、test:results、test:story、test:desktop、test:story:desktop 全通過；v1.4 Story 不退化。
+- [x] Browser/Electron zh-TW/en；1920×1080、1366×768、390×844 Story/mobile 真實視覺 QA。
+- [x] docs/images/v1.5-day-world.png、v1.5-night-world.png、v1.5-clinic-control.png、v1.5-storm-shelter.png、v1.5-fire-event.png 實際執行截图；影片可選。
+- [x] docs/V1.5_REPORT.md 18 項：Goal/Architecture/Interactables/POI/Utility/Territory/Weather/Hazards/Perception/Navigation/Persistence/Replay/Story/Determinism/Benchmark/Performance/QA/Limitations。
+- [x] README Living World、操作、screenshots 更新；package/Electron/UI/README/release v1.5.0 一致。
+- [ ] 合理分 commit、push 原 private repo、Git clean。
+- [ ] 全部驗收後 tag v1.5.0、private GitHub Release、Windows portable、繁體中文 notes，保留舊 release。
+- [ ] 最終逐項驗收；任何未完成不得寫 COMPLETE；stretch 不犧牲核心品質。

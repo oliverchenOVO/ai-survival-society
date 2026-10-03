@@ -1,0 +1,18 @@
+[
+  {
+    "version": "1.4.0",
+    "ticks": 1000,
+    "cpuMsPerTick": 0.126,
+    "wallMeanMs": 0.0604994000000097,
+    "p95Ms": 0.19770000000062282,
+    "serializedSnapshotBytes": 124105
+  },
+  {
+    "version": "1.5.0",
+    "ticks": 1000,
+    "cpuMsPerTick": 0.672,
+    "wallMeanMs": 0.3602542999999823,
+    "p95Ms": 1.3402999999998428,
+    "serializedSnapshotBytes": 235447
+  }
+]
