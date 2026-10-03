@@ -56,7 +56,7 @@ try {
   assert.equal(await page.locator('vite-error-overlay').count(), 0);
   assert.deepEqual(errors, []);
   await writeFile(
-    'docs/qa/development-v1.5.json',
+    'docs/qa/development-v1.6.json',
     JSON.stringify(
       {
         version: '1.5.0',

@@ -1,0 +1,2130 @@
+可以。這版我會刻意把重點鎖在「**已經存在的 Living World，要真的看起來像一個會被使用、受損、修復、佔領、留下歷史的物理世界**」。
+
+你目前 v1.5 已經有統一互動物件、8 個 POI、天候、火災／洪水、控制權、世界知識、存檔／重播與 Story 整合；已知限制則是建築仍偏原 art 加功能物件、沒有室內 navmesh、火災不擴散、洪水只做局部封鎖。V1.5_REPORT V1.5_REPORT
+
+所以下面這份 v1.6 提示詞，不再擴大量 gameplay 規則，而是專心把「互動」變成**看得見、摸得到、留下痕跡**。
+
+---
+
+# AI Survival Society v1.6 — Physical World & Visual Polish Update
+
+你現在要在既有 AI Survival Society 專案上開發下一個正式版本：
+
+# AI Survival Society v1.6
+## Physical World & Visual Polish Update
+
+這不是新專案。
+
+請在目前既有 private GitHub repository、v1.5.0 程式碼、既有 Living World、Story、Replay、i18n、Browser、Electron 與 deterministic architecture 上繼續迭代。
+
+---
+
+## 本版本核心目標
+
+不要再優先增加更多 gameplay rule。
+
+本次任務是：
+
+> 把已經存在的 Living World 從「功能上成立」升級成「視覺上、物理上、互動回饋上都真的成立」。
+
+完成後，第一次看到的人應該可以只看畫面，就理解：
+
+- 這裡是診所
+- 這裡是補給站
+- 這裡是瞭望塔
+- 這個據點目前有人控制
+- 這個箱子已被搜空
+- 這扇門真的開過
+- 這個發電機已修好
+- 這裡發生過火災
+- 這個地方剛剛發生過戰鬥
+- 這個 Agent 正在修理／治療／搜索／廣播
+- 這個區域曾經被佔領並留下痕跡
+
+本版本關鍵詞：
+
+PHYSICALITY  
+WORLD FEEDBACK  
+READABILITY  
+ANIMATION  
+ENVIRONMENTAL STORYTELLING  
+VISUAL IDENTITY  
+SCENE POLISH
+
+---
+
+# 最高原則
+
+本版本優先順序：
+
+WORLD READABILITY
+>
+NEW MECHANICS
+
+INTERACTION FEEDBACK
+>
+DECORATIVE EFFECTS
+
+STATEFUL OBJECTS
+>
+STATIC PROPS
+
+VISIBLE CONSEQUENCE
+>
+HIDDEN VARIABLES
+
+CONSISTENT ART DIRECTION
+>
+ASSET QUANTITY
+
+本版本原則：
+
+不要把世界做得更「複雜」，
+
+要把世界做得更「可信」。
+
+---
+
+# 嚴格限制
+
+除非必要，不要修改：
+
+- Utility AI weights
+- Agent decision logic
+- v1.5 gameplay balance
+- social systems
+- resource economy
+- deterministic seed behavior
+- Story semantics
+- existing save compatibility
+
+如果純視覺改動導致：
+
+simulation RNG consumption 改變
+
+這是 bug。
+
+視覺 RNG 必須獨立。
+
+本版本應盡量做到：
+
+v1.5 gameplay golden 結果保持一致。
+
+如果真的因必要 collision / path geometry 改動導致 gameplay 變化：
+
+必須明確記錄原因，
+
+不能默默更新 benchmark。
+
+---
+
+# Phase 1 — Inspect Existing Art & Rendering Pipeline
+
+先閱讀：
+
+- `src/world`
+- Three.js scene architecture
+- POI rendering
+- interactable registry
+- robot rendering
+- Blender pipeline
+- `Art/Blender`
+- `generate_assets.py`
+- GLB loading
+- camera
+- lighting
+- postprocessing
+- particles
+- current interaction feedback
+- replay world rendering
+- Story screenshots
+- QA screenshot tooling
+
+建立：
+
+`docs/V1.6_PLAN.md`
+
+內容：
+
+1. current visual weaknesses
+2. current POI recognizability
+3. current animation limitations
+4. Blender asset strategy
+5. runtime animation strategy
+6. performance budget
+7. replay implications
+8. before/after validation plan
+
+寫完立即繼續實作。
+
+禁止停在規劃。
+
+---
+
+# 核心功能 1 — POI Visual Redesign
+
+目前 8 個 POI 必須具有明確不同的視覺語言。
+
+至少：
+
+## Village
+
+應具有：
+
+- houses
+- road/path
+- fencing
+- lamps
+- central common area
+- utility props
+
+讓它看起來像：
+
+真正有人生活過的聚落。
+
+---
+
+## Clinic
+
+必須第一眼可辨識。
+
+建議：
+
+- medical cross / light symbol
+- cleaner architecture
+- treatment beds
+- cabinets
+- powered medical device
+- entrance
+- interior lighting
+
+Generator offline 時：
+
+Clinic 應明顯變暗或部分設備停止。
+
+---
+
+## Watchtower
+
+不能只是 marker。
+
+必須有：
+
+- actual elevated platform
+- stairs / ladder visual
+- lookout deck
+- visible occupying Agent state
+- beacon / signal light
+
+---
+
+## Ruins
+
+加入：
+
+- broken walls
+- collapsed columns
+- debris
+- loot niches
+- narrow entrances
+- visual danger
+
+---
+
+## Supply Depot
+
+加入：
+
+- crates
+- racks
+- fences
+- loading area
+- metal structure
+- visible cache depletion
+
+---
+
+## Shelter
+
+加入：
+
+- covered interior
+- beds / benches
+- campfire location
+- weather protection visual
+- door
+
+---
+
+## Bridge
+
+強化：
+
+- real bridge structure
+- railings
+- supports
+- flood state
+- blocked state visual
+
+---
+
+## Lake / Water Source
+
+加入：
+
+- bank
+- rocks
+- reeds / simple vegetation
+- water interaction point
+- path to shore
+
+不要只是水面標籤。
+
+---
+
+# 核心功能 2 — Blender Asset Pipeline Upgrade
+
+允許直接使用 Blender。
+
+優先使用：
+
+Blender Python
+bpy
+CLI generation
+
+不要依賴大量人工點擊。
+
+建立或擴充：
+
+`Art/Blender/generate_world_assets.py`
+
+或合理拆分：
+
+- generate_poi_assets.py
+- generate_props.py
+- generate_damage_variants.py
+
+資產應：
+
+- stylized
+- low poly
+- consistent
+- lightweight
+- reusable
+- Web-friendly
+
+保留：
+
+`.blend` source
+
+輸出：
+
+`.glb`
+
+---
+
+# 核心功能 3 — Modular Asset Kit
+
+建立一套可重用的模組化場景組件。
+
+例如：
+
+Walls
+Roof
+Door
+Window
+Fence
+Crate
+Shelf
+Bed
+Lamp
+Generator
+Radio
+Medical cabinet
+Tower platform
+Bridge section
+Debris
+Barricade visual-only prop
+Sign
+Pipe
+Cable
+
+不要每個 POI 都重新建一套完全獨立 mesh。
+
+---
+
+# 核心功能 4 — Stateful Visual Objects
+
+所有重要 interactable 必須有明顯狀態差異。
+
+例如：
+
+## Door
+
+Closed：
+門板關閉
+
+Open：
+門真的旋轉開
+
+Locked：
+鎖定 indicator
+
+Broken：
+歪斜 / damaged mesh
+
+---
+
+## Container
+
+Full：
+完整 crate
+
+Partial：
+開蓋 / 少量內容
+
+Empty：
+打開且空
+
+Searched：
+有明顯已翻找狀態
+
+---
+
+## Generator
+
+Offline：
+dark
+no movement
+no light
+
+Damaged：
+sparks / damage visual
+
+Repairing：
+repair sparks
+
+Online：
+moving parts
+light
+powered POI lighting
+
+---
+
+## Medical Station
+
+Available：
+active indicator
+
+Occupied：
+Agent interaction state
+
+No charge：
+dim / red / inactive
+
+Powered off：
+equipment dark
+
+---
+
+## Campfire
+
+Unlit
+Lit
+Low fuel
+Extinguished
+
+至少視覺可分辨。
+
+---
+
+# 核心功能 5 — Real Interaction Animation
+
+Agent interaction 不再只是：
+
+站在物件旁 + 文字事件。
+
+至少加入程序式 animation feedback。
+
+不要求完整 humanoid rig。
+
+使用：
+
+position
+rotation
+body bob
+arm rotation
+head orientation
+particles
+timed pose
+
+即可。
+
+至少：
+
+## Search
+
+Agent 面向 Container
+
+短暫停止移動
+
+身體／手部有 search animation
+
+箱蓋打開
+
+---
+
+## Repair
+
+Agent 面向 Generator
+
+重複 repair motion
+
+spark particles
+
+repair progress feedback
+
+---
+
+## Heal
+
+Agent 靠近 Medical Station
+
+station light pulse
+
+角色 treatment pose
+
+---
+
+## Rest
+
+Agent 在 Bed / Shelter 中停止
+
+使用 resting pose
+
+---
+
+## Broadcast
+
+Agent 面向 Radio
+
+radio pulse / ring
+
+---
+
+## Occupy Watchtower
+
+Agent 視覺真的出現在塔位附近／平台上
+
+不要只改資料。
+
+---
+
+# 核心功能 6 — Contextual Agent Facing
+
+Agent 不要永遠面朝 movement direction。
+
+Interaction 時：
+
+lookAt(interactable)
+
+Conversation 時：
+
+lookAt(otherAgent)
+
+Combat 時：
+
+lookAt(target)
+
+Rest 時：
+
+relaxed orientation
+
+這種細節成本低但效果非常明顯。
+
+---
+
+# 核心功能 7 — Locomotion Polish
+
+如果目前 robot movement 很像：
+
+mesh 在地面滑動
+
+請加入程序式 locomotion：
+
+- body bob
+- foot/leg rhythm
+- slight turn anticipation
+- acceleration/deceleration
+- idle motion
+
+不要重做複雜 skeletal animation。
+
+若現有 GLB 可以做簡單 rig：
+
+可以。
+
+但完成度優先。
+
+---
+
+# 核心功能 8 — POI Interior / Semi-Interior
+
+至少讓以下三個 POI：
+
+Clinic
+Shelter
+Depot
+
+擁有真正可進入或半室內區域。
+
+不必做完整 interior navmesh。
+
+可以使用：
+
+simple walkable zones
+door portals
+interior interaction nodes
+
+重點：
+
+Agent 看起來真的進入建築使用設施。
+
+不要穿牆。
+
+---
+
+# 核心功能 9 — Interior Lighting
+
+Powered POI：
+
+加入：
+
+interior lights
+
+例如：
+
+Clinic：
+cool white
+
+Shelter：
+warm
+
+Depot：
+industrial
+
+Generator offline：
+
+相應 POI：
+
+部分照明關閉。
+
+夜晚尤其要看得出來。
+
+---
+
+# 核心功能 10 — Environmental Damage States
+
+重要 POI 支援：
+
+clean
+used
+damaged
+
+不用每個物件都破壞。
+
+但至少：
+
+- Village
+- Clinic
+- Depot
+- Bridge
+
+可有 damaged overlay / debris。
+
+來源：
+
+combat
+fire
+hazard
+event
+
+不要增加複雜 durability gameplay。
+
+本版可以：
+
+visual consequence only
+
+只要資料來源來自現有事件。
+
+---
+
+# 核心功能 11 — Environmental Traces
+
+世界應留下暫時或持久痕跡。
+
+至少加入：
+
+## Combat traces
+
+例如：
+
+scorch
+small debris
+impact mark
+
+## Fire traces
+
+blackened ground
+
+burned props
+
+## POI Control
+
+flag
+hologram
+signal light
+banner
+
+## Repeated traffic
+
+如果成本合理：
+
+簡單 flattened grass / dirt hint
+
+不是 P0。
+
+---
+
+# 核心功能 12 — World History Layer
+
+建立：
+
+World Visual History
+
+從 Event Bus 衍生：
+
+recent world traces
+
+例如：
+
+ATTACK
+FIRE
+POI_CONTROLLED
+GENERATOR_REPAIRED
+CONTAINER_SEARCHED
+
+這些痕跡：
+
+不影響 gameplay RNG。
+
+它們只視覺化既有歷史。
+
+可設定 TTL：
+
+短期痕跡：
+
+30–90 sim seconds
+
+重大事件：
+
+可保留整局。
+
+---
+
+# 核心功能 13 — Control Visual Language
+
+POI 控制權現在必須不看文字也看得出來。
+
+例如：
+
+- colored beacon
+- flag
+- holographic pillar
+- ground ring
+- roof light
+
+不要過度 RGB。
+
+使用：
+
+Agent / Alliance identity accent
+
+並維持現有 UI 色調。
+
+ contested 狀態：
+
+加入：
+
+flicker
+split color
+warning pulse
+
+---
+
+# 核心功能 14 — Less Floating Labels
+
+目前世界有較多 POI label。
+
+v1.6 目標：
+
+減少對 label 的依賴。
+
+要求：
+
+關掉大部分標籤時，
+
+仍能理解主要 POI。
+
+可以保留：
+
+optional labels
+
+或：
+
+zoom-dependent labels
+
+近距離：
+
+少顯示
+
+遠距離：
+
+顯示簡短 label
+
+不要永遠滿地名牌。
+
+---
+
+# 核心功能 15 — World UI Declutter
+
+重新檢查：
+
+POI labels
+Agent names
+controller markers
+hazard markers
+
+建立：
+
+LOD / zoom-aware UI。
+
+例如：
+
+Zoom far：
+
+顯示 POI name
+Agent clusters
+
+Zoom medium：
+
+Agent names
+key state
+
+Zoom close：
+
+interaction status
+
+避免所有資訊同時顯示。
+
+---
+
+# 核心功能 16 — Interaction Status Bubble
+
+Agent 執行重大互動時：
+
+頭頂短暫顯示 icon / label。
+
+例如：
+
+🔧 Repairing
+
+✚ Healing
+
+📦 Searching
+
+📡 Broadcasting
+
+🔥 Resting
+
+不要使用 emoji 如果風格不一致。
+
+可使用 icon。
+
+zh-TW / English。
+
+---
+
+# 核心功能 17 — Dialogue Bubble Upgrade
+
+如果已有對話：
+
+加入：
+
+簡潔對話泡泡。
+
+重要限制：
+
+- 不遮整個世界
+- 有 TTL
+- 同時最多 N 個
+- zoom-aware
+- selected agent 優先
+
+LLM 對話可顯示。
+
+---
+
+# 核心功能 18 — Combat Visual Feedback
+
+Combat 至少加入：
+
+- attack anticipation
+- target facing
+- impact flash
+- short hit reaction
+- HP feedback
+- retreat animation
+- death collapse / shutdown
+
+不要做血腥。
+
+角色是 stylized robot，
+
+可以使用：
+
+sparks
+energy burst
+mechanical shutdown
+
+---
+
+# 核心功能 19 — Death State
+
+死亡 Agent：
+
+不要瞬間消失。
+
+先：
+
+shutdown animation
+
+然後：
+
+wreck / inactive body
+
+保留一段時間。
+
+如果效能允許：
+
+整局保留。
+
+這會對 Storytelling 非常有價值。
+
+---
+
+# 核心功能 20 — Fire Visual Upgrade
+
+現有 fire hazard：
+
+加入：
+
+- flames
+- smoke
+- glow
+- ground scorch
+- nearby lighting
+
+不要只是 particle sprite。
+
+但仍保持：
+
+fire spread 未實作就不要假裝擴散。
+
+Visual 和 gameplay state 必須一致。
+
+---
+
+# 核心功能 21 — Flood Visual Upgrade
+
+當北橋 flood blocker 生效：
+
+必須看得出來。
+
+例如：
+
+- higher river level visual
+- fast current
+- debris
+- warning marker
+- partially submerged bridge
+
+不要只是 invisible collider。
+
+---
+
+# 核心功能 22 — Weather Polish
+
+## Rain
+
+加入：
+
+- visible rain
+- darker surfaces
+- subtle wetness
+- atmosphere
+
+## Storm
+
+加入：
+
+- heavier rain
+- wind
+- tree sway
+- darker sky
+- lightning if cheap
+- reduced visibility
+
+不要讓 weather shader 太重。
+
+---
+
+# 核心功能 23 — Day / Night Polish
+
+現有 day/night：
+
+升級：
+
+- sunrise
+- sunset
+- moon / night sky
+- POI lights
+- campfire glow
+- window light
+- atmospheric color shift
+
+不要只是改 ambient intensity。
+
+---
+
+# 核心功能 24 — Vegetation Motion
+
+Trees：
+
+加入非常輕量：
+
+wind sway
+
+Storm：
+
+sway increased
+
+避免：
+
+每棵樹獨立昂貴 animation。
+
+使用：
+
+shared shader / grouped transform
+
+若適合。
+
+---
+
+# 核心功能 25 — Water Polish
+
+Lake / River：
+
+加入：
+
+- animated surface
+- flow direction
+- subtle reflection
+- shore transition
+
+保持效能。
+
+---
+
+# 核心功能 26 — Roads & Paths
+
+讓世界看起來：
+
+角色真的生活在這裡。
+
+加入：
+
+- village path
+- clinic path
+- depot road
+- bridge connection
+- ruins trail
+
+道路同時提高：
+
+POI readability。
+
+不一定改 gameplay。
+
+如果改 movement cost：
+
+必須明確測 determinism。
+
+---
+
+# 核心功能 27 — Scene Composition
+
+重新檢查整座島：
+
+不要只是平均散布物件。
+
+增加：
+
+foreground
+midground
+background
+
+控制：
+
+visual density
+
+POI 視覺 landmark
+
+重要區域：
+
+更容易辨識。
+
+---
+
+# 核心功能 28 — Camera Polish
+
+改善：
+
+orbit
+pan
+zoom
+focus
+follow
+
+加入：
+
+smooth interpolation
+
+Agent focus：
+
+鏡頭不要突然 snap。
+
+POI focus：
+
+可加入點擊 POI focus。
+
+---
+
+# 核心功能 29 — Event Camera
+
+既有 cinematic camera：
+
+升級。
+
+重大事件：
+
+- POI capture
+- betrayal
+- combat
+- death
+- generator repair
+- fire
+- final confrontation
+
+可短暫自動 focus。
+
+但：
+
+不可以讓鏡頭瘋狂跳。
+
+建立：
+
+event camera priority
+
+cooldown
+
+例如：
+
+WINNER
+DEATH
+BETRAYAL
+POI_CONTROLLED
+FIRE
+REPAIR
+
+低優先事件不搶鏡。
+
+---
+
+# 核心功能 30 — Observer / Cinematic Toggle
+
+建立兩種觀看模式。
+
+## Observatory
+
+保留現在：
+
+Dashboard
+Inspector
+Feed
+Director
+
+資訊完整。
+
+## Cinematic
+
+隱藏部分 panel
+
+世界畫面更大
+
+保留：
+
+字幕
+Agent names
+major event
+minimal stats
+
+不改 gameplay。
+
+---
+
+# 核心功能 31 — Cinematic HUD
+
+Cinematic Mode 顯示：
+
+Alive
+Time
+Current weather
+Selected / Focused Agent
+Major Event
+
+避免整個 Dashboard。
+
+---
+
+# 核心功能 32 — Major Event Banner
+
+例如：
+
+CLINIC CAPTURED
+
+NOVA + LYRA
+
+POWER RESTORED
+
+ATLAS repaired the Village Generator
+
+BETRAYAL
+
+RUNE broke the alliance with SAGE
+
+zh-TW：
+
+診所已被控制
+
+電力恢復
+
+背叛
+
+保持冷色科技風格。
+
+---
+
+# 核心功能 33 — Visual Sound Feedback
+
+如果現有 audio system 可用：
+
+加入：
+
+door
+container
+repair
+generator startup
+radio
+medical
+fire
+storm
+combat impact
+capture
+
+不要大量下載素材。
+
+可以：
+
+procedural / simple licensed-free assets
+
+但授權必須明確。
+
+---
+
+# 核心功能 34 — Audio Spatialization
+
+如果成本合理：
+
+世界音效使用簡化 positional audio。
+
+例如：
+
+campfire
+generator
+radio
+storm
+combat
+
+遠距離：
+
+降低音量。
+
+不是 P0。
+
+---
+
+# 核心功能 35 — Story Screenshot Integration
+
+Story Page：
+
+可以保存：
+
+重要事件 snapshot
+
+如果 architecture 合理。
+
+例如 Major Moment：
+
+顯示一張當時世界縮圖。
+
+但這是 P1。
+
+不要為此大量增加 archive。
+
+---
+
+# 核心功能 36 — Replay Visual Fidelity
+
+Replay 必須能顯示：
+
+- door state
+- generator state
+- fire state
+- flood
+- weather
+- POI control
+- campfire
+- death wrecks if data supports
+
+不要 replay 時永遠顯示 final visual state。
+
+---
+
+# 核心功能 37 — Asset Loading
+
+避免 v1.6 把：
+
+初始下載量
+
+拉得太大。
+
+建立：
+
+shared geometry
+instancing
+compressed GLB
+
+如可用：
+
+Draco / Meshopt
+
+但只有真的有需要才加。
+
+---
+
+# 核心功能 38 — Performance Budget
+
+保持：
+
+12 Agents
+
+1x–10x
+
+Browser / Electron
+
+流暢。
+
+目標：
+
+1920×1080
+
+普通場景：
+
+接近 60 FPS
+
+Storm + Fire + UI：
+
+不得嚴重跌落。
+
+不要承諾固定硬體 FPS。
+
+記錄實測。
+
+---
+
+# 核心功能 39 — LOD
+
+如果場景物件數明顯上升：
+
+加入簡單 LOD。
+
+例如：
+
+far:
+low detail
+
+near:
+full detail
+
+對：
+
+trees
+rocks
+buildings
+props
+
+優先使用：
+
+instancing。
+
+---
+
+# 核心功能 40 — Draw Call Discipline
+
+記錄：
+
+draw calls
+triangles
+texture memory
+GLB size
+
+不要為了畫面提升：
+
+導致過度 draw calls。
+
+---
+
+# Blender Art Direction
+
+整體風格：
+
+Stylized Low Poly
+Futuristic Survival Observatory
+
+不要：
+
+寫實軍事
+Fortnite copy
+Minecraft copy
+generic Unity asset-store look
+
+保持：
+
+現有冷色科技 UI
+
++
+溫和 low-poly island
+
++
+少量高辨識功能色。
+
+---
+
+# Materials
+
+建立有限 material palette。
+
+例如：
+
+Concrete
+Wood
+Metal
+Medical white
+Industrial dark
+Glass
+Water
+Terrain
+Vegetation
+Emission
+
+不要 100 個 material。
+
+---
+
+# Lighting
+
+重新做 Lighting pass。
+
+至少：
+
+sun / moon
+ambient
+fog
+POI lights
+campfire
+generator powered
+medical
+fire
+
+注意：
+
+Three.js / Web 性能。
+
+---
+
+# Postprocessing
+
+可用：
+
+bloom
+color grading
+vignette
+
+但不要：
+
+過曝
+過量 bloom
+motion blur
+
+如果現在已有：
+
+調整即可。
+
+---
+
+# Accessibility
+
+重要狀態不能只靠顏色。
+
+例如 POI：
+
+Controlled
+
+除了色彩，
+
+加入：
+
+icon / shape / line。
+
+---
+
+# Localization
+
+所有新 UI：
+
+zh-TW
+English
+
+使用既有 i18n。
+
+禁止 hardcoded user-facing strings。
+
+---
+
+# Story Compatibility
+
+v1.4 / v1.5 舊 Story：
+
+必須正常讀取。
+
+缺少 v1.6 visual-history data：
+
+使用 fallback。
+
+不要要求 migration 才能查看舊 Story。
+
+---
+
+# Save Compatibility
+
+v1.5 save：
+
+可以讀。
+
+若 v1.6 純 visual state：
+
+不要把它塞進 authoritative save。
+
+如果 visual traces 需要 replay：
+
+使用 optional versioned visual history。
+
+---
+
+# Determinism
+
+本版本非常重要：
+
+所有純視覺：
+
+- particles
+- animation phase
+- camera shake
+- visual debris
+- idle timing
+
+使用：
+
+visual-only RNG
+
+或：
+
+time-based deterministic rendering
+
+不得呼叫 simulation RNG。
+
+執行：
+
+v1.5 golden benchmark
+
+如果 gameplay core 沒改：
+
+應保持一致。
+
+---
+
+# Before / After QA
+
+必須建立：
+
+Before / After
+
+至少相同 Seed
+
+相同時間
+
+相同鏡頭
+
+例如：
+
+Seed 7
+t = 90
+
+v1.5 screenshot
+vs
+v1.6 screenshot
+
+用於驗收。
+
+---
+
+# Visual Acceptance Scenarios
+
+至少實際驗證：
+
+1. Day Village
+2. Night Clinic
+3. Generator Offline
+4. Generator Repaired
+5. Supply Cache Full
+6. Supply Cache Empty
+7. Door Closed
+8. Door Open
+9. Campfire Lit
+10. Storm Shelter
+11. Flooded Bridge
+12. Fire
+13. POI Capture
+14. Contested POI
+15. Agent Repair
+16. Agent Heal
+17. Broadcast
+18. Combat
+19. Death
+20. Replay same world state
+
+---
+
+# Automated QA
+
+原有測試全部重跑：
+
+npm test
+test:i18n
+test:ui
+test:results
+test:story
+test:desktop
+test:story:desktop
+world QA
+
+新增：
+
+visual-state tests
+
+不要只用 screenshot pixel-perfect。
+
+可以檢查：
+
+object transform
+visibility
+material state
+animation state
+controller marker
+replay state
+
+---
+
+# Screenshot QA
+
+至少：
+
+1920×1080
+1366×768
+
+Story：
+
+390×844
+
+觀測畫面：
+
+desktop priority。
+
+---
+
+# Required Screenshots
+
+新增：
+
+docs/images/v1.6-village.png
+
+docs/images/v1.6-clinic-night.png
+
+docs/images/v1.6-generator-repair.png
+
+docs/images/v1.6-storm.png
+
+docs/images/v1.6-fire.png
+
+docs/images/v1.6-poi-control.png
+
+docs/images/v1.6-combat.png
+
+docs/images/v1.6-cinematic.png
+
+---
+
+# Demo Video
+
+這版非常建議產生：
+
+docs/images/v1.6-world-demo.mp4
+
+約：
+
+30–60 秒
+
+內容：
+
+Agent moving
+
+search container
+
+repair generator
+
+storm
+
+POI capture
+
+combat
+
+night
+
+但不是 P0。
+
+---
+
+# Documentation
+
+建立：
+
+docs/V1.6_REPORT.md
+
+至少：
+
+1. Goal
+2. Existing visual baseline
+3. Art direction
+4. Blender pipeline
+5. POI redesign
+6. Interactable visual states
+7. Agent animation
+8. Environment
+9. Weather / day-night
+10. Damage / history traces
+11. Cinematic mode
+12. Camera
+13. Replay
+14. Performance
+15. Determinism
+16. QA
+17. Before / after
+18. Known limitations
+
+---
+
+# README
+
+更新：
+
+Physical World Update
+
+加入新版 screenshots。
+
+不要刪掉：
+
+Living World
+
+Story
+
+i18n
+
+相關內容。
+
+---
+
+# Git Strategy
+
+在現有 private repo。
+
+開始前：
+
+git status
+
+如果有未知修改：
+
+不要覆蓋。
+
+合理 commits。
+
+建議：
+
+feat(art): rebuild functional poi asset kit
+
+feat(world): add stateful interactable visuals
+
+feat(animation): add contextual agent interactions
+
+feat(world): add environmental traces and damage states
+
+feat(render): polish weather day-night and water
+
+feat(camera): add cinematic observer mode
+
+feat(replay): render historical world states
+
+perf(render): reduce draw calls and add lod
+
+test(v1.6): add visual-state and regression coverage
+
+docs(v1.6): add physical world report
+
+---
+
+# Version
+
+升級：
+
+v1.6.0
+
+同步：
+
+package
+Electron metadata
+UI
+README
+Release
+
+---
+
+# Release
+
+全部驗收通過後：
+
+tag：
+
+v1.6.0
+
+建立：
+
+Private GitHub Release
+
+附：
+
+Windows portable
+
+繁體中文 Release Notes。
+
+保留所有舊版。
+
+---
+
+# Acceptance Criteria
+
+結束前逐項確認：
+
+[ ] 8 個 POI 視覺明顯不同
+
+[ ] Clinic 一眼可辨識
+
+[ ] Watchtower 真的有高塔結構
+
+[ ] Depot 有 crates / storage visual
+
+[ ] Shelter 有可進入空間
+
+[ ] Bridge blocked state 可見
+
+[ ] Lake / river 更像真正水體
+
+[ ] Door 真的開關
+
+[ ] Container full / empty 可辨識
+
+[ ] Generator offline / damaged / online 可辨識
+
+[ ] Medical station active / unavailable 可辨識
+
+[ ] Campfire 狀態可辨識
+
+[ ] Search 有 animation
+
+[ ] Repair 有 animation
+
+[ ] Heal 有 animation
+
+[ ] Rest 有 animation
+
+[ ] Broadcast 有 animation
+
+[ ] Agent interaction 時會正確轉向
+
+[ ] locomotion 不再像滑動
+
+[ ] combat 有 hit feedback
+
+[ ] death 有 shutdown state
+
+[ ] POI control 不看 label 也看得出來
+
+[ ] contested state 可辨識
+
+[ ] fire 視覺與 gameplay state 一致
+
+[ ] flood 視覺與 blocker 一致
+
+[ ] rain / storm 明顯不同
+
+[ ] day / sunset / night 可辨識
+
+[ ] powered POI 夜間有光
+
+[ ] environmental traces 存在
+
+[ ] UI labels 減少 clutter
+
+[ ] zoom-aware labels 正常
+
+[ ] cinematic mode 正常
+
+[ ] event camera 不亂跳
+
+[ ] Replay 顯示歷史 world state
+
+[ ] v1.5 saves 可讀
+
+[ ] v1.4 / v1.5 Story 可讀
+
+[ ] zh-TW 完整
+
+[ ] English 完整
+
+[ ] Browser 正常
+
+[ ] Electron 正常
+
+[ ] portable 正常
+
+[ ] simulation RNG 不被 visual effects 污染
+
+[ ] 若 gameplay 未改，v1.5 golden 完全一致
+
+[ ] Performance 可接受
+
+[ ] Blender source 保留
+
+[ ] procedural generation script 可重建
+
+[ ] README 更新
+
+[ ] V1.6_REPORT 完成
+
+[ ] before / after 截圖完成
+
+[ ] Git clean
+
+[ ] push private repo
+
+[ ] v1.6.0 Release 完成
+
+任何失敗：
+
+繼續 Debug。
+
+不要把：
+
+PARTIAL
+
+寫成：
+
+COMPLETE。
+
+---
+
+# Stretch Goals
+
+核心全部完成後才考慮：
+
+- simple fire spread visual
+- repairable bridge visual
+- agent-built barricade visual
+- footprints
+- permanent scorch map
+- weather puddles
+- interior doors
+- simple windows
+- more robot animation
+- agent emotes
+- cinematic replay highlight reel
+- automatic trailer generation
+
+不要因 Stretch Goal 犧牲：
+
+performance
+determinism
+compatibility
+QA
+
+---
+
+# 最重要的產品目標
+
+完成 v1.6 後，
+
+使用者不應該需要看 Event Feed 才知道發生什麼。
+
+他應該可以直接從世界畫面看到：
+
+「那裡停電了。」
+
+「Atlas 正在修發電機。」
+
+「診所重新亮了。」
+
+「Nova 和 Lyra 控制了診所。」
+
+「Pax 正在靠近。」
+
+「北橋淹水了。」
+
+「Rune 被迫繞路。」
+
+「這裡剛剛發生過戰鬥。」
+
+「那個箱子已經被搜空了。」
+
+也就是：
+
+> 世界不只是告訴你它發生了什麼，
+> 而是讓你看見它發生了什麼。
+
+現在直接開始：
+
+Inspect current repository
+
+→
+
+Audit visual baseline
+
+→
+
+Upgrade Blender asset pipeline
+
+→
+
+Rebuild POIs
+
+→
+
+Implement stateful interactable visuals
+
+→
+
+Add interaction animation
+
+→
+
+Add interior / semi-interior spaces
+
+→
+
+Upgrade day/night/weather
+
+→
+
+Add environmental traces
+
+→
+
+Upgrade combat/death feedback
+
+→
+
+Reduce UI clutter
+
+→
+
+Add Cinematic Mode
+
+→
+
+Replay fidelity
+
+→
+
+Performance pass
+
+→
+
+Before/after QA
+
+→
+
+Browser / Electron / portable QA
+
+→
+
+Documentation
+
+→
+
+Git
+
+→
+
+Release v1.6.0
+
+不要停在規劃。
+
+做到真正可交付完成品。

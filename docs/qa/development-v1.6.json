@@ -1,0 +1,13 @@
+{
+  "version": "1.5.0",
+  "date": "2026-10-03T12:25:09.338Z",
+  "entry": "scripts/dev.mjs",
+  "frontend": "http://localhost:14297",
+  "checks": [
+    "Isolated dev entry starts",
+    "HTTP and WebSocket proxy connect to allocated backend",
+    "Actual unbundled React/Three.js canvas renders in zh-TW",
+    "Simulation advances without renderer errors"
+  ],
+  "errors": []
+}

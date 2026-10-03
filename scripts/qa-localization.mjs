@@ -11,6 +11,12 @@ const runtime = await startServer({
   config: { autoRestart: false },
 });
 const base = `http://localhost:${runtime.port}`;
+// Prepare a deterministic, paused social snapshot before launching the browser.
+// Wall-clock acceleration can finish the match while a loaded host starts Chrome.
+const localeFixture = runtime.getSimulation();
+while (localeFixture.elapsed < 64 && localeFixture.status === 'running') localeFixture.tick();
+assert.equal(localeFixture.status, 'running');
+localeFixture.status = 'paused';
 const browser = await launchBrowser({ channel: 'chrome', headless: true });
 const context = await browser.newContext();
 const page = await context.newPage();
@@ -135,9 +141,6 @@ try {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.locator('canvas').waitFor();
-  await post('/api/control', { action: 'speed', value: 32 });
-  await page.waitForTimeout(2000);
-  await post('/api/control', { action: 'pause' });
   await page.waitForTimeout(400);
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-TW');
   check('Fresh profile defaults to zh-TW with real generated social events');
@@ -147,7 +150,7 @@ try {
   ]) {
     await page.setViewportSize(size);
     await audit(`world ${size.width}`);
-    await page.screenshot({ path: `docs/images/v1.5-zh-TW-world-${size.width}.png` });
+    await page.screenshot({ path: `docs/images/v1.6-zh-TW-world-${size.width}.png` });
     for (const [nav, title] of [
       ['角色', '十二個心智'],
       ['紀錄', '世界事件紀錄'],
@@ -161,7 +164,7 @@ try {
       await page.waitForTimeout(200);
       await audit(`${nav} ${size.width}`);
       if (nav === '設定')
-        await page.screenshot({ path: `docs/images/v1.5-zh-TW-settings-${size.width}.png` });
+        await page.screenshot({ path: `docs/images/v1.6-zh-TW-settings-${size.width}.png` });
       await close();
     }
     await page.getByRole('button', { name: '操作與作品說明' }).click();
@@ -210,7 +213,7 @@ try {
   await page.getByRole('dialog', { name: '島嶼記得一切' }).waitFor();
   await page.getByText('最終生還者', { exact: true }).waitFor();
   await audit('winner historian');
-  await page.screenshot({ path: 'docs/images/v1.5-zh-TW-result.png' });
+  await page.screenshot({ path: 'docs/images/v1.6-zh-TW-result.png' });
   await close();
   await post('/api/control', { action: 'restart', value: 9 });
   const extinction = runtime.getSimulation();
@@ -223,7 +226,7 @@ try {
   await page.getByRole('dialog', { name: '島嶼記得一切' }).waitFor();
   await page.getByText('全滅事件', { exact: true }).waitFor();
   await audit('extinction historian');
-  await page.screenshot({ path: 'docs/images/v1.5-zh-TW-extinction.png' });
+  await page.screenshot({ path: 'docs/images/v1.6-zh-TW-extinction.png' });
   await close();
   check('Winner, extinction and templated Historian contain no untranslated fixed prose');
   await page.getByRole('button', { name: '模擬檔案庫', exact: true }).click();
@@ -263,7 +266,7 @@ try {
   await offline.close();
   assert.deepEqual(errors, []);
   await writeFile(
-    'docs/qa/localization-browser-v1.5.json',
+    'docs/qa/localization-browser-v1.6.json',
     JSON.stringify(
       {
         browser: 'Playwright Chrome (Browser plugin unavailable)',

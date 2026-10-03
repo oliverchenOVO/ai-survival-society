@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-03T13:15:57.872Z",
+  "sourceRevision": "3fb13541d7cbd0ce78bb314a45e9f80b0b8700fa",
+  "version": "1.6.0",
+  "unitTests": 34,
+  "regression": {
+    "primarySeeds": 50,
+    "holdoutSeeds": 50,
+    "goldenUpdated": false
+  },
+  "checks": {
+    "browser-results": {
+      "file": "docs/qa/browser-results-v1.6.json",
+      "status": "PASS"
+    },
+    "localization-browser": {
+      "file": "docs/qa/localization-browser-v1.6.json",
+      "status": "PASS"
+    },
+    "results": {
+      "file": "docs/qa/results-v1.6.json",
+      "status": "PASS"
+    },
+    "stories-browser": {
+      "file": "docs/qa/stories-browser-v1.6.json",
+      "status": "PASS"
+    },
+    "stories-desktop": {
+      "file": "docs/qa/stories-desktop-v1.6.json",
+      "status": "PASS"
+    },
+    "desktop-results": {
+      "file": "docs/qa/desktop-results-v1.6.json",
+      "status": "PASS"
+    },
+    "world-browser": {
+      "file": "docs/qa/world-browser-v1.6.json",
+      "status": "PASS"
+    },
+    "world-desktop": {
+      "file": "docs/qa/world-desktop-v1.6.json",
+      "status": "PASS"
+    },
+    "physical-browser": {
+      "file": "docs/qa/physical-browser-v1.6.json",
+      "status": "PASS"
+    },
+    "portable-results": {
+      "file": "docs/qa/portable-results-v1.6.json",
+      "status": "PASS"
+    },
+    "package-integrity": {
+      "file": "docs/qa/package-integrity-v1.6.json",
+      "status": "PASS"
+    },
+    "assets": {
+      "file": "docs/qa/assets-v1.6.json",
+      "status": "PASS"
+    }
+  },
+  "optionalDeferred": [
+    "positional audio (not P0)",
+    "Story screenshot archive (P1)",
+    "demo MP4 (not P0)"
+  ]
+}

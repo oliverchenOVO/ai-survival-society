@@ -125,7 +125,7 @@ try {
     updateWorld(s, 0.25);
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'docs/images/v1.5-day-world.png' });
+    await page.screenshot({ path: 'docs/images/v1.6-day-world.png' });
     const g = s.world.objects.find((o) => o.type === 'generator');
     a.position = { ...g.position };
     a.target = g.id;
@@ -138,11 +138,11 @@ try {
     updateWorld(s, 11);
     assert.equal(clinic.controller, a.id);
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'docs/images/v1.5-clinic-control.png' });
+    await page.screenshot({ path: 'docs/images/v1.6-clinic-control.png' });
     s.elapsed = 100;
     s.world.timeOfDay = 'night';
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'docs/images/v1.5-night-world.png' });
+    await page.screenshot({ path: 'docs/images/v1.6-night-world.png' });
     setWeather(s, 'storm', 60);
     const bed = s.world.objects.find((o) => o.type === 'bed' && o.poi === 'poi_shelter');
     a.position = { ...bed.position };
@@ -152,10 +152,10 @@ try {
     performInteraction(s, a, bed, 1);
     await page.waitForTimeout(500);
     assert.ok((await page.locator('.living-hud').innerText()).includes('暴風雨'));
-    await page.screenshot({ path: 'docs/images/v1.5-storm-shelter.png' });
+    await page.screenshot({ path: 'docs/images/v1.6-storm-shelter.png' });
     startHazard(s, 'fire', 'poi_village');
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'docs/images/v1.5-fire-event.png' });
+    await page.screenshot({ path: 'docs/images/v1.6-fire-event.png' });
     check(
       'Authority fixtures: day/night, generator restoration, clinic control, storm shelter and fire rendered',
     );
@@ -167,6 +167,7 @@ try {
   await page.reload();
   await page.locator('.living-hud').waitFor();
   check('Saved world resumes intact and remains intact after reload');
+  await page.setViewportSize({width:1920,height:1080});
   for (const speed of [1, 10]) {
     await post('/api/control', { action: 'speed', value: speed });
     await post('/api/control', { action: 'resume' });
@@ -232,7 +233,7 @@ try {
   assert.deepEqual(errors, []);
   check('No renderer/console errors');
   await writeFile(
-    `docs/qa/world-${desktop ? 'desktop' : 'browser'}-v1.5.json`,
+    `docs/qa/world-${desktop ? 'desktop' : 'browser'}-v1.6.json`,
     JSON.stringify(
       {
         date: new Date().toISOString(),

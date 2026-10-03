@@ -1,0 +1,11 @@
+{
+  "blender": "3.1.2",
+  "script": "Art/Blender/generate_world_assets.py",
+  "rebuilt": true,
+  "identicalGLB": true,
+  "meshes": 19,
+  "materials": 8,
+  "textures": 0,
+  "glbBytes": 27856,
+  "sha256": "545BA233BB4FC5BD4D88DA664210FB3C7C5AD906385082ED61464104E63F3665"
+}

@@ -310,3 +310,122 @@
 - [x] 最終逐項驗收；任何未完成不得寫 COMPLETE；stretch 不犧牲核心品質。
 
 最終驗收：27/27 與 100-seed golden、Browser／Electron／portable 全部通過；私人 Release v1.5.0 已發布，GitHub asset digest 與本機一致。應用程式 revision b118945，Release tag 725ffde，發布後驗收紀錄另提交至 main。
+
+## v1.6.0 — Physical World & Visual Polish
+
+原始完整需求：docs/V1.6_REQUIREMENTS.txt。以下保留每項核心功能與附件驗收條件；P1 / 非 P0 / Stretch 另記，不能冒充完成。
+
+- [x] Phase 1 — Inspect Existing Art & Rendering Pipeline
+- [x] 核心功能 1 — POI Visual Redesign
+- [x] 核心功能 2 — Blender Asset Pipeline Upgrade
+- [x] 核心功能 3 — Modular Asset Kit
+- [x] 核心功能 4 — Stateful Visual Objects
+- [x] 核心功能 5 — Real Interaction Animation
+- [x] 核心功能 6 — Contextual Agent Facing
+- [x] 核心功能 7 — Locomotion Polish
+- [x] 核心功能 8 — POI Interior / Semi-Interior
+- [x] 核心功能 9 — Interior Lighting
+- [x] 核心功能 10 — Environmental Damage States
+- [x] 核心功能 11 — Environmental Traces
+- [x] 核心功能 12 — World History Layer
+- [x] 核心功能 13 — Control Visual Language
+- [x] 核心功能 14 — Less Floating Labels
+- [x] 核心功能 15 — World UI Declutter
+- [x] 核心功能 16 — Interaction Status Bubble
+- [x] 核心功能 17 — Dialogue Bubble Upgrade
+- [x] 核心功能 18 — Combat Visual Feedback
+- [x] 核心功能 19 — Death State
+- [x] 核心功能 20 — Fire Visual Upgrade
+- [x] 核心功能 21 — Flood Visual Upgrade
+- [x] 核心功能 22 — Weather Polish
+- [x] 核心功能 23 — Day / Night Polish
+- [x] 核心功能 24 — Vegetation Motion
+- [x] 核心功能 25 — Water Polish
+- [x] 核心功能 26 — Roads & Paths
+- [x] 核心功能 27 — Scene Composition
+- [x] 核心功能 28 — Camera Polish
+- [x] 核心功能 29 — Event Camera
+- [x] 核心功能 30 — Observer / Cinematic Toggle
+- [x] 核心功能 31 — Cinematic HUD
+- [x] 核心功能 32 — Major Event Banner
+- [x] 核心功能 33 — Visual Sound Feedback
+- [ ] 核心功能 34 — Audio Spatialization（非 P0，延後，未實作）
+- [ ] 核心功能 35 — Story Screenshot Integration（P1，延後，未實作）
+- [x] 核心功能 36 — Replay Visual Fidelity
+- [x] 核心功能 37 — Asset Loading
+- [x] 核心功能 38 — Performance Budget
+- [x] 核心功能 39 — LOD
+- [x] 核心功能 40 — Draw Call Discipline
+- [x] Blender Art Direction
+- [x] Materials
+- [x] Lighting
+- [x] Postprocessing
+- [x] Accessibility
+- [x] Localization
+- [x] Story Compatibility
+- [x] Save Compatibility
+- [x] Determinism
+- [x] Before / After QA
+- [x] Visual Acceptance Scenarios
+- [x] Automated QA
+- [x] Screenshot QA
+- [x] Required Screenshots
+- [x] Documentation
+- [x] README
+- [x] Git Strategy
+- [x] Version
+- [ ] Release
+- [x] 8 個 POI 視覺明顯不同
+- [x] Clinic 一眼可辨識
+- [x] Watchtower 真的有高塔結構
+- [x] Depot 有 crates / storage visual
+- [x] Shelter 有可進入空間
+- [x] Bridge blocked state 可見
+- [x] Lake / river 更像真正水體
+- [x] Door 真的開關
+- [x] Container full / empty 可辨識
+- [x] Generator offline / damaged / online 可辨識
+- [x] Medical station active / unavailable 可辨識
+- [x] Campfire 狀態可辨識
+- [x] Search 有 animation
+- [x] Repair 有 animation
+- [x] Heal 有 animation
+- [x] Rest 有 animation
+- [x] Broadcast 有 animation
+- [x] Agent interaction 時會正確轉向
+- [x] locomotion 不再像滑動
+- [x] combat 有 hit feedback
+- [x] death 有 shutdown state
+- [x] POI control 不看 label 也看得出來
+- [x] contested state 可辨識
+- [x] fire 視覺與 gameplay state 一致
+- [x] flood 視覺與 blocker 一致
+- [x] rain / storm 明顯不同
+- [x] day / sunset / night 可辨識
+- [x] powered POI 夜間有光
+- [x] environmental traces 存在
+- [x] UI labels 減少 clutter
+- [x] zoom-aware labels 正常
+- [x] cinematic mode 正常
+- [x] event camera 不亂跳
+- [x] Replay 顯示歷史 world state
+- [x] v1.5 saves 可讀
+- [x] v1.4 / v1.5 Story 可讀
+- [x] zh-TW 完整
+- [x] English 完整
+- [x] Browser 正常
+- [x] Electron 正常
+- [x] portable 正常
+- [x] simulation RNG 不被 visual effects 污染
+- [x] 若 gameplay 未改，v1.5 golden 完全一致
+- [x] Performance 可接受
+- [x] Blender source 保留
+- [x] procedural generation script 可重建
+- [x] README 更新
+- [x] V1.6_REPORT 完成
+- [x] before / after 截圖完成
+- [ ] Git clean
+- [ ] push private repo
+- [ ] v1.6.0 Release 完成
+
+驗收證據：docs/qa/*-v1.6.json、tests/visual-state.test.mjs 與 docs/V1.6_REPORT.md。LOD 經預算評估採共享幾何、instancing、遠近標籤層級；本次無新增幾何 LOD。影片是非 P0，未產出。

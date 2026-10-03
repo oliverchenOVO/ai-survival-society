@@ -1,5 +1,18 @@
 # AI Survival Society
 
+**v1.6.0 — Physical World & Visual Polish Update。** 八個地標現在有可辨識的實體構造；門以鉸鏈開啟，箱蓋與內容物反映耗盡，發電機有維修火花、進度與運轉馬達，醫療站／營火有清楚狀態。角色會面向互動對象並使用程序式手腳動作；戰鬥留下痕跡，死亡留下停機殘骸。新增半室內空間、據點旗幟、雨與風、夜間照明及電影式觀察模式。
+
+鏡頭工具的影片圖示切換「觀測儀表／電影式觀察」，標籤圖示切換地點名稱；靠近時以物件與互動狀態為主，遠處顯示地標與角色群集。點地標或其實體構造可平滑聚焦。音效按鈕開啟既有程序式音效。設定仍可持久切換繁體中文／English。重播顯示當時物件狀態與事件痕跡，倒退不保留未來狀態。
+
+本版**不修改 gameplay**：Utility AI、社交、碰撞、資源與 RNG 沿用 v1.5；原 100-seed golden 不更新。Blender 模組套件只有約 28 KB，保留來源與 CLI 重建腳本，沒有新增大型字體／材質。使用 `npm run test:visual` 驗證實體物件狀態與歷史重播；完整說明見 [v1.6 報告](docs/V1.6_REPORT.md)。
+
+![聚落](docs/images/v1.6-village.png)
+![夜間診所](docs/images/v1.6-clinic-night.png)
+![發電機維修](docs/images/v1.6-generator-repair.png)
+![電影式觀察](docs/images/v1.6-cinematic.png)
+
+Windows portable：[私人 v1.6.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.6.0)。既有 Living World、Story、i18n 與舊版 Release 均保留。
+
 **v1.5.0 — Living World Update。** 角色現在會搜索有限補給箱、開門或破門、使用休息處與營火、修復發電機、使用醫療站、登塔與廣播。八種據點可被控制、爭奪與放棄；夜晚、雨、暴風雨、火災與北橋洪水會影響視野、風險與路線。世界認知有時效，角色不再知道全島即時補給。
 
 在角色觀察器展開「世界認知」查看已知／過期資訊。世界上方顯示時間與天候；據點標記顯示控制者，自動避讓避免重疊；指向細線保留地點位置，滑鼠停留可查看完整控制者名單。速度選單新增 10×。「檔案庫」中有 v1.5 checkpoint 的未完成局可按「繼續已保存的模擬」恢復，先暫停供檢視，再按「繼續」。已完成局的 Story 新增 World Moments，角色生平新增重要地點；可從事件跳至包含當時世界狀態的重播。
@@ -9,7 +22,7 @@
 ![Living World 白晝](docs/images/v1.5-day-world.png)
 ![診所控制](docs/images/v1.5-clinic-control.png)
 
-最新 Windows portable：[私人 v1.5.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0)。需要有倉庫存取權；公開網站部署仍須 Node backend 與持久化 DATA_DIR。
+歷史 Windows portable：[私人 v1.5.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0)。需要有倉庫存取權；公開網站部署仍須 Node backend 與持久化 DATA_DIR。
 
 **Twelve minds. A smaller tomorrow.** A living 3D island where autonomous robots build trust, exchange supplies, form alliances and sometimes betray each other to survive.
 
@@ -27,7 +40,7 @@ Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://loc
 
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
-最新單檔桌面版：[私人 Release v1.5.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0)，下載 `AI-Survival-Society-1.5.0.exe` 即可執行。舊版 Release 保留。
+最新單檔桌面版：[私人 Release v1.6.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.6.0)，下載 `AI-Survival-Society-1.6.0.exe` 即可執行。舊版 Release 保留。
 
 遊戲啟動後自動運行。上方可暫停／繼續／重新開始、設定速度。設定可切換語言、改 Seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
 
