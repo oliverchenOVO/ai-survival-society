@@ -62,5 +62,19 @@
     "positional audio (not P0)",
     "Story screenshot archive (P1)",
     "demo MP4 (not P0)"
-  ]
+  ],
+  "release": {
+    "status": "PASS",
+    "url": "https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.6.0",
+    "publishedAt": "2026-10-03T13:24:05Z",
+    "digestMatches": true,
+    "bytesMatch": true,
+    "tagCommit": "b67bcdf"
+  },
+  "live": {
+    "url": "http://localhost:4310/",
+    "status": "running",
+    "autoRestart": true,
+    "actualChrome": "PASS"
+  }
 }

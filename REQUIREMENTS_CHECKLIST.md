@@ -374,7 +374,7 @@
 - [x] README
 - [x] Git Strategy
 - [x] Version
-- [ ] Release
+- [x] Release
 - [x] 8 個 POI 視覺明顯不同
 - [x] Clinic 一眼可辨識
 - [x] Watchtower 真的有高塔結構
@@ -424,8 +424,8 @@
 - [x] README 更新
 - [x] V1.6_REPORT 完成
 - [x] before / after 截圖完成
-- [ ] Git clean
-- [ ] push private repo
-- [ ] v1.6.0 Release 完成
+- [x] Git clean
+- [x] push private repo
+- [x] v1.6.0 Release 完成
 
 驗收證據：docs/qa/*-v1.6.json、tests/visual-state.test.mjs 與 docs/V1.6_REPORT.md。LOD 經預算評估採共享幾何、instancing、遠近標籤層級；本次無新增幾何 LOD。影片是非 P0，未產出。
