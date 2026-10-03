@@ -502,8 +502,8 @@
 - [x] Documentation
 - [x] README
 - [x] Version
-- [ ] Git
-- [ ] Release
+- [x] Git
+- [x] Release
 - [x] Acceptance Criteria
 - [x] Stretch Goals — optional，未犧牲核心驗收追加功能
 - [x] 最重要的產品目標
@@ -560,6 +560,6 @@
 - [x] 10x simulation 性能可接受
 - [x] README 更新
 - [x] V1.7_REPORT 完成
-- [ ] Git clean
-- [ ] push private repo
-- [ ] v1.7.0 Release 完成
+- [x] Git clean
+- [x] push private repo
+- [x] v1.7.0 Release 完成

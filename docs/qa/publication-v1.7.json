@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-03T21:12:23.065Z",
+  "repository": "oliverchenOVO/ai-survival-society",
+  "private": true,
+  "release": {
+    "url": "https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.7.0",
+    "tag": "v1.7.0",
+    "draft": false,
+    "prerelease": false,
+    "latest": true
+  },
+  "source": {
+    "tagCommit": "dab07939629a31d0902bd51ae4b79735213f9319",
+    "mainAtPublication": "dab07939629a31d0902bd51ae4b79735213f9319"
+  },
+  "asset": {
+    "name": "AI-Survival-Society-1.7.0.exe",
+    "bytes": 102766578,
+    "digest": "sha256:66f780194d556a1eff2f1e31ac4b47138d4c2ac288d9b55d7a0b7b5e5213666d",
+    "url": "https://github.com/oliverchenOVO/ai-survival-society/releases/download/v1.7.0/AI-Survival-Society-1.7.0.exe",
+    "state": "uploaded"
+  },
+  "preservedReleases": [
+    "v1.6.0",
+    "v1.5.0",
+    "v1.4.0",
+    "v1.1.1",
+    "v1.1.0",
+    "v1.0.0"
+  ],
+  "checks": [
+    "GitHub repository remains private",
+    "Published stable latest Release",
+    "Uploaded size and GitHub SHA-256 digest match the locally tested executable",
+    "Tag and main match the tested source and QA records",
+    "All six earlier Releases preserved"
+  ]
+}
