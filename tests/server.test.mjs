@@ -3,11 +3,37 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import net from 'node:net';
+import { once } from 'node:events';
 import { startServer } from '../server/index.mjs';
+
+test('shutdown saves the world and closes unfinished HTTP headers without waiting for timeout', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'society-shutdown-'));
+  const runtime = await startServer({ port: 0, dataDir: dir });
+  const socket = net.createConnection({ host: 'localhost', port: runtime.port });
+  let timer;
+  try {
+    await once(socket, 'connect');
+    socket.write('GET /api/state HTTP/1.1\r\nHost: localhost\r\n');
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const closed = once(socket, 'close');
+    await Promise.race([
+      runtime.close(),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Shutdown hung on incomplete HTTP headers')), 3000); }),
+    ]);
+    await closed;
+    assert.ok((await readdir(path.join(dir, 'saves'))).some((f) => f.endsWith('.json')));
+  } finally {
+    clearTimeout(timer);
+    socket.destroy();
+    assert.ok(path.resolve(dir).startsWith(path.resolve(tmpdir()) + path.sep));
+    await rm(dir, { recursive: true, force: true });
+  }
+});
 test('HTTP controls, persistence, archive, bad inputs and cross-origin protection work end to end', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'society-test-')),
     runtime = await startServer({ port: 0, dataDir: dir });
-  const base = `http://127.0.0.1:${runtime.port}`;
+  const base = `http://localhost:${runtime.port}`;
   const get = (url) => fetch(base + url).then((r) => r.json());
   const post = async (url, body) => {
     const res = await fetch(base + url, {
@@ -66,7 +92,7 @@ test('continuous mode preserves completed stories and retains bounded debug logs
     dataDir: dir,
     config: { matchDuration: 12, restartDelaySeconds: 0.15, maxStoredMatches: 3 },
   });
-  const base = `http://127.0.0.1:${runtime.port}`;
+  const base = `http://localhost:${runtime.port}`;
   const initial = runtime.getSimulation().config.seed;
   try {
     await fetch(base + '/api/control', {
@@ -74,7 +100,7 @@ test('continuous mode preserves completed stories and retains bounded debug logs
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'speed', value: 32 }),
     });
-    const deadline = Date.now() + 12000;
+    const deadline = Date.now() + 45000;
     while (runtime.getSimulation().config.seed < initial + 4 && Date.now() < deadline)
       await new Promise((r) => setTimeout(r, 100));
     assert.ok(

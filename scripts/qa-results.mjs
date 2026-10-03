@@ -1,3 +1,4 @@
+import { launchBrowser } from './qa-runtime.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { startServer } from '../server/index.mjs';
@@ -6,24 +7,32 @@ const baseline = process.argv.includes('--baseline');
 const runtime = await startServer({
   port: 0,
   dataDir: '.qa/results-data',
-  config: { seed: 7, matchDuration: 4, speed: 32, restartDelaySeconds: 2, agentCount: 2 },
+  config: {
+    autoRestart: false,
+    seed: 7,
+    matchDuration: 4,
+    speed: 32,
+    restartDelaySeconds: 2,
+    agentCount: 2,
+  },
 });
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const browser = await launchBrowser({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
-const base = `http://127.0.0.1:${runtime.port}`;
+const base = `http://localhost:${runtime.port}`;
 await mkdir('docs/qa', { recursive: true });
 await mkdir('docs/images', { recursive: true });
 try {
   await page.addInitScript(() => localStorage.setItem('society.locale.v1', 'en'));
-  await page.goto(base);
+  await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
   const dialog = page.getByRole('dialog', { name: 'The island remembers' });
   await dialog.waitFor({ timeout: 30000 });
   if (!baseline) await dialog.getByRole('link', { name: 'Export this history' }).waitFor();
   const old = await dialog.innerText();
   const completed = await page.request.get(base + '/api/state').then((r) => r.json());
   assert.equal(completed.status, 'finished');
+  await page.request.post(base + '/api/control', { data: { action: 'auto_restart', value: true } });
   await page.request.post(base + '/api/control', { data: { action: 'speed', value: 1 } });
   await page.waitForFunction(
     async (id) => (await fetch('/api/state').then((r) => r.json())).matchId !== id,
@@ -31,16 +40,17 @@ try {
     { timeout: 10000 },
   );
   await page.request.post(base + '/api/control', { data: { action: 'pause' } });
+  const nextWorld = await page.request.get(base + '/api/state').then((r) => r.json());
   await page.waitForFunction(
-    () => document.querySelector('.simulation-strip')?.textContent.includes('SEED 8'),
-    null,
-    { timeout: 10000 },
+    (seed) => document.querySelector('.simulation-strip')?.textContent.includes('SEED ' + seed),
+    nextWorld.seed,
+    { timeout: 30000 },
   );
   const after = await dialog.innerText();
   if (baseline) {
     assert.ok(after.includes('No survivors'));
     await writeFile(
-      'docs/qa/results-bug-before.json',
+      'docs/qa/results-fixture-v1.5.json',
       JSON.stringify({ old, after, completedMatch: completed.matchId, errors }, null, 2),
     );
     console.log('REPRODUCED: old result reads new live run and displays No survivors');
@@ -55,7 +65,7 @@ try {
     assert.equal(exported.matchId, completed.matchId);
     assert.equal(exported.elapsed, completed.elapsed);
     assert.deepEqual(exported.stats, completed.stats);
-    await page.screenshot({ path: 'docs/images/v1.1-result.png' });
+    await page.screenshot({ path: 'docs/images/v1.5-result.png' });
     await dialog.getByRole('button', { name: 'Close dialog' }).click();
     await page.request.post(base + '/api/control', {
       data: { action: 'auto_restart', value: false },
@@ -78,13 +88,13 @@ try {
     assert.equal(extinction.matchId, sim.matchId);
     assert.equal(extinction.winner, null);
     assert.equal(extinction.outcome.kind, 'extinction');
-    await page.screenshot({ path: 'docs/images/v1.1-extinction.png' });
+    await page.screenshot({ path: 'docs/images/v1.5-extinction.png' });
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.screenshot({ path: 'docs/images/v1.1-extinction-mobile.png' });
+    await page.screenshot({ path: 'docs/images/v1.5-extinction-mobile.png' });
     assert.ok(await dialog.isVisible());
     assert.deepEqual(errors, []);
     await writeFile(
-      'docs/qa/results-ui.json',
+      'docs/qa/results-v1.5.json',
       JSON.stringify(
         {
           browser: 'Playwright Chrome; Browser plugin not available',

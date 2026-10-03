@@ -33,7 +33,7 @@ app.whenReady().then(async () => {
       autoHideMenuBar: true,
       webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true },
     });
-    const origin = `http://127.0.0.1:${runtime.port}`;
+    const origin = `http://localhost:${runtime.port}`;
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     win.webContents.on('will-navigate', (event, url) => {
       if (!url.startsWith(origin + '/')) event.preventDefault();

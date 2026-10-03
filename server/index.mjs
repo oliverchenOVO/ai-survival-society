@@ -73,9 +73,31 @@ export async function startServer(options = {}) {
     return snapshot();
   };
   app.get('/api/health', (_, res) =>
-    res.json({ ok: true, app: 'AI Survival Society', version: '1.4.0' }),
+    res.json({ ok: true, app: 'AI Survival Society', version: '1.5.0' }),
   );
   app.get('/api/state', (_, res) => res.json(snapshot()));
+  app.post('/api/load', async (req, res) => {
+    try {
+      const data = await store.read(req.body.id);
+      if (data.status === 'finished') throw new Error('Only unfinished checkpoints can resume');
+      const loaded = Simulation.fromSave(data);
+      await store.persist(sim);
+      models.reset();
+      sim = loaded;
+      sim.status = 'paused';
+      store.identities.set(sim, {
+        simulationId: data.simulation_id,
+        startedAt: data.startedAt,
+        simulationVersion: '1.5.0',
+        finishedAt: null,
+      });
+      finishedAt = null;
+      savedAt = 0;
+      res.json(snapshot());
+    } catch {
+      res.status(400).json({ error: 'Save has no living-world checkpoint' });
+    }
+  });
   app.get('/api/preferences', (_, res) => res.json({ language: preferences.language }));
   app.post('/api/preferences', async (req, res) => {
     if (!['zh-TW', 'en'].includes(req.body.language))
@@ -115,7 +137,7 @@ export async function startServer(options = {}) {
         await restart(value ?? sim.config.seed);
         break;
       case 'speed':
-        if (![0.5, 1, 2, 4, 8, 16, 32].includes(value))
+        if (![0.5, 1, 2, 4, 8, 10, 16, 32].includes(value))
           return res.status(400).json({ error: 'Unsupported speed' });
         speed = value;
         break;
@@ -329,7 +351,7 @@ export async function startServer(options = {}) {
   }, 100);
   let accumulator = 0;
   const port = options.port ?? Number(process.env.PORT ?? 4310),
-    host = options.host ?? process.env.HOST ?? '127.0.0.1';
+    host = options.host ?? process.env.HOST ?? 'localhost';
   await new Promise((resolve, reject) => {
     server.once('error', reject);
     server.listen(port, host, resolve);
@@ -349,7 +371,13 @@ export async function startServer(options = {}) {
       await store.persist(sim);
       for (const socket of wss.clients) socket.terminate();
       await new Promise((resolve) => wss.close(resolve));
-      await new Promise((resolve) => server.close(resolve));
+      await new Promise((resolve) => {
+        server.close(resolve);
+        // A renderer can leave an accepted HTTP connection without complete
+        // headers. Save first, then drain it so desktop quit never waits on
+        // the HTTP header timeout. Upgraded sockets were terminated above.
+        server.closeAllConnections();
+      });
     },
   };
 }

@@ -6,6 +6,7 @@ import { chooseDecision } from './utility.mjs';
 import { executeAction } from './actions.mjs';
 import { generateHistory } from './historian.mjs';
 import { safeRadiusAt } from './rules.mjs';
+import { createLivingWorld, updateWorld, setWeather, worldEvent, poiAt } from './living-world.mjs';
 export const DIRECTOR_EVENTS = [
   'food_crisis',
   'supply_drop',
@@ -42,6 +43,7 @@ export class Simulation {
     this.nextResource = 6;
     this.nextSnapshot = 0;
     this.timeline = [];
+    this.world = createLivingWorld(this.config.seed);
     this.matchId = `${Date.now()}-${this.config.seed}`;
     for (let i = 0; i < 36; i++) this.resources.push(createResource(this));
     this.event(
@@ -54,6 +56,8 @@ export class Simulation {
     );
   }
   event(type, a, b, result, data = {}, importance = 0.5, relationship_change = {}) {
+    const location = a || b ? poiAt(this.world, (b ?? a).position) : null;
+    data = { ...data, poi: data.poi ?? location?.id ?? null };
     const e = this.bus.emit({
       timestamp: +this.elapsed.toFixed(2),
       actor: a?.id ?? 'WORLD',
@@ -80,6 +84,11 @@ export class Simulation {
         ['ATTACK', 'BETRAYAL', 'THEFT', 'DEATH', 'ALLIANCE_BROKEN'].includes(type) ? -0.9 : 0.6,
         importance,
       );
+    if (['ATTACK', 'BETRAYAL', 'THEFT'].includes(type))
+      for (const agent of [a, b].filter(Boolean)) {
+        if (agent.worldKnowledge?.[location?.id])
+          agent.worldKnowledge[location.id].lastConflict = this.elapsed;
+      }
     return e;
   }
   breakAlliance(a, b, cause) {
@@ -133,6 +142,7 @@ export class Simulation {
   tick(dt = this.config.tickSeconds) {
     if (this.status !== 'running') return;
     this.elapsed += dt;
+    updateWorld(this, dt);
     this.safeRadius = safeRadiusAt(
       this.elapsed,
       this.config.matchDuration,
@@ -190,6 +200,7 @@ export class Simulation {
     if (this.elapsed >= this.nextSnapshot) {
       this.timeline.push({
         timestamp: +this.elapsed.toFixed(2),
+        world: structuredClone(this.world),
         stats: this.stats(),
         agents: this.agents.map((a) => ({
           id: a.id,
@@ -229,6 +240,17 @@ export class Simulation {
           'Food crisis: food regeneration reduced by 70% for 90 seconds. Rare supplies are unaffected.';
         break;
       case 'supply_drop':
+        {
+          const o = structuredClone(this.world.objects.find((o) => o.type === 'container'));
+          o.id = `drop_${++this.world.serial}`;
+          o.poi = 'poi_depot';
+          o.position = { x: 0, z: 0 };
+          o.state = 'full';
+          o.metadata.stock = { food: 8, medicine: 3, weapon: 2, wood: 3, water: 3, relic: 0 };
+          o.metadata.occupants = [];
+          this.world.objects.push(o);
+          this.world.pois.find((p) => p.id === o.poi).interactables.push(o.id);
+        }
         for (let i = 0; i < 9; i++)
           this.resources.push(
             createResource(this, i % 3 === 0 ? 'weapon' : i % 3 === 1 ? 'medicine' : 'food', {
@@ -239,7 +261,7 @@ export class Simulation {
         description = 'A rare supply drop landed at the central beacon.';
         break;
       case 'storm':
-        this.effects.storm = this.elapsed + 60;
+        setWeather(this, 'storm', 60);
         description = 'Storm: movement speed reduced for 60 seconds.';
         break;
       case 'rumor': {
@@ -260,6 +282,9 @@ export class Simulation {
         break;
       }
       case 'treasure':
+        this.world.objects.find(
+          (o) => o.poi === 'poi_ruins' && o.type === 'container',
+        ).metadata.stock.relic += 3;
         for (let i = 0; i < 6; i++)
           this.resources.push(createResource(this, i % 2 ? 'relic' : 'medicine'));
         description = 'Rare relics and medicine have appeared across the island.';
@@ -320,6 +345,7 @@ export class Simulation {
       resources: this.resources,
       zones: ZONES,
       effects: this.effects,
+      world: this.world,
       stats: this.stats(),
       events: this.bus.log.slice(-100),
       eventCount: this.bus.log.length,
@@ -335,6 +361,45 @@ export class Simulation {
       events: this.bus.log,
       timeline: this.timeline,
       config: this.config,
+      checkpoint: {
+        rngState: this.rng.getState(),
+        resourceId: this.resourceId,
+        nextResource: this.nextResource,
+        nextSnapshot: this.nextSnapshot,
+      },
     };
+  }
+  static fromSave(data) {
+    if (
+      data?.schemaVersion !== 1 ||
+      !Array.isArray(data.agents) ||
+      data.world?.schemaVersion !== 1 ||
+      !Array.isArray(data.world.objects) ||
+      !Array.isArray(data.world.pois) ||
+      !Array.isArray(data.world.hazards) ||
+      !Number.isInteger(data.checkpoint?.rngState)
+    )
+      throw new Error('Save has no living-world checkpoint');
+    const sim = new Simulation(data.config);
+    for (const key of [
+      'elapsed',
+      'safeRadius',
+      'agents',
+      'resources',
+      'effects',
+      'world',
+      'status',
+      'winner',
+      'outcome',
+      'history',
+      'timeline',
+      'matchId',
+    ])
+      sim[key] = structuredClone(data[key]);
+    sim.bus.log = structuredClone(data.events);
+    Object.assign(sim, data.checkpoint);
+    sim.rng.setState(data.checkpoint.rngState);
+    delete sim.rngState;
+    return sim;
   }
 }

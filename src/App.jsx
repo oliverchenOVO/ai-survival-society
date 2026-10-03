@@ -258,6 +258,7 @@ export default function App({ initialReplayId = null, initialReplayTime = 0 }) {
       [...replay.timeline].reverse().find((f) => f.timestamp <= replayTime) ?? replay.timeline[0];
     state = {
       ...replay,
+      world: frame?.world ?? null,
       elapsed: replayTime,
       status: 'paused',
       speed: live.speed,
@@ -376,7 +377,7 @@ export default function App({ initialReplayId = null, initialReplayTime = 0 }) {
             value={live.speed}
             onChange={(e) => control('speed', Number(e.target.value))}
           >
-            {[0.5, 1, 2, 4, 8, 16, 32].map((v) => (
+            {[0.5, 1, 2, 4, 8, 10, 16, 32].map((v) => (
               <option key={v} value={v}>
                 {t('speed.option', {
                   speed: v,

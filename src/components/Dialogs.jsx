@@ -430,6 +430,20 @@ export function ReplayLibrary({ onClose, onLoad, onError }) {
                 <ArrowRight size={17} />
               </button>
               <div className="library-meta">
+                {r.resumable ? (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await request('/api/load', { id: r.id });
+                        location.href = '/';
+                      } catch (e) {
+                        onError(e);
+                      }
+                    }}
+                  >
+                    {t('world.resume')}
+                  </button>
+                ) : null}
                 <time>
                   {r.date ? new Date(r.date).toLocaleString(locale) : t('story.unknownDate')}
                 </time>

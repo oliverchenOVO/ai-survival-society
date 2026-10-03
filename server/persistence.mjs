@@ -30,6 +30,7 @@ export class Persistence {
     this.identities = new WeakMap();
     this.deleted = new Set();
     this.index = new Map();
+    this.records = new Map();
   }
   async atomic(file, data) {
     await writeFile(file + '.tmp', JSON.stringify(data));
@@ -65,6 +66,7 @@ export class Persistence {
         }
         this.index.set(id, file);
         this.index.set(d.matchId, file);
+        this.records.set(file, { status: d.status, date: d.startedAt ?? d.matchId.split('-')[0] });
       } catch {
         this.index.set(file.replace(/\.json$/, ''), file);
       }
@@ -75,7 +77,7 @@ export class Persistence {
       this.identities.set(sim, {
         simulationId: newStoryId(),
         startedAt: new Date().toISOString(),
-        simulationVersion: '1.4.0',
+        simulationVersion: '1.5.0',
         finishedAt: null,
       });
     return this.identities.get(sim);
@@ -109,6 +111,10 @@ export class Persistence {
         });
         this.index.set(data.simulation_id, file);
         this.index.set(data.matchId, file);
+        this.records.set(file, {
+          status: data.status,
+          date: data.startedAt ?? data.matchId.split('-')[0],
+        });
         await this.prune();
       });
     return this.chain;
@@ -152,6 +158,7 @@ export class Persistence {
           matchId: d.matchId,
           seed: d.seed,
           status: d.status,
+          resumable: Boolean(d.world && d.checkpoint && d.status !== 'finished'),
           outcome: d.story?.outcome ?? d.outcome ?? null,
           elapsed: d.elapsed,
           winner: d.agents.find((a) => a.id === d.winner)?.name ?? null,
@@ -188,6 +195,7 @@ export class Persistence {
             if (e.code !== 'ENOENT') throw e;
           });
         for (const [key, value] of this.index) if (value === file) this.index.delete(key);
+        this.records.delete(file);
       });
     return this.chain;
   }
@@ -195,25 +203,21 @@ export class Persistence {
     const files = [...new Set(this.index.values())];
     const unfinished = [];
     for (const file of files) {
-      try {
-        const d = JSON.parse(await readFile(path.join(this.root, 'saves', file), 'utf8'));
-        if (d.status !== 'finished')
-          unfinished.push({ file, date: d.startedAt ?? d.matchId.split('-')[0] });
-      } catch {}
+      const record = this.records.get(file);
+      if (record && record.status !== 'finished') unfinished.push({ file, date: record.date });
     }
     for (const { file } of unfinished
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(this.maxStored)) {
       await unlink(path.join(this.root, 'saves', file));
+      this.records.delete(file);
       for (const [key, value] of this.index) if (value === file) this.index.delete(key);
     }
     const logs = await Promise.all(
-      (await readdir(path.join(this.root, 'logs')))
-        .filter(validFile)
-        .map(async (file) => ({
-          file,
-          time: (await stat(path.join(this.root, 'logs', file))).mtimeMs,
-        })),
+      (await readdir(path.join(this.root, 'logs'))).filter(validFile).map(async (file) => ({
+        file,
+        time: (await stat(path.join(this.root, 'logs', file))).mtimeMs,
+      })),
     );
     await Promise.all(
       logs

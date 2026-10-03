@@ -1,6 +1,8 @@
 import { distance } from './random.mjs';
 import { relation } from './agents.mjs';
+import { WORLD_ACTIONS, worldCandidates, canSee, observeWorld } from './living-world.mjs';
 export const ACTIONS = [
+  ...WORLD_ACTIONS,
   'eat',
   'heal',
   'rest',
@@ -17,6 +19,7 @@ export const ACTIONS = [
   'betray',
 ];
 export function candidates(sim, a) {
+  observeWorld(sim, a);
   const p = a.personality;
   const options = [];
   const add = (action, score, target, public_reason, destination = null) =>
@@ -41,7 +44,7 @@ export function candidates(sim, a) {
     'Recover energy; exhaustion makes every encounter dangerous.',
   );
   const resources = sim.resources.filter(
-    (r) => distance(r.position, { x: 0, z: 0 }) < sim.safeRadius,
+    (r) => distance(r.position, { x: 0, z: 0 }) < sim.safeRadius && canSee(sim, a, r.position),
   );
   resources.sort((x, y) => {
     const cost = (r) =>
@@ -62,7 +65,10 @@ export function candidates(sim, a) {
       resources[0].position,
     );
   const nearby = sim.agents.filter(
-    (b) => b.alive && b.id !== a.id && distance(a.position, b.position) < sim.config.socialRadius,
+    (b) =>
+      b.alive &&
+      b.id !== a.id &&
+      canSee(sim, a, b.position, ['hide', 'take_cover'].includes(b.action)),
   );
   a.observed = nearby.length
     ? `${nearby
@@ -181,6 +187,7 @@ export function candidates(sim, a) {
     'Explore unfamiliar ground and look for opportunity.',
     { x: Math.cos(angle) * sim.safeRadius * 0.65, z: Math.sin(angle) * sim.safeRadius * 0.65 },
   );
+  options.push(...worldCandidates(sim, a));
   return options.sort((x, y) => y.score - x.score);
 }
 export function chooseDecision(sim, a) {
@@ -204,23 +211,25 @@ export function chooseDecision(sim, a) {
   a.action = decision.action;
   a.target = decision.target;
   a.public_reason = decision.public_reason;
+  a.reasonData = decision.reasonData;
   a.destination = decision.destination ? { ...decision.destination } : null;
   a.decisionSource = decision.source ?? 'utility';
-  a.goal = {
-    forage: 'Secure supplies',
-    eat: 'Satisfy hunger',
-    heal: 'Recover health',
-    rest: 'Conserve energy',
-    talk: 'Understand a stranger',
-    ally: 'Build an alliance',
-    trade: 'Exchange resources',
-    attack: 'Remove a threat',
-    flee: 'Reach safety',
-    betray: 'Break a fragile alliance',
-    cooperate: 'Protect an ally',
-    steal: 'Acquire food covertly',
-    deceive: 'Gain through deception',
-    explore: 'Explore the island',
-  }[decision.action];
+  a.goal =
+    {
+      forage: 'Secure supplies',
+      eat: 'Satisfy hunger',
+      heal: 'Recover health',
+      rest: 'Conserve energy',
+      talk: 'Understand a stranger',
+      ally: 'Build an alliance',
+      trade: 'Exchange resources',
+      attack: 'Remove a threat',
+      flee: 'Reach safety',
+      betray: 'Break a fragile alliance',
+      cooperate: 'Protect an ally',
+      steal: 'Acquire food covertly',
+      deceive: 'Gain through deception',
+      explore: 'Explore the island',
+    }[decision.action] ?? 'world.goal';
   return decision;
 }

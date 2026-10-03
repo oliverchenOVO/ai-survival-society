@@ -1,11 +1,22 @@
 import { distance, clamp } from './random.mjs';
 import { relation, changeRelation } from './agents.mjs';
+import {
+  WORLD_ACTIONS,
+  navigationWaypoint,
+  performInteraction,
+  shelterAt,
+} from './living-world.mjs';
 export function moveAgent(sim, a, destination, dt) {
+  const finalDestination = destination;
+  destination = navigationWaypoint(sim, a, destination);
   const dx = destination.x - a.position.x,
     dz = destination.z - a.position.z;
   const d = Math.hypot(dx, dz);
-  if (d < 0.4) return true;
-  const speed = (sim.effects.storm > sim.elapsed ? 1.05 : 2.05) * (0.65 + a.energy / 280);
+  if (d < 0.12) return distance(a.position, finalDestination) < 1.2;
+  const speed =
+    (sim.world.weather === 'storm' ? 1.25 : sim.world.weather === 'rain' ? 1.8 : 2.05) *
+    (sim.world.timeOfDay === 'night' ? 0.9 : 1) *
+    (0.65 + a.energy / 280);
   const step = Math.min(d, speed * dt);
   a.position.x += (dx / d) * step;
   a.position.z += (dz / d) * step;
@@ -15,7 +26,7 @@ export function moveAgent(sim, a, destination, dt) {
     a.position.z *= 28 / radius;
   }
   a.energy = clamp(a.energy - dt * 0.32, 0, 100);
-  return d < 1.2;
+  return distance(a.position, finalDestination) < 1.2;
 }
 const spoken = (a, b) => {
   if (relation(a, b).hostility > 0.4)
@@ -26,6 +37,33 @@ const spoken = (a, b) => {
   return `I am watching the ring. What is your plan, ${b.name}?`;
 };
 export function executeAction(sim, a, dt) {
+  if (WORLD_ACTIONS.includes(a.action)) {
+    if (['hide', 'take_cover'].includes(a.action)) {
+      if (a.destination && distance(a.position, a.destination) > 1)
+        moveAgent(sim, a, a.destination, dt * 0.65);
+      else {
+        a.energy = clamp(a.energy + dt * (3 + shelterAt(sim, a) * 3), 0, 100);
+        a.hp = clamp(a.hp + dt * 0.15, 0, 100);
+      }
+      return;
+    }
+    const o = sim.world.objects.find((o) => o.id === a.target);
+    if (!o) {
+      a.nextDecision = sim.elapsed;
+      return;
+    }
+    if (distance(a.position, o.position) > 1.65)
+      moveAgent(
+        sim,
+        a,
+        o.type === 'door'
+          ? { x: o.position.x, z: o.position.z + (a.position.z < o.position.z ? -1 : 1) }
+          : o.position,
+        dt,
+      );
+    else if (!performInteraction(sim, a, o, dt)) a.nextDecision = sim.elapsed + 0.5;
+    return;
+  }
   const b = sim.agents.find((x) => x.id === a.target && x.alive);
   if (['flee', 'explore'].includes(a.action)) {
     if (a.destination) moveAgent(sim, a, a.destination, dt);
@@ -59,6 +97,9 @@ export function executeAction(sim, a, dt) {
     return;
   }
   if (a.action === 'rest') {
+    const warm = sim.world.objects.some(
+      (o) => o.type === 'campfire' && o.state === 'lit' && distance(a.position, o.position) < 4,
+    );
     const sheltered = sim.agents.some(
       (b) =>
         b.alive &&
@@ -66,7 +107,7 @@ export function executeAction(sim, a, dt) {
         relation(a, b).alliance &&
         distance(a.position, b.position) < 3.5,
     );
-    a.energy = clamp(a.energy + dt * (sheltered ? 5 : 4), 0, 100);
+    a.energy = clamp(a.energy + dt * ((sheltered ? 5 : 4) + (warm ? 1.5 : 0)), 0, 100);
     a.hp = clamp(a.hp + dt * (sheltered ? 0.3 : 0.15), 0, 100);
     return;
   }
@@ -256,7 +297,14 @@ export function executeAction(sim, a, dt) {
     }
     // eslint-disable-next-line no-fallthrough
     case 'attack': {
-      const damage = (a.weapon === 'None' ? 8 : 15) + sim.rng() * 7;
+      const damage =
+        ((a.weapon === 'None' ? 8 : 15) + sim.rng() * 7) *
+        (['hide', 'take_cover'].includes(b.action) ? 0.7 : 1) *
+        (sim.world.objects.some(
+          (o) => o.type === 'watchtower' && o.metadata.occupants.includes(b.id),
+        )
+          ? 0.9
+          : 1);
       b.hp = Math.max(0, b.hp - damage);
       a.energy = Math.max(0, a.energy - 4);
       a.stats.attacks++;

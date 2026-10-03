@@ -20,6 +20,8 @@ export function remember(agent, event, emotionalImpact = 0, importance = 0.5) {
     what: event.result,
     when: event.timestamp,
     event: event.event,
+    poi: event.data?.poi ?? null,
+    position: event.position ? { ...event.position } : null,
     importance,
     emotionalImpact,
   });

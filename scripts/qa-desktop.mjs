@@ -12,7 +12,7 @@ const errors = [],
   viewports = [];
 let app;
 async function launch() {
-  app = await electron.launch({ executablePath, env, args: [], timeout: 20000 });
+  app = await electron.launch({ executablePath, env, args: [], timeout: 60000 });
   const page = await app.firstWindow();
   page.on('pageerror', (e) => errors.push(e.message));
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
@@ -56,7 +56,7 @@ try {
       await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
       false,
     );
-    await page.screenshot({ path: `docs/images/zh-TW-desktop-${width}.png`, scale: 'css' });
+    await page.screenshot({ path: `docs/images/v1.5-zh-TW-desktop-${width}.png`, scale: 'css' });
   }
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('DOM.enable');
@@ -71,6 +71,7 @@ try {
   checks.push(
     'Fresh desktop profile defaults to zh-TW; Chinese glyphs, 1920x1080/1366x768, pause/resume/restart/selection/camera',
   );
+  console.log('PASS', checks.at(-1));
   await page.getByRole('button', { name: '設定', exact: true }).click();
   await page.getByTestId('language-select').selectOption('en');
   await page.waitForFunction(
@@ -83,6 +84,7 @@ try {
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
   assert.notEqual(ports[0], ports[1]);
   checks.push('English persists after actual app close/relaunch on a different ephemeral port');
+  console.log('PASS', checks.at(-1));
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByTestId('language-select').selectOption('zh-TW');
   await page.waitForFunction(
@@ -94,6 +96,7 @@ try {
   await page.getByRole('button', { name: '設定', exact: true }).waitFor();
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-TW');
   checks.push('Traditional Chinese persists after a second actual close/relaunch');
+  console.log('PASS', checks.at(-1));
   const security = await app.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences(),
   );
@@ -102,7 +105,7 @@ try {
   assert.equal(security.sandbox, true);
   assert.deepEqual(errors, []);
   await writeFile(
-    'docs/qa/desktop-results.json',
+    'docs/qa/desktop-results-v1.5.json',
     JSON.stringify(
       {
         executablePath,

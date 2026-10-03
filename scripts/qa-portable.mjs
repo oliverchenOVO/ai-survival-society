@@ -6,10 +6,10 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import net from 'node:net';
 const probe = net.createServer();
-await new Promise((resolve) => probe.listen(0, '127.0.0.1', resolve));
+await new Promise((resolve) => probe.listen(0, 'localhost', resolve));
 const debugPort = probe.address().port;
 await new Promise((resolve) => probe.close(resolve));
-const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.4.0.exe');
+const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.5.0.exe');
 const processHandle = spawn(exe, [`--remote-debugging-port=${debugPort}`], {
   stdio: 'ignore',
   windowsHide: true,
@@ -21,7 +21,7 @@ try {
   let port;
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(`http://127.0.0.1:${debugPort}/json/version`, {
+      const response = await fetch(`http://localhost:${debugPort}/json/version`, {
         signal: AbortSignal.timeout(1000),
       });
       if (response.ok) {
@@ -32,12 +32,12 @@ try {
     await new Promise((r) => setTimeout(r, 250));
   }
   assert.ok(port, 'Portable must start its Chromium debug target within 120 seconds');
-  browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`, { timeout: 10000 });
+  browser = await chromium.connectOverCDP(`http://localhost:${port}`, { timeout: 10000 });
   page =
     browser
       .contexts()[0]
       .pages()
-      .find((p) => p.url().startsWith('http://127.0.0.1:')) ?? browser.contexts()[0].pages()[0];
+      .find((p) => p.url().startsWith('http://localhost:')) ?? browser.contexts()[0].pages()[0];
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
@@ -55,9 +55,9 @@ try {
   assert.equal(await page.locator('canvas').count(), 1);
   assert.equal(await page.evaluate(() => typeof window.require), 'undefined');
   assert.deepEqual(errors, []);
-  await page.screenshot({ path: 'docs/images/zh-TW-portable-build.png' });
+  await page.screenshot({ path: 'docs/images/v1.5-zh-TW-portable-build.png' });
   await writeFile(
-    'docs/qa/portable-results.json',
+    'docs/qa/portable-results-v1.5.json',
     JSON.stringify(
       {
         executablePath: exe,

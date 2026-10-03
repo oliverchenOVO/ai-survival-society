@@ -1,6 +1,7 @@
 import { useLocale } from '../i18n/LocaleProvider.jsx';
 import { Heart, Zap, Utensils, Shield, Brain, ChevronDown, Crosshair } from 'lucide-react';
 import { formatTime } from '../api.mjs';
+import { knowledgeState } from '../../core/living-world.mjs';
 const TRAITS = [
   'aggression',
   'greed',
@@ -176,6 +177,9 @@ export default function Inspector({ state, selected, onSelect }) {
             {a.target
               ? ` → ${
                   state.agents.find((b) => b.id === a.target)?.name ??
+                  (state.world?.objects.find((o) => o.id === a.target)
+                    ? t('world.' + state.world.objects.find((o) => o.id === a.target).type)
+                    : null) ??
                   t('inspector.supply', {
                     id: a.target.replace('Resource_', ''),
                   })
@@ -244,6 +248,36 @@ export default function Inspector({ state, selected, onSelect }) {
           )}
         </div>
       </section>
+      {state.world ? (
+        <section className="inspector-section">
+          <details>
+            <summary>{t('world.knowledge')}</summary>
+            {state.world.pois.map((p) => {
+              const k = a.worldKnowledge?.[p.id];
+              return (
+                <p key={p.id}>
+                  <strong>{t('world.' + p.type)}</strong> ·{' '}
+                  {t('knowledge.' + knowledgeState(k, state.elapsed))}
+                  {k?.controller ? (
+                    <>
+                      <br />
+                      {t('world.controlled', {
+                        name: state.agents.find((b) => b.id === k.controller)?.name ?? k.controller,
+                      })}
+                    </>
+                  ) : null}
+                  {k?.danger ? (
+                    <>
+                      <br />
+                      {t('world.danger')}
+                    </>
+                  ) : null}
+                </p>
+              );
+            })}
+          </details>
+        </section>
+      ) : null}
       <section className="inspector-section memories">
         <div className="panel-title">{t('inspector.memories')}</div>
         {memories.length ? (

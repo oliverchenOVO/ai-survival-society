@@ -1,10 +1,11 @@
+import { launchBrowser } from './qa-runtime.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { startServer } from '../server/index.mjs';
 const runtime = await startServer({ port: 0, dataDir: '.qa/browser-data' });
-const base = `http://127.0.0.1:${runtime.port}`;
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const base = `http://localhost:${runtime.port}`;
+const browser = await launchBrowser({ channel: 'chrome', headless: true });
 const page = await browser.newPage({
   viewport: { width: 1600, height: 1000 },
   deviceScaleFactor: 1,
@@ -33,7 +34,7 @@ await mkdir('docs/images', { recursive: true });
 await mkdir('docs/qa', { recursive: true });
 try {
   await page.addInitScript(() => localStorage.setItem('society.locale.v1', 'en'));
-  await page.goto(base);
+  await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
   await page.locator('canvas').waitFor();
   await page.waitForTimeout(2200);
@@ -72,7 +73,7 @@ try {
   assert.ok(mid.stats.conversations > 0);
   assert.ok(mid.stats.alliances > 0);
   check('Autonomous movement, resource collection, conversations and alliances');
-  await page.screenshot({ path: 'docs/images/world-overview.png' });
+  await page.screenshot({ path: 'docs/images/v1.5-world-overview.png' });
   await page.getByRole('combobox', { name: 'Selected agent' }).selectOption('Agent_03');
   await page.waitForTimeout(750);
   assert.equal(
@@ -102,12 +103,12 @@ try {
   await page.mouse.move(box.x + 190, box.y + 150, { steps: 10 });
   await page.mouse.up({ button: 'right' });
   await page.mouse.wheel(0, 80);
-  await page.screenshot({ path: 'docs/images/agent-inspector.png' });
+  await page.screenshot({ path: 'docs/images/v1.5-agent-inspector.png' });
   check('Selection, focus, follow, cinematic toggle, orbit, pan and zoom');
   await page.getByRole('button', { name: 'Network', exact: true }).click();
   await page.getByRole('dialog', { name: 'The social fabric' }).waitFor();
   assert.ok((await page.getByRole('dialog').locator('line').count()) > 0);
-  await page.screenshot({ path: 'docs/images/relationships.png' });
+  await page.screenshot({ path: 'docs/images/v1.5-relationships.png' });
   await page.getByRole('button', { name: 'Close dialog' }).click();
   check('Live relationship graph renders from simulation data');
   await page.getByRole('button', { name: 'Director', exact: true }).click();
@@ -117,7 +118,7 @@ try {
   const d = await current();
   for (const type of ['FOOD_CRISIS', 'SUPPLY_DROP', 'STORM', 'RUMOR', 'TREASURE', 'PLAGUE'])
     assert.ok(d.events.some((e) => e.event === type));
-  await page.screenshot({ path: 'docs/images/director-mode.png' });
+  await page.screenshot({ path: 'docs/images/v1.5-director-mode.png' });
   await page.getByRole('button', { name: 'Close dialog' }).click();
   check('All six Director buttons modify world and emit events');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -135,7 +136,7 @@ try {
   assert.ok(completed.stats.deaths === 11);
   assert.ok(completed.stats.betrayals > 0);
   assert.ok(completed.history.chapters.length === 4);
-  await page.screenshot({ path: 'docs/images/final-result.png' });
+  await page.screenshot({ path: 'docs/images/v1.5-final-result.png' });
   check('Full run reaches combat, deaths, betrayal, winner and historian');
   await page.getByRole('button', { name: 'Close dialog' }).click();
   await page.getByRole('button', { name: 'Save run', exact: true }).click();
@@ -145,7 +146,7 @@ try {
   const log = await exported.json();
   assert.ok(log.timeline.length > 0);
   assert.ok(log.events.length > 100);
-  await writeFile('docs/qa/example-run.json', JSON.stringify(log, null, 2));
+  await writeFile('.qa/example-run.json', JSON.stringify(log, null, 2));
   check('Complete JSON export and save archive');
   await page.getByRole('button', { name: 'Simulation archive', exact: true }).click();
   await page.getByRole('dialog', { name: 'Simulation archive' }).waitFor();
@@ -162,7 +163,7 @@ try {
   await page.getByRole('button', { name: 'Play replay', exact: true }).click();
   await page.waitForTimeout(400);
   assert.ok(Number(await page.getByRole('slider', { name: 'Replay timeline' }).inputValue()) > 150);
-  await page.screenshot({ path: 'docs/images/replay.png' });
+  await page.screenshot({ path: 'docs/images/v1.5-replay.png' });
   await page.getByRole('button', { name: 'Return live' }).click();
   check('Saved-run replay timeline, playback and return-live');
   await page.getByTestId('restart').click();
@@ -170,7 +171,7 @@ try {
   await page.getByTestId('pause').click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(650);
-  await page.screenshot({ path: 'docs/images/mobile.png', fullPage: true });
+  await page.screenshot({ path: 'docs/images/v1.5-mobile.png', fullPage: true });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('dialog', { name: 'Simulation settings' }).waitFor();
@@ -180,7 +181,7 @@ try {
   assert.deepEqual(failedRequests, []);
   check('No page errors, console errors or failed asset/API requests');
   await writeFile(
-    'docs/qa/browser-results.json',
+    'docs/qa/browser-results-v1.5.json',
     JSON.stringify(
       {
         browser: await browser.version(),

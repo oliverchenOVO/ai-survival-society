@@ -1,5 +1,6 @@
 import { ACTIONS } from '../core/utility.mjs';
-import { clamp } from '../core/random.mjs';
+import { clamp, distance } from '../core/random.mjs';
+import { WORLD_ACTIONS, canInteract, canSee, knowledgeState } from '../core/living-world.mjs';
 export const proseLanguageInstruction = (language) =>
   language === 'zh-TW'
     ? ' Prefer Traditional Chinese (zh-TW) for message and public_reason only. Keep action enums and target IDs unchanged.'
@@ -37,14 +38,25 @@ export function validateDecision(value, sim, agent) {
     (typeof target !== 'string' ||
       target === agent.id ||
       (!sim.agents.some((a) => a.id === target && a.alive) &&
-        !sim.resources.some((r) => r.id === target)))
+        !sim.resources.some((r) => r.id === target) &&
+        !sim.world.objects.some((o) => o.id === target)))
   )
     throw new Error('Invalid model target');
   if (social.includes(value.action) && !sim.agents.some((a) => a.id === target && a.alive))
     throw new Error('Social action needs a living target');
   if (value.action === 'forage' && !sim.resources.some((r) => r.id === target))
     throw new Error('Forage needs a resource');
-  if (['eat', 'heal', 'rest', 'explore'].includes(value.action) && target !== null)
+  if (WORLD_ACTIONS.includes(value.action) && !['hide', 'take_cover'].includes(value.action)) {
+    const o = sim.world.objects.find((o) => o.id === target);
+    if (
+      !canInteract(sim, agent, o, value.action, false) ||
+      !Object.values(agent.worldKnowledge ?? {}).some((k) =>
+        k?.objects?.some((x) => x.id === target),
+      )
+    )
+      throw new Error('Invalid world interaction');
+  }
+  if (['eat', 'heal', 'rest', 'explore','hide','take_cover'].includes(value.action) && target !== null)
     throw new Error('Self action must have null target');
   return {
     action: value.action,
@@ -180,9 +192,27 @@ export class ModelQueue {
         time: sim.elapsed,
         safeRadius: sim.safeRadius,
         nearby: sim.agents
-          .filter((a) => a.alive && a.id !== agent.id)
+          .filter((a) => a.alive && a.id !== agent.id && canSee(sim, agent, a.position))
           .map((a) => ({ id: a.id, name: a.name, hp: a.hp, position: a.position })),
-        resources: sim.resources.slice(0, 8),
+        resources: sim.resources.filter((r) => canSee(sim, agent, r.position)).slice(0, 8),
+        nearby_objects: Object.values(agent.worldKnowledge ?? {})
+          .filter(Boolean)
+          .flatMap((k) => k.objects ?? [])
+          .filter(o=>distance(agent.position,o.position)<sim.config.socialRadius)
+          .sort((a,b)=>distance(agent.position,a.position)-distance(agent.position,b.position))
+          .slice(0, 8)
+          .map((o) => ({ id: o.id, type: o.type, state: o.state, position: o.position })),
+        known_locations: Object.values(agent.worldKnowledge ?? {})
+          .filter(Boolean)
+          .slice(0, 8)
+          .map((k) => ({
+            id: k.id,
+            controller: k.controller,
+            danger: k.danger,
+            knowledge: knowledgeState(k, sim.elapsed),
+          })),
+        weather: sim.world.weather,
+        time_of_day: sim.world.timeOfDay,
       };
       const content = await new ModelProvider(this.config).request(
         [

@@ -1,6 +1,6 @@
 {
   "name": "ai-survival-society",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "A living 3D society of autonomous agents, with utility AI and optional local language models.",
   "type": "module",
@@ -10,7 +10,7 @@
     "start": "node server/index.mjs",
     "build": "vite build",
     "test": "node --test tests/*.test.mjs && npm run test:benchmark",
-    "test:benchmark": "node scripts/benchmark-social.mjs docs/qa/social-v1.1.json && node scripts/benchmark-social.mjs docs/qa/social-holdout-v1.1.json --holdout",
+    "test:benchmark": "node scripts/benchmark-world.mjs",
     "test:results": "node scripts/qa-results.mjs",
     "test:simulation": "node scripts/validate-simulation.mjs",
     "test:ui": "node scripts/qa-browser.mjs",

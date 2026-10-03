@@ -10,6 +10,13 @@ export const DIRECTOR_TYPES = [
   'TREASURE',
 ];
 const weights = {
+  POI_CONTROLLED: 48,
+  POI_CONTESTED: 48,
+  GENERATOR_REPAIRED: 42,
+  FIRE_STARTED: 40,
+  BRIDGE_BLOCKED: 40,
+  STATION_HEAL: 20,
+  BROADCAST_SENT: 15,
   MATCH_ENDED: 150,
   DEATH: 85,
   BETRAYAL: 100,
@@ -108,6 +115,12 @@ export function majorMoments(data, limit = 12) {
   for (const r of ranked) {
     const e = byId.get(r.eventId);
     if (!e) continue;
+    if (
+      e.data?.poi &&
+      e.event.startsWith('POI_') &&
+      selected.filter((x) => byId.get(x.eventId)?.event.startsWith('POI_')).length >= 2
+    )
+      continue;
     if ((counts[e.event] ?? 0) >= 3 && !['DEATH', 'MATCH_ENDED', 'BETRAYAL'].includes(e.event))
       continue;
     counts[e.event] = (counts[e.event] ?? 0) + 1;
@@ -150,6 +163,13 @@ export function buildFacts(data, metadata) {
       .map((e) => e.id);
     return {
       id: a.id,
+      places: Object.entries(a.placeStats ?? {})
+        .map(([id, s]) => ({ id, ...s }))
+        .sort((a, b) => b.visits - a.visits),
+      finalPlace:
+        data.world?.pois.find(
+          (p) => Math.hypot(a.position.x - p.position.x, a.position.z - p.position.z) < 4.5,
+        )?.id ?? null,
       survival: a.alive ? data.elapsed : (a.diedAt ?? death?.timestamp ?? data.elapsed),
       deathEventId: death?.id ?? null,
       killer: death?.target === a.id ? death.actor : null,
@@ -296,6 +316,56 @@ const numericObject = (o) =>
       ([, v]) => (typeof v === 'number' && Number.isFinite(v)) || typeof v === 'boolean',
     ),
   );
+export function publicWorld(w) {
+  if (!w) return null;
+  return {
+    schemaVersion: 1,
+    timeOfDay: cleanText(w.timeOfDay),
+    weather: cleanText(w.weather),
+    metrics: numericObject(w.metrics),
+    walls: (w.walls ?? []).map(numericObject),
+    pois: (w.pois ?? []).map((p) => ({
+      id: cleanText(p.id),
+      type: cleanText(p.type),
+      position: numericObject(p.position),
+      risk: p.risk,
+      shelter: p.shelter,
+      controller: cleanText(p.controller),
+      controllers: (p.controllers ?? []).map(cleanText),
+      occupancy: (p.occupancy ?? []).map(cleanText),
+      resources: numericObject(p.resources),
+      access: cleanText(p.access),
+    })),
+    objects: (w.objects ?? []).map((o) => ({
+      id: cleanText(o.id),
+      type: cleanText(o.type),
+      poi: cleanText(o.poi),
+      position: numericObject(o.position),
+      state: cleanText(o.state),
+      capacity: o.capacity,
+      durability: o.durability,
+      controller: cleanText(o.controller),
+      usable: o.usable,
+      visible: o.visible,
+      metadata: {
+        stock: numericObject(o.metadata?.stock),
+        charges: o.metadata?.charges,
+        fuel: o.metadata?.fuel,
+        powerZone: cleanText(o.metadata?.powerZone),
+        occupants: (o.metadata?.occupants ?? []).map(cleanText),
+      },
+    })),
+    hazards: (w.hazards ?? []).map((h) => ({
+      id: cleanText(h.id),
+      type: cleanText(h.type),
+      poi: cleanText(h.poi),
+      position: numericObject(h.position),
+      radius: h.radius,
+      until: h.until,
+      damage: h.damage,
+    })),
+  };
+}
 export function publicStory(data) {
   validateSave(data);
   if (!data.story || data.status !== 'finished') throw new Error('Story not completed');
@@ -333,6 +403,7 @@ export function publicStory(data) {
         .map(([id, r]) => [id, numericObject(r)]),
     ),
     memory: (a.memory ?? []).map((m) => ({
+      poi: cleanText(m.poi),
       who: cleanText(m.who),
       what: cleanText(m.what),
       when: m.when,
@@ -352,7 +423,22 @@ export function publicStory(data) {
     position: numericObject(e.position),
     relationship_change: numericObject(e.relationship_change),
     data: Object.fromEntries(
-      ['cause', 'victim', 'resource', 'damage', 'successful', 'detected', 'amount']
+      [
+        'cause',
+        'victim',
+        'resource',
+        'damage',
+        'successful',
+        'detected',
+        'amount',
+        'poi',
+        'object',
+        'objectType',
+        'weather',
+        'hazard',
+        'controller',
+        'message',
+      ]
         .filter((k) => e.data?.[k] !== undefined)
         .map((k) => [
           k,
@@ -388,6 +474,12 @@ export function publicStory(data) {
     outcome: { kind: data.winner ? 'winner' : 'extinction', survivors: data.winner ? 1 : 0 },
     agents: s.agents.map((f) => ({
       id: f.id,
+      places: (f.places ?? []).map((p) => ({
+        id: cleanText(p.id),
+        visits: p.visits,
+        controlSeconds: p.controlSeconds,
+      })),
+      finalPlace: cleanText(f.finalPlace),
       survival: f.survival,
       deathEventId: f.deathEventId,
       killer: f.killer,
@@ -432,6 +524,7 @@ export function publicStory(data) {
     elapsed: data.elapsed,
     duration: data.duration,
     safeRadius: data.safeRadius,
+    world: publicWorld(data.world),
     status: data.status,
     winner: data.winner,
     outcome: facts.outcome,
@@ -440,6 +533,7 @@ export function publicStory(data) {
     events,
     timeline: data.timeline.map((f) => ({
       timestamp: f.timestamp,
+      world: publicWorld(f.world),
       stats: {
         ...numericObject(f.stats),
         counts: numericObject(f.stats?.counts),
@@ -598,12 +692,55 @@ export function markdown(data, locale = 'zh-TW') {
       const e = data.events.find((e) => e.id === m.eventId);
       return `- ${time(e.timestamp)} — ${esc(localizeEvent(e, locale))}`;
     }),
+    ...(data.world
+      ? [
+          '## ' + t('world.moments'),
+          ...data.events
+            .filter((e) =>
+              [
+                'POI_CONTROLLED',
+                'POI_CONTESTED',
+                'GENERATOR_REPAIRED',
+                'FIRE_STARTED',
+                'BRIDGE_BLOCKED',
+              ].includes(e.event),
+            )
+            .slice(0, 12)
+            .map((e) => `- ${time(e.timestamp)} — ${esc(localizeEvent(e, locale))}`),
+        ]
+      : []),
     '## ' + t('story.cast'),
     ...data.agents.map((a) => {
       const f = data.story.agents.find((f) => f.id === a.id),
         names = (ids) =>
           ids.map((id) => data.agents.find((a) => a.id === id)?.name).join(' / ') ||
           t('story.none');
+      const places = (f.places ?? []).length
+        ? '\n\n' +
+          esc(t('world.places')) +
+          '\n' +
+          f.places
+            .slice(0, 5)
+            .map(
+              (p) =>
+                '- ' +
+                esc(t('world.' + p.id.replace('poi_', ''))) +
+                ' · ' +
+                esc(
+                  t('world.placeDetail', {
+                    visits: p.visits,
+                    seconds: Math.round(p.controlSeconds),
+                  }),
+                ),
+            )
+            .join('\n') +
+          (f.finalPlace
+            ? '\n' +
+              esc(t('world.deathPlace')) +
+              ': ' +
+              esc(t('world.' + f.finalPlace.replace('poi_', '')))
+            : '')
+        : '';
       return `### ${esc(a.name)}\n${esc(biography(data, a.id, locale))}\n\n${esc(t('inspector.personality'))}: ${Object.entries(
         a.personality,
       )
@@ -615,7 +752,7 @@ export function markdown(data, locale = 'zh-TW') {
           const e = data.events.find((e) => e.id === id);
           return '- ' + time(e.timestamp) + ' ' + esc(localizeEvent(e, locale));
         })
-        .join('\n')}`;
+        .join('\n')}${places}`;
     }),
     '## ' + t('story.historian'),
   ];

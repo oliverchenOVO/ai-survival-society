@@ -177,6 +177,25 @@ function LifeStory({ data, id, onClose }) {
         </div>
         <p className="life-biography">{biography(data, id, locale)}</p>
         <Stats stats={a.stats} />
+        {(f.places ?? []).length > 0 ? (
+          <>
+            <h3>{t('world.places')}</h3>
+            {f.places.slice(0, 5).map((p) => (
+              <p key={p.id}>
+                {t('world.' + p.id.replace('poi_', ''))} ·{' '}
+                {t('world.placeDetail', {
+                  visits: p.visits,
+                  seconds: Math.round(p.controlSeconds),
+                })}
+              </p>
+            ))}
+            {f.finalPlace ? (
+              <p>
+                {t('world.deathPlace')} · {t('world.' + f.finalPlace.replace('poi_', ''))}
+              </p>
+            ) : null}
+          </>
+        ) : null}
         <h3>{t('inspector.personality')}</h3>
         <div className="life-traits">
           {Object.entries(a.personality).map(([key, value]) => (
@@ -501,6 +520,31 @@ export default function StoryPage({ id }) {
             ))}
           </div>
         </section>
+        {data.world ? (
+          <section className="story-section" id="world-moments">
+            <div className="story-section-heading">
+              <span>◎</span>
+              <h2>{t('world.moments')}</h2>
+            </div>
+              <div className="story-world-moments">
+              {data.events
+                .filter((e) =>
+                  [
+                    'POI_CONTROLLED',
+                    'POI_CONTESTED',
+                    'GENERATOR_REPAIRED',
+                    'FIRE_STARTED',
+                    'BRIDGE_BLOCKED',
+                    'WEATHER_CHANGED',
+                  ].includes(e.event),
+                )
+                .slice(0, 12)
+                .map((e) => (
+                  <EventRow key={e.id} data={data} event={e} major />
+                ))}
+            </div>
+          </section>
+        ) : null}
         <section className="story-section" id="final-three">
           <div className="story-section-heading">
             <span>03</span>

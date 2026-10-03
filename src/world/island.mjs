@@ -273,9 +273,9 @@ export function createIsland(scene, seed) {
 }
 export function createOcean(scene) {
   const material = new THREE.ShaderMaterial({
-    uniforms: { time: { value: 0 } },
+    uniforms: { time: { value: 0 }, night: { value: 0 } },
     vertexShader: `varying vec3 vPos; varying vec3 vWorld; uniform float time; void main(){ vec3 p=position; p.z+=sin(p.x*.16+time*.35)*.035+cos(p.y*.13-time*.2)*.035; vPos=p;vWorld=(modelMatrix*vec4(p,1.)).xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.); }`,
-    fragmentShader: `varying vec3 vPos;varying vec3 vWorld; uniform float time; void main(){float wave=sin(vPos.x*2.6+vPos.y*1.7+sin(vPos.y*.15)*2.+time*.4)*.5+.5;float light=pow(max(0.,1.-abs(vPos.x+vPos.y*.22-30.)/20.),4.);vec3 color=mix(vec3(.005,.025,.035),vec3(.007,.032,.043),wave*.12)+vec3(.048,.028,.009)*light;color=mix(color,vec3(.17,.085,.055),smoothstep(130.,750.,distance(cameraPosition,vWorld)));gl_FragColor=vec4(color,1.);}`,
+    fragmentShader: `varying vec3 vPos;varying vec3 vWorld; uniform float time; uniform float night; void main(){float wave=sin(vPos.x*2.6+vPos.y*1.7+sin(vPos.y*.15)*2.+time*.4)*.5+.5;float light=pow(max(0.,1.-abs(vPos.x+vPos.y*.22-30.)/20.),4.);vec3 color=mix(vec3(.005,.025,.035),vec3(.007,.032,.043),wave*.12)+vec3(.048,.028,.009)*light;color=mix(color,mix(vec3(.17,.085,.055),vec3(.012,.022,.045),night),smoothstep(130.,750.,distance(cameraPosition,vWorld)));gl_FragColor=vec4(color,1.);}`,
   });
   const ocean = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000, 110, 110), material);
   ocean.rotation.x = -Math.PI / 2;
@@ -286,9 +286,9 @@ export function createOcean(scene) {
 export function createSky(scene) {
   const material = new THREE.ShaderMaterial({
     side: THREE.BackSide,
-    uniforms: {},
+    uniforms: { night: { value: 0 } },
     vertexShader: `varying vec3 vWorld; void main(){vWorld=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-    fragmentShader: `varying vec3 vWorld; void main(){float h=normalize(vWorld).y; vec3 c=mix(vec3(.17,.085,.055),vec3(.035,.08,.13),smoothstep(-.04,.17,h));float alignment=max(0.,dot(normalize(vWorld),normalize(vec3(-.5,.025,-.7))));c+=vec3(1.,.58,.22)*pow(alignment,3600.)+vec3(.12,.045,.005)*pow(alignment,150.);gl_FragColor=vec4(c,1.);}`,
+    fragmentShader: `uniform float night; varying vec3 vWorld; void main(){float h=normalize(vWorld).y; vec3 c=mix(vec3(.17,.085,.055),vec3(.035,.08,.13),smoothstep(-.04,.17,h));float alignment=max(0.,dot(normalize(vWorld),normalize(vec3(-.5,.025,-.7))));c+=vec3(1.,.58,.22)*pow(alignment,3600.)+vec3(.12,.045,.005)*pow(alignment,150.);c=mix(c,vec3(.012,.022,.045),night);gl_FragColor=vec4(c,1.);}`,
   });
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1000, 32, 20), material));
   const silhouettes = new THREE.Group();
@@ -304,4 +304,5 @@ export function createSky(scene) {
     }
   }
   scene.add(silhouettes);
+  return material;
 }

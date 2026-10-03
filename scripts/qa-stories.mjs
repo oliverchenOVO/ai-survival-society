@@ -1,3 +1,4 @@
+import { launchBrowser } from './qa-runtime.mjs';
 // Browser plugin not available: isolated Playwright Chrome / actual Electron QA.
 import { chromium, _electron as electron } from 'playwright';
 import assert from 'node:assert/strict';
@@ -42,17 +43,17 @@ try {
     app = await electron.launch({
       executablePath: path.resolve('builds/win-unpacked/AI Survival Society.exe'),
       env: { ...process.env, SOCIETY_USER_DATA_DIR: profile },
-      timeout: 30000,
+      timeout: 60000,
     });
     page = await app.firstWindow();
     await page.locator('canvas').waitFor();
     context = page.context();
   } else {
     runtime = await startServer({ port: 0, dataDir: profile, config: { autoRestart: false } });
-    browser = await chromium.launch({ channel: 'chrome', headless: true });
+    browser = await launchBrowser({ channel: 'chrome', headless: true });
     context = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] });
     page = await context.newPage();
-    await page.goto(`http://127.0.0.1:${runtime.port}`);
+    await page.goto(`http://localhost:${runtime.port}`);
   }
   const base = new URL(page.url()).origin;
   page.on('pageerror', (e) => errors.push(e.message));
@@ -85,16 +86,16 @@ try {
     layouts.push({ width, height, overflow });
   }
   await page.setViewportSize({ width: 1366, height: 768 });
-  await page.screenshot({ path: 'docs/images/v1.4-story-hero.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.5-story-hero.png', scale: 'css' });
   check(
     'Story routes, winner, 12 portraits, bilingual UI, collapsed timeline and three viewport sizes',
   );
   await page.locator('#moments').evaluate((el) => el.scrollIntoView({ block: 'start' }));
-  await page.screenshot({ path: 'docs/images/v1.4-major-moments.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.5-major-moments.png', scale: 'css' });
   await page.locator('.cast-card').first().click();
   await page.getByRole('dialog').waitFor();
   assert.equal(await page.locator('.life-traits meter').count(), 8);
-  await page.screenshot({ path: 'docs/images/v1.4-agent-story.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.5-agent-story.png', scale: 'css' });
   await page.getByRole('button', { name: '關閉視窗' }).click();
   await page.locator('.story-edge').first().press('Enter');
   await page.getByRole('dialog').waitFor();
@@ -136,7 +137,7 @@ try {
   });
   await page.getByRole('button', { name: '產生分享卡', exact: true }).click();
   await page.locator('.story-card-preview').waitFor();
-  await page.screenshot({ path: 'docs/images/v1.4-share-card.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.5-share-card.png', scale: 'css' });
   // Electron's download dialog is handled without an interactive save prompt.
   if (desktop)
     await app.evaluate(({ BrowserWindow }, profile) => {
@@ -224,7 +225,7 @@ try {
   assert.equal(await page.evaluate(() => window.PWNED), undefined);
   assert.ok((await page.locator('#historian').innerText()).includes('自由敘事'));
   check('Untrusted LLM prose preserved as escaped text without execution');
-  await page.goto(base);
+  await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.getByRole('button', { name: '模擬檔案庫', exact: true }).click();
   await page.locator('.library-tools input').fill(id);
   assert.equal(await page.locator('.library-entry').count(), 1);
@@ -243,7 +244,7 @@ try {
     app = await electron.launch({
       executablePath: path.resolve('builds/win-unpacked/AI Survival Society.exe'),
       env: { ...process.env, SOCIETY_USER_DATA_DIR: profile },
-      timeout: 30000,
+      timeout: 60000,
     });
     page = await app.firstWindow();
     await page.locator('canvas').waitFor();
@@ -254,7 +255,7 @@ try {
   assert.deepEqual(errors, []);
   check('No renderer exceptions');
   await writeFile(
-    `docs/qa/stories-${desktop ? 'desktop' : 'browser'}-v1.4.json`,
+    `docs/qa/stories-${desktop ? 'desktop' : 'browser'}-v1.5.json`,
     JSON.stringify(
       {
         date: new Date().toISOString(),

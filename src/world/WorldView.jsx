@@ -10,6 +10,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { Crosshair, Plus, Minus, Eye, Video, Move, RotateCcw } from 'lucide-react';
 import { createIsland, createOcean, createSky } from './island.mjs';
 import { terrainHeight } from '../../core/world.mjs';
+import { createLivingScene } from './living-scene.mjs';
 const tmp = new THREE.Vector3();
 export default function WorldView({
   state,
@@ -95,7 +96,8 @@ export default function WorldView({
       });
       sunlight.shadow.normalBias = 0.08;
       scene.add(sunlight);
-      createSky(scene);
+      const sky = createSky(scene);
+      const livingScene = createLivingScene(scene, container);
       const ocean = createOcean(scene);
       let island = createIsland(scene, latest.current.state.seed),
         worldSeed = latest.current.state.seed;
@@ -293,6 +295,12 @@ export default function WorldView({
           worldSeed = s.seed;
         }
         ocean.uniforms.time.value = time;
+        livingScene.update(s, camera, time, latest.current.t);
+        sky.uniforms.night.value = s.world?.timeOfDay === 'night' ? 1 : 0;
+        ocean.uniforms.night.value = sky.uniforms.night.value;
+        sunlight.intensity =
+          s.world?.timeOfDay === 'night' ? 0.5 : s.world?.weather === 'storm' ? 1.4 : 3.7;
+        renderer.toneMappingExposure = s.world?.timeOfDay === 'night' ? 0.75 : 1.05;
         island.artifact.rotation.y = time * 0.3;
         dust.rotation.y = time * 0.015;
         dust.position.y = Math.sin(time * 0.2) * 0.15;
@@ -311,7 +319,13 @@ export default function WorldView({
           if (!wrapper) continue;
           const pos = new THREE.Vector3(
             a.position.x,
-            terrainHeight(a.position.x, a.position.z) + (a.alive ? 0.08 : 0),
+            terrainHeight(a.position.x, a.position.z) +
+              (a.alive ? 0.08 : 0) +
+              (s.world?.objects.some(
+                (o) => o.type === 'watchtower' && o.metadata.occupants.includes(a.id),
+              )
+                ? 3.2
+                : 0),
             a.position.z,
           );
           if (!wrapper.userData.placed) {
@@ -335,6 +349,8 @@ export default function WorldView({
               a.alive && moving ? Math.sin(time * 11 + a.index) * 0.08 : 0;
             wrapper.children[0].rotation.z =
               a.alive && moving ? Math.sin(time * 11 + a.index) * 0.06 : 0;
+            if (a.alive && ['search', 'repair', 'heal_at', 'broadcast'].includes(a.action))
+              wrapper.children[0].position.y += Math.sin(time * 7) * 0.06;
           }
           const label = labels.get(a.id);
           tmp

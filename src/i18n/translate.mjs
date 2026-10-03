@@ -28,6 +28,8 @@ export function translate(key, locale = DEFAULT_LOCALE, params = {}) {
   return value.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? `{${name}}`));
 }
 export function localizeText(text, locale = DEFAULT_LOCALE) {
+  if (catalogs.en['world.event.' + text]) return translate('world.event.' + text, locale);
+  if (text?.startsWith('world.') && catalogs.en[text]) return translate(text, locale);
   if (!text || locale === 'en') return text ?? '';
   if (englishKeys[text]) return translate(englishKeys[text], locale);
   for (const [pattern, key, names] of generatedRules) {
@@ -41,6 +43,22 @@ export function localizeText(text, locale = DEFAULT_LOCALE) {
   return text; // Unknown/free model prose is deliberately preserved.
 }
 export function localizeEvent(event, locale) {
+  if (catalogs.en['world.event.' + event.event]) {
+    const location = event.data?.poi?.replace(/^poi_/, '');
+    const place =
+      location && catalogs.en['world.' + location] ? translate('world.' + location, locale) : '';
+    const actor = event.actor !== 'WORLD' ? event.actorName + ' · ' : '';
+    const suffix = event.data?.weather
+      ? ' · ' + translate('weather.' + event.data.weather, locale)
+      : '';
+    return (
+      actor +
+      translate('world.event.' + event.event, locale) +
+      (place ? ' · ' + place : '') +
+      suffix +
+      (event.data?.message ? ' · ' + event.data.message : '')
+    );
+  }
   return localizeText(event.result, locale);
 }
 export function localizeHistory(state, locale) {

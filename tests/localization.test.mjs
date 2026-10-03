@@ -45,7 +45,8 @@ test('real utility simulations and every Director event translate without mutati
     for (const event of sim.bus.log) {
       types.add(event.event);
       assert.notEqual(localizeEvent(event, 'zh-TW'), event.result, event.result);
-      assert.equal(localizeEvent(event, 'en'), event.result);
+      if(!catalogs.en['world.event.'+event.event])assert.equal(localizeEvent(event, 'en'), event.result);
+      else assert.ok(localizeEvent(event,'en').includes(catalogs.en['world.event.'+event.event]));
     }
     const localized = localizeHistory(sim.export(), 'zh-TW');
     for (const chapter of localized.chapters)
@@ -103,7 +104,7 @@ test('language preference persists across server ports and does not alter paused
   let runtime;
   try {
     runtime = await startServer({ port: 0, dataDir: dir });
-    let base = `http://127.0.0.1:${runtime.port}`;
+    let base = `http://localhost:${runtime.port}`;
     const post = (url, body) =>
       fetch(base + url, {
         method: 'POST',
@@ -121,7 +122,7 @@ test('language preference persists across server ports and does not alter paused
     assert.equal((await post('/api/preferences', { language: 'invalid' })).status, 400);
     await runtime.close();
     runtime = await startServer({ port: 0, dataDir: dir });
-    base = `http://127.0.0.1:${runtime.port}`;
+    base = `http://localhost:${runtime.port}`;
     assert.equal((await get('/api/preferences')).language, 'en');
   } finally {
     await runtime?.close();
