@@ -70,7 +70,10 @@
       "icon": "desktop/icon.ico",
       "signExecutable": false
     },
-    "asar": false
+    "asar": false,
+    "portable": {
+      "unpackDirName": false
+    }
   },
   "author": "Oliver"
 }

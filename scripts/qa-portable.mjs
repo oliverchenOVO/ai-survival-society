@@ -34,7 +34,10 @@ try {
     await new Promise((r) => setTimeout(r, 250));
   }
   assert.ok(port, 'Portable must start its Chromium debug target within 300 seconds');
-  browser = await chromium.connectOverCDP(`http://localhost:${port}`, { timeout: 10000 });
+  console.log('Portable Chromium endpoint ready');
+  // The debug endpoint can open before Chromium finishes the cold NSIS launch.
+  browser = await chromium.connectOverCDP(`http://localhost:${port}`, { timeout: 60000 });
+  console.log('Portable DevTools attached');
   page =
     browser
       .contexts()[0]
@@ -44,6 +47,7 @@ try {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
   await page.locator('canvas').waitFor();
+  console.log('Portable world canvas ready');
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-TW');
   await page.getByTestId('restart').click();
   await page.waitForTimeout(300);
@@ -79,11 +83,24 @@ try {
   console.log(
     'PASS actual portable executable, canvas, pause/resume/restart, selection and renderer isolation',
   );
+} catch (error) {
+  console.error('Portable QA failed:', error.message);
+  throw error;
 } finally {
-  if (page && !page.isClosed()) await page.close().catch(() => {});
-  await browser?.close().catch(() => {});
+  let cleanupTimeout;
+  await Promise.race([
+    (async () => {
+      if (page && !page.isClosed()) await page.close().catch(() => {});
+      await browser?.close().catch(() => {});
+    })(),
+    new Promise((resolve) => {
+      cleanupTimeout = setTimeout(resolve, 10000);
+    }),
+  ]);
+  clearTimeout(cleanupTimeout);
   if (processHandle.exitCode === null)
     await promisify(execFile)('taskkill', ['/PID', String(processHandle.pid), '/T', '/F'], {
       windowsHide: true,
+      timeout: 10000,
     }).catch(() => {});
 }

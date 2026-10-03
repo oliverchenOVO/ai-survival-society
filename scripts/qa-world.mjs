@@ -179,9 +179,13 @@ try {
   check('Saved world resumes intact and remains intact after reload');
   await page.setViewportSize({ width: 1920, height: 1080 });
   for (const speed of [1, 10]) {
+    // Isolate speed samples: a loaded host may finish the previous world while
+    // Chromium schedules the measurement. Never measure an already ended run.
+    await post('/api/control', { action: 'restart', value: 7 });
     await post('/api/control', { action: 'speed', value: speed });
     await post('/api/control', { action: 'resume' });
     const before = await page.request.get(base + '/api/state').then((r) => r.json());
+    assert.equal(before.status, 'running');
     frameRates.push(
       await page.evaluate(
         (speed) =>

@@ -2,6 +2,8 @@ import { _electron as electron } from 'playwright';
 import assert from 'node:assert/strict';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 const executablePath = process.argv[2] ?? 'builds/win-unpacked/AI Survival Society.exe';
 const profile = path.resolve(`.qa/desktop-locale-${Date.now()}`);
 const env = { ...process.env, SOCIETY_USER_DATA_DIR: profile };
@@ -12,7 +14,12 @@ const errors = [],
   viewports = [];
 let app;
 async function launch() {
-  app = await electron.launch({ executablePath, env, args: process.env.SOCIETY_QA_SOFTWARE==='1'?['--use-angle=swiftshader']:[], timeout: 60000 });
+  app = await electron.launch({
+    executablePath,
+    env,
+    args: process.env.SOCIETY_QA_SOFTWARE === '1' ? ['--use-angle=swiftshader'] : [],
+    timeout: 60000,
+  });
   const page = await app.firstWindow();
   page.on('pageerror', (e) => errors.push(e.message));
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
@@ -126,5 +133,25 @@ try {
     'PASS packaged zh-TW desktop, both resolutions, CJK fonts, controls, 3 launches, language persistence and sandbox',
   );
 } finally {
-  await app?.close();
+  if (app) {
+    const ownedPid = app.process().pid;
+    let timeout;
+    const closed = await Promise.race([
+      app.close().then(
+        () => true,
+        () => false,
+      ),
+      new Promise((resolve) => {
+        timeout = setTimeout(() => resolve(false), 10000);
+      }),
+    ]);
+    clearTimeout(timeout);
+    if (!closed && ownedPid) {
+      // Only the launcher returned by this QA's electron.launch is owned here.
+      await promisify(execFile)('taskkill', ['/PID', String(ownedPid), '/T', '/F'], {
+        windowsHide: true,
+        timeout: 10000,
+      }).catch(() => {});
+    }
+  }
 }
