@@ -1895,6 +1895,20 @@ small {
   box-shadow: 0 0 12px #8ee6c045;
   border-width: 2px;
 }
+.poi-label::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 1px;
+  height: var(--poi-leader, 0px);
+  background: #607880;
+  pointer-events: none;
+}
+.poi-label[data-shift='down']::after {
+  top: auto;
+  bottom: 100%;
+}
 .living-labels {
   pointer-events: none;
 }

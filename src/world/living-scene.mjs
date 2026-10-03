@@ -161,6 +161,9 @@ export function createLivingScene(scene, host) {
             : 1,
         );
     }
+    const placed = [],
+      viewportWidth = host.clientWidth,
+      viewportHeight = host.clientHeight;
     for (const p of w.pois) {
       let label = pois.get(p.id);
       if (!label) {
@@ -169,19 +172,64 @@ export function createLivingScene(scene, host) {
         labelHost.append(label);
         pois.set(p.id, label);
       }
-      const names = (p.controllers ?? [])
+      const controllers = (p.controllers ?? [])
         .map((id) => s.agents.find((a) => a.id === id)?.name)
-        .filter(Boolean)
-        .join(' + ');
-      label.textContent = t('world.' + p.type) + (names ? ' · ' + names : '');
+        .filter(Boolean);
+      const names = controllers.join(' + ');
+      const visibleNames =
+        controllers.slice(0, 2).join(' + ') +
+        (controllers.length > 2 ? ` +${controllers.length - 2}` : '');
+      const caption = t('world.' + p.type) + (names ? ' · ' + visibleNames : '');
+      if (label.textContent !== caption) {
+        label.textContent = caption;
+        label._livingSize = null;
+      }
       label.title = names ? t('world.controlled', { name: names }) : t('world.public');
       label.dataset.controlled = Boolean(names);
       label.style.borderColor = s.agents.find((a) => a.id === p.controller)?.color ?? '#607880';
       projection
         .set(p.position.x, terrainHeight(p.position.x, p.position.z) + 3.7, p.position.z)
         .project(camera);
-      label.style.transform = `translate(-50%,-50%) translate(${(projection.x * 0.5 + 0.5) * host.clientWidth}px,${(-projection.y * 0.5 + 0.5) * host.clientHeight}px)`;
-      label.style.display = projection.z < 1 ? 'block' : 'none';
+      const visible = projection.z < 1 && Math.abs(projection.x) < 1 && Math.abs(projection.y) < 1;
+      label.style.display = visible ? 'block' : 'none';
+      if (!visible) continue;
+      label._livingSize ??= { width: label.offsetWidth, height: label.offsetHeight };
+      const { width, height } = label._livingSize;
+      const x = Math.max(
+        width / 2 + 6,
+        Math.min(viewportWidth - width / 2 - 6, (projection.x * 0.5 + 0.5) * viewportWidth),
+      );
+      const anchorY = (-projection.y * 0.5 + 0.5) * viewportHeight;
+      let y = anchorY,
+        rect;
+      // Eight labels, bounded screen-space search; no gameplay or camera changes.
+      for (let step = 0; step < 17; step++) {
+        const offset = Math.ceil(step / 2) * (height + 6) * (step % 2 ? -1 : 1);
+        y = Math.max(92 + height / 2, Math.min(viewportHeight - height / 2 - 8, anchorY + offset));
+        rect = {
+          left: x - width / 2,
+          right: x + width / 2,
+          top: y - height / 2,
+          bottom: y + height / 2,
+        };
+        if (
+          !placed.some(
+            (r) =>
+              rect.left < r.right + 4 &&
+              rect.right > r.left - 4 &&
+              rect.top < r.bottom + 4 &&
+              rect.bottom > r.top - 4,
+          )
+        )
+          break;
+      }
+      placed.push(rect);
+      label.dataset.shift = y > anchorY ? 'down' : 'up';
+      label.style.setProperty(
+        '--poi-leader',
+        `${Math.max(0, Math.abs(y - anchorY) - height / 2)}px`,
+      );
+      label.style.transform = `translate(-50%,-50%) translate(${x}px,${y}px)`;
     }
     for (const [id, m] of hazards)
       if (!w.hazards.some((h) => h.id === id)) {

@@ -91,10 +91,31 @@ try {
         width: innerWidth,
         height: innerHeight,
         overflow: document.documentElement.scrollWidth > innerWidth,
+        overlappingPlaces: (() => {
+          const labels = [...document.querySelectorAll('.poi-label')]
+            .filter((e) => e.getClientRects().length)
+            .map((e) => ({ name: e.textContent, rect: e.getBoundingClientRect() }));
+          return labels.flatMap((a, i) =>
+            labels
+              .slice(i + 1)
+              .filter(
+                (b) =>
+                  a.rect.left < b.rect.right &&
+                  a.rect.right > b.rect.left &&
+                  a.rect.top < b.rect.bottom &&
+                  a.rect.bottom > b.rect.top,
+              )
+              .map((b) => [a.name, b.name]),
+          );
+        })(),
       })),
     );
   }
   assert.ok(layouts.every((l) => !l.overflow));
+  assert.ok(
+    layouts.every((l) => !l.overlappingPlaces.length),
+    'POI marker text overlaps',
+  );
   check('World desktop layouts, identity, meaningful content and no overlay');
   if (runtime) {
     const s = runtime.getSimulation(),
