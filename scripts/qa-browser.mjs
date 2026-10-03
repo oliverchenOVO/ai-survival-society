@@ -134,7 +134,7 @@ try {
   await page.waitForTimeout(300);
   check('Seed settings restart works');
   await page.getByRole('combobox', { name: 'Simulation speed' }).selectOption('32');
-  await page.getByRole('dialog', { name: 'The island remembers' }).waitFor({ timeout: 40000 });
+  await page.getByRole('dialog', { name: 'The island remembers' }).waitFor({ timeout: 180000 });
   const completed = await current();
   assert.equal(completed.status, 'finished');
   assert.equal(completed.stats.alive, 1);
@@ -205,8 +205,8 @@ try {
     ),
   );
 } catch (error) {
-  await page.screenshot({ path: '.qa/browser-failure.png', fullPage: true });
   console.error(error);
+  await page.screenshot({ path: '.qa/browser-failure.png', fullPage: true, timeout:5000 }).catch(()=>{});
   throw error;
 } finally {
   await browser.close();

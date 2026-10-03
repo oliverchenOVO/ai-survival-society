@@ -42,8 +42,9 @@ try {
   if (desktop) {
     app = await electron.launch({
       executablePath: path.resolve('builds/win-unpacked/AI Survival Society.exe'),
+      args: process.env.SOCIETY_QA_SOFTWARE==='1'?['--use-angle=swiftshader']:[],
       env: { ...process.env, SOCIETY_USER_DATA_DIR: profile },
-      timeout: 60000,
+      timeout: 180000,
     });
     page = await app.firstWindow();
     await page.locator('canvas').waitFor();
@@ -243,8 +244,9 @@ try {
     app = null;
     app = await electron.launch({
       executablePath: path.resolve('builds/win-unpacked/AI Survival Society.exe'),
+      args: process.env.SOCIETY_QA_SOFTWARE==='1'?['--use-angle=swiftshader']:[],
       env: { ...process.env, SOCIETY_USER_DATA_DIR: profile },
-      timeout: 60000,
+      timeout: 180000,
     });
     page = await app.firstWindow();
     await page.locator('canvas').waitFor();

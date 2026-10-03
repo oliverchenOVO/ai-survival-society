@@ -153,7 +153,16 @@ export function createPhysicalKit(scene) {
                 'metal',
               );
             for (const dz of world.spatial && dx > 0 ? [2.4] : [1, 2])
-              piece('crate', x + dx, y + 0.9, z + dz, 0.55, 0.6, world.spatial && dx > 0 ? 0.45 : 0.6, 'wood');
+              piece(
+                'crate',
+                x + dx,
+                y + 0.9,
+                z + dz,
+                0.55,
+                0.6,
+                world.spatial && dx > 0 ? 0.45 : 0.6,
+                'wood',
+              );
           }
           piece('platform', x, y + 0.08, z - 4, 4, 0.15, 1.5, 'industrial');
           for (const dx of [-3.8, 3.8])

@@ -12,7 +12,7 @@ const errors = [],
   viewports = [];
 let app;
 async function launch() {
-  app = await electron.launch({ executablePath, env, args: [], timeout: 60000 });
+  app = await electron.launch({ executablePath, env, args: process.env.SOCIETY_QA_SOFTWARE==='1'?['--use-angle=swiftshader']:[], timeout: 60000 });
   const page = await app.firstWindow();
   page.on('pageerror', (e) => errors.push(e.message));
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();

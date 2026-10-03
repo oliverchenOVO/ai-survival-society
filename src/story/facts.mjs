@@ -321,20 +321,33 @@ export function publicWorld(w) {
   return {
     schemaVersion: 1,
     timeOfDay: cleanText(w.timeOfDay),
-    ...(w.spatial ? { spatial: {
-      schemaVersion: w.spatial.schemaVersion,
-      collisionSchemaVersion: w.spatial.collisionSchemaVersion,
-      slots: (w.spatial.slots ?? []).map(slot => ({
-        ...numericObject(slot), id: cleanText(slot.id), objectId: cleanText(slot.objectId),
-        agentId: cleanText(slot.agentId), state: cleanText(slot.state), facing: numericObject(slot.facing),
-      })),
-      portals: (w.spatial.portals ?? []).map(portal => ({
-        ...numericObject(portal), id: cleanText(portal.id), objectId: cleanText(portal.objectId),
-        fromRegion: cleanText(portal.fromRegion), toRegion: cleanText(portal.toRegion),
-        axis: cleanText(portal.axis), state: cleanText(portal.state), reservations: [],
-      })),
-      metrics: numericObject(w.spatial.metrics),
-    }} : {}),
+    ...(w.spatial
+      ? {
+          spatial: {
+            schemaVersion: w.spatial.schemaVersion,
+            collisionSchemaVersion: w.spatial.collisionSchemaVersion,
+            slots: (w.spatial.slots ?? []).map((slot) => ({
+              ...numericObject(slot),
+              id: cleanText(slot.id),
+              objectId: cleanText(slot.objectId),
+              agentId: cleanText(slot.agentId),
+              state: cleanText(slot.state),
+              facing: numericObject(slot.facing),
+            })),
+            portals: (w.spatial.portals ?? []).map((portal) => ({
+              ...numericObject(portal),
+              id: cleanText(portal.id),
+              objectId: cleanText(portal.objectId),
+              fromRegion: cleanText(portal.fromRegion),
+              toRegion: cleanText(portal.toRegion),
+              axis: cleanText(portal.axis),
+              state: cleanText(portal.state),
+              reservations: [],
+            })),
+            metrics: numericObject(w.spatial.metrics),
+          },
+        }
+      : {}),
     weather: cleanText(w.weather),
     metrics: numericObject(w.metrics),
     walls: (w.walls ?? []).map(numericObject),
@@ -565,7 +578,14 @@ export function publicStory(data) {
         hp: a.hp,
         action: cleanText(a.action),
         target: cleanText(a.target),
-        ...(a.spatial ? { spatial: { facing: numericObject(a.spatial.facing), slotId: cleanText(a.spatial.slotId) } } : {}),
+        ...(a.spatial
+          ? {
+              spatial: {
+                facing: numericObject(a.spatial.facing),
+                slotId: cleanText(a.spatial.slotId),
+              },
+            }
+          : {}),
       })),
     })),
     history,

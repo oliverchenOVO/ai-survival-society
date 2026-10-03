@@ -269,24 +269,55 @@ test('checkpoint preserves deterministic future and legacy migration is explicit
 });
 
 test('bed capacity, dual generator slots and attack interruption remain authoritative', () => {
-  const s=fixture(), a=activate(s,0,{x:18,z:2}), b=activate(s,1,{x:20,z:2}), c=activate(s,2,{x:22,z:2});
-  const bed=s.world.objects.find(o=>o.type==='bed'), generator=s.world.objects.find(o=>o.type==='generator');
-  a.action=b.action='rest_at'; a.target=b.target=bed.id;
-  assert.ok(reserveInteraction(s,a,bed)); assert.equal(reserveInteraction(s,b,bed),null);
-  a.target=generator.id; a.action='repair'; revalidateSpatial(s);
-  b.target=generator.id; b.action='repair'; c.target=generator.id; c.action='repair';
-  const first=reserveInteraction(s,a,generator), second=reserveInteraction(s,b,generator);
-  assert.ok(first&&second); assert.notEqual(first.id,second.id); assert.equal(reserveInteraction(s,c,generator),null);
-  s.event('ATTACK',c,a,'ATTACK',{damage:1}); assert.equal(first.state,'free');
-  assert.ok(reserveInteraction(s,c,generator));
+  const s = fixture(),
+    a = activate(s, 0, { x: 18, z: 2 }),
+    b = activate(s, 1, { x: 20, z: 2 }),
+    c = activate(s, 2, { x: 22, z: 2 });
+  const bed = s.world.objects.find((o) => o.type === 'bed'),
+    generator = s.world.objects.find((o) => o.type === 'generator');
+  a.action = b.action = 'rest_at';
+  a.target = b.target = bed.id;
+  assert.ok(reserveInteraction(s, a, bed));
+  assert.equal(reserveInteraction(s, b, bed), null);
+  a.target = generator.id;
+  a.action = 'repair';
+  revalidateSpatial(s);
+  b.target = generator.id;
+  b.action = 'repair';
+  c.target = generator.id;
+  c.action = 'repair';
+  const first = reserveInteraction(s, a, generator),
+    second = reserveInteraction(s, b, generator);
+  assert.ok(first && second);
+  assert.notEqual(first.id, second.id);
+  assert.equal(reserveInteraction(s, c, generator), null);
+  s.event('ATTACK', c, a, 'ATTACK', { damage: 1 });
+  assert.equal(first.state, 'free');
+  assert.ok(reserveInteraction(s, c, generator));
+});
+
+test('abstract goal inside furniture reaches its legal projection without endless replanning', () => {
+  const s = fixture(),
+    a = activate(s, 0, { x: -2, z: -3 });
+  advance(s, [a], [{ x: 0, z: 0 }], 20);
+  const replans = s.world.spatial.metrics.replans;
+  advance(s, [a], [{ x: 0, z: 0 }], 10);
+  assert.equal(s.world.spatial.metrics.replans, replans);
+  assert.ok(walkable(s, a.position));
 });
 
 test('opposing clinic doorway traffic yields, separates and releases short reservations', () => {
- const s=fixture();const door=s.world.objects.find(o=>o.id==='clinic_door_0');door.state='open';
- const a=activate(s,0,nearestLegal(s,{x:-3,z:3.2})),b=activate(s,1,{x:-3,z:4.8});
- advance(s,[a,b],[{x:-4,z:5},nearestLegal(s,{x:-3,z:3.2})],90);
- assert.ok(Math.hypot(a.position.x+4,a.position.z-5)<.25,JSON.stringify(a.position));
- assert.ok(Math.hypot(b.position.x+3,b.position.z-3.2)<.25,JSON.stringify(b.position));
- for(const portal of s.world.spatial.portals)assert.ok(portal.reservations.length<=portal.capacity);
- s.elapsed+=2;revalidateSpatial(s);assert.ok(s.world.spatial.portals.every(p=>p.reservations.length===0));
+  const s = fixture();
+  const door = s.world.objects.find((o) => o.id === 'clinic_door_0');
+  door.state = 'open';
+  const a = activate(s, 0, nearestLegal(s, { x: -3, z: 3.2 })),
+    b = activate(s, 1, { x: -3, z: 4.8 });
+  advance(s, [a, b], [{ x: -4, z: 5 }, nearestLegal(s, { x: -3, z: 3.2 })], 90);
+  assert.ok(Math.hypot(a.position.x + 4, a.position.z - 5) < 0.25, JSON.stringify(a.position));
+  assert.ok(Math.hypot(b.position.x + 3, b.position.z - 3.2) < 0.25, JSON.stringify(b.position));
+  for (const portal of s.world.spatial.portals)
+    assert.ok(portal.reservations.length <= portal.capacity);
+  s.elapsed += 2;
+  revalidateSpatial(s);
+  assert.ok(s.world.spatial.portals.every((p) => p.reservations.length === 0));
 });

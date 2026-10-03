@@ -392,12 +392,32 @@ export function findPath(sim, from, to, { smooth = true } = {}) {
   return finish(path);
 }
 export function pathDistance(sim, a, target) {
-  const vertical = (target.y ?? 0) > 0.2 && geometry.verticalRoutes.find(r => dist(r.nodes.at(-1), target) < 0.3);
-  const departure = (a.position.y ?? 0) > 0.2 && geometry.verticalRoutes.find(r => r.id === a.spatial?.verticalRouteId);
-  const path = findPath(sim, departure ? departure.nodes[0] : a.position, vertical ? vertical.nodes[0] : target);
+  const vertical =
+    (target.y ?? 0) > 0.2 &&
+    geometry.verticalRoutes.find((r) => dist(r.nodes.at(-1), target) < 0.3);
+  const departure =
+    (a.position.y ?? 0) > 0.2 &&
+    geometry.verticalRoutes.find((r) => r.id === a.spatial?.verticalRouteId);
+  const path = findPath(
+    sim,
+    departure ? departure.nodes[0] : a.position,
+    vertical ? vertical.nodes[0] : target,
+  );
   if (!path) return Infinity;
-  const nodes = [...(departure ? departure.nodes.slice().reverse().filter(n => n.y < (a.position.y ?? 0) + .05) : []), ...path, ...(vertical ? vertical.nodes.slice(1) : [])];
-  return nodes.reduce((sum, p, i) => { const previous = i ? nodes[i - 1] : a.position; return sum + Math.hypot(p.x-previous.x, p.z-previous.z, (p.y ?? 0)-(previous.y ?? 0)); }, 0);
+  const nodes = [
+    ...(departure
+      ? departure.nodes
+          .slice()
+          .reverse()
+          .filter((n) => n.y < (a.position.y ?? 0) + 0.05)
+      : []),
+    ...path,
+    ...(vertical ? vertical.nodes.slice(1) : []),
+  ];
+  return nodes.reduce((sum, p, i) => {
+    const previous = i ? nodes[i - 1] : a.position;
+    return sum + Math.hypot(p.x - previous.x, p.z - previous.z, (p.y ?? 0) - (previous.y ?? 0));
+  }, 0);
 }
 export function initializeSpatial(sim, { migration = false } = {}) {
   caches.delete(sim);
@@ -435,7 +455,7 @@ export function initializeSpatial(sim, { migration = false } = {}) {
     o.capacity = geometry.interactionSlots.filter((s) => s.objectId === o.id).length || o.capacity;
     if (o.poi === 'poi_lake' && o.type === 'container') o.position = { x: -14, z: -8.8 };
     if (o.id === 'ruins_container_1') o.position = { x: 11, z: -10, y: 1.6 };
-    if (o.id === 'depot_radio_1') o.position = {x:.8,z:0};
+    if (o.id === 'depot_radio_1') o.position = { x: 0.8, z: 0 };
   }
   for (const a of sim.agents) {
     a.collisionRadius = AGENT_RADIUS;
@@ -561,7 +581,7 @@ export function atInteractionSlot(sim, a, o) {
     return false;
   if (!lineClear(sim, a.position, o.position, 0, { hazards: false, ignoreObject: o.id }))
     return false;
-  a.spatial.stuckTimer=0;
+  a.spatial.stuckTimer = 0;
   slot.state = 'occupied';
   slot.expiresAt = sim.elapsed + 5;
   a.spatial.facing = slot.facing;
@@ -595,10 +615,26 @@ function portalPermit(sim, a, from, to, dt) {
   return true;
 }
 export function moveSpatial(sim, a, destination, dt, speed) {
+  // Abstract flee/explore goals can fall inside furniture. Project the destination,
+  // never the character, so arrival is measured against the same legal endpoint as A*.
+  if (!walkable(sim, destination))
+    destination = { ...destination, ...nearestLegal(sim, destination) };
   const s = a.spatial,
     m = sim.world.spatial.metrics,
     c = cache(sim),
     started = performance.now();
+  // Retreat/exploration requests an area, not an exclusive equipment slot. A
+  // nearby occupied endpoint is reached without pushing its occupant aside.
+  if (
+    ['flee', 'explore'].includes(a.action) &&
+    dist(a.position, destination) < 0.9 &&
+    sim.agents.some((b) => b.alive && b.id !== a.id && dist(b.position, destination) < 0.7)
+  ) {
+    s.stuckTimer = 0;
+    s.retries = 0;
+    s.path = [];
+    return true;
+  }
   if (
     s.failedTarget &&
     sim.elapsed < s.failedTarget.until &&
@@ -623,10 +659,24 @@ export function moveSpatial(sim, a, destination, dt, speed) {
     s.signature !== c.signature ||
     (!s.path.length && dist(a.position, destination) > 0.2 && sim.elapsed >= (s.retryAt ?? 0))
   ) {
-    const departure = (a.position.y??0)>.2 && (!vertical || vertical.id!==s.verticalRouteId) && geometry.verticalRoutes.find(r=>r.id===s.verticalRouteId || r.nodes.some((n,i)=>i&&segmentDistance(r.nodes[i-1],n,a.position)<.7));
-    const descend=departure?departure.nodes.slice().reverse().filter(n=>n.y<(a.position.y??0)+.05):[];
-    s.path=departure?[...descend,...(findPath(sim,departure.nodes[0],baseTarget)??[])]:findPath(sim,a.position,baseTarget)??[];
-    if(vertical)s.verticalRouteId=vertical.id;
+    const departure =
+      (a.position.y ?? 0) > 0.2 &&
+      (!vertical || vertical.id !== s.verticalRouteId) &&
+      geometry.verticalRoutes.find(
+        (r) =>
+          r.id === s.verticalRouteId ||
+          r.nodes.some((n, i) => i && segmentDistance(r.nodes[i - 1], n, a.position) < 0.7),
+      );
+    const descend = departure
+      ? departure.nodes
+          .slice()
+          .reverse()
+          .filter((n) => n.y < (a.position.y ?? 0) + 0.05)
+      : [];
+    s.path = departure
+      ? [...descend, ...(findPath(sim, departure.nodes[0], baseTarget) ?? [])]
+      : (findPath(sim, a.position, baseTarget) ?? []);
+    if (vertical) s.verticalRouteId = vertical.id;
     if (vertical && s.path.length) s.path.push(...vertical.nodes.slice(1));
     s.target = { ...destination };
     s.signature = c.signature;
@@ -640,7 +690,10 @@ export function moveSpatial(sim, a, destination, dt, speed) {
         releaseSlot(sim, a);
         a.nextDecision = sim.elapsed;
         s.failedTarget = { ...destination, until: sim.elapsed + 8 };
-        s.blockedActions=[...(s.blockedActions??[]).filter(b=>b.until>sim.elapsed),{action:a.action,target:a.target,until:sim.elapsed+15}].slice(-8);
+        s.blockedActions = [
+          ...(s.blockedActions ?? []).filter((b) => b.until > sim.elapsed),
+          { action: a.action, target: a.target, until: sim.elapsed + 45 },
+        ].slice(-8);
         s.target = null;
         s.retries = 0;
       }
@@ -658,7 +711,9 @@ export function moveSpatial(sim, a, destination, dt, speed) {
       m.completedPaths++;
       s.completionCounted = true;
     }
-    m.averagePathEfficiency = m.plannedDistance ? Math.min(1, m.directDistance / m.plannedDistance) : 1;
+    m.averagePathEfficiency = m.plannedDistance
+      ? Math.min(1, m.directDistance / m.plannedDistance)
+      : 1;
     return dist(a.position, destination) < 0.2;
   }
   const target = s.path[0],
@@ -752,8 +807,11 @@ export function moveSpatial(sim, a, destination, dt, speed) {
     s.signature = null;
     s.retryAt = sim.elapsed + 0.5;
     if (s.retries >= 3) {
-      s.blockedActions=[...(s.blockedActions??[]).filter(b=>b.until>sim.elapsed),{action:a.action,target:a.target,until:sim.elapsed+15}].slice(-8);
-      s.retries=0;
+      s.blockedActions = [
+        ...(s.blockedActions ?? []).filter((b) => b.until > sim.elapsed),
+        { action: a.action, target: a.target, until: sim.elapsed + 45 },
+      ].slice(-8);
+      s.retries = 0;
       releaseSlot(sim, a);
       s.path = [];
       s.target = null;

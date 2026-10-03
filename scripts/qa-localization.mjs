@@ -129,6 +129,7 @@ async function audit(label) {
     };
   });
   layouts.push({ label, ...result });
+  console.log('AUDIT', label);
   assert.equal(result.pageOverflow, false, label);
   assert.deepEqual(result.clipped, [], `${label}: clipped controls`);
   assert.deepEqual(result.overlaps, [], `${label}: overlapping UI labels`);
@@ -279,6 +280,9 @@ try {
       2,
     ),
   );
+} catch (error) {
+  console.error(error);
+  throw error;
 } finally {
   await browser.close();
   await runtime.close();

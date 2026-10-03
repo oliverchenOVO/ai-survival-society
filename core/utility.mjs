@@ -188,7 +188,14 @@ export function candidates(sim, a) {
     { x: Math.cos(angle) * sim.safeRadius * 0.65, z: Math.sin(angle) * sim.safeRadius * 0.65 },
   );
   options.push(...worldCandidates(sim, a));
-  return options.filter(o=>!a.spatial?.blockedActions?.some(b=>b.until>sim.elapsed&&b.action===o.action&&b.target===o.target)).sort((x, y) => y.score - x.score);
+  return options
+    .filter(
+      (o) =>
+        !a.spatial?.blockedActions?.some(
+          (b) => b.until > sim.elapsed && b.action === o.action && b.target === o.target,
+        ),
+    )
+    .sort((x, y) => y.score - x.score);
 }
 export function chooseDecision(sim, a) {
   const options = candidates(sim, a);

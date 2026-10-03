@@ -1,10 +1,17 @@
-import {reserveInteraction,atInteractionSlot,releaseSlot} from '../core/spatial.mjs';
+import { reserveInteraction, atInteractionSlot, releaseSlot } from '../core/spatial.mjs';
 import { startServer } from '../server/index.mjs';
 import { launchBrowser } from './qa-runtime.mjs';
 import { setWeather, startHazard, worldEvent } from '../core/living-world.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
-function placeAtSlot(s,a,o){releaseSlot(s,a);a.target=o.id;const slot=reserveInteraction(s,a,o);assert.ok(slot);a.position={x:slot.x,y:slot.y??0,z:slot.z};assert.ok(atInteractionSlot(s,a,o));}
+function placeAtSlot(s, a, o) {
+  releaseSlot(s, a);
+  a.target = o.id;
+  const slot = reserveInteraction(s, a, o);
+  assert.ok(slot);
+  a.position = { x: slot.x, y: slot.y ?? 0, z: slot.z };
+  assert.ok(atInteractionSlot(s, a, o));
+}
 const runtime = await startServer({
   port: 0,
   dataDir: `.qa/physical-${Date.now()}`,
@@ -123,7 +130,7 @@ try {
   d = await show('Generator Offline', null, gen.position);
   assert.ok(!d.objects.find((o) => o.id === gen.id).state.online);
   gen.state = 'damaged';
-  placeAtSlot(sim,a,gen);
+  placeAtSlot(sim, a, gen);
   a.target = gen.id;
   a.action = 'repair';
   gen.metadata.repairProgress = 1.5;
@@ -135,7 +142,7 @@ try {
   assert.ok(d.objects.find((o) => o.id === gen.id).state.online);
   await show('Night Clinic', 'v1.7-clinic-night.png', poi('clinic').position);
   const med = obj('medical_station');
-  placeAtSlot(sim,a,med);
+  placeAtSlot(sim, a, med);
   a.action = 'heal_at';
   a.target = med.id;
   d = await show('Agent Heal', null, med.position);
@@ -148,7 +155,7 @@ try {
   worldEvent(sim, 'CONTAINER_SEARCHED', a, poi('village'), cache);
   a.action = 'search';
   a.target = cache.id;
-  placeAtSlot(sim,a,cache);
+  placeAtSlot(sim, a, cache);
   d = await show('Supply Cache Empty', null, cache.position);
   assert.ok(!d.objects.find((o) => o.id === cache.id).state.contents);
   const door = obj('door');
@@ -166,7 +173,7 @@ try {
   setWeather(sim, 'storm', 60);
   a.action = 'rest_at';
   const bed = sim.world.objects.find((o) => o.type === 'bed' && o.poi === 'poi_shelter');
-  placeAtSlot(sim,a,bed);
+  placeAtSlot(sim, a, bed);
   a.target = bed.id;
   await show('Storm Shelter', 'v1.7-storm.png', poi('shelter').position);
   startHazard(sim, 'flood', 'poi_bridge');
@@ -184,7 +191,7 @@ try {
   worldEvent(sim, 'POI_CONTESTED', a, clinic, null);
   await show('Contested POI', null, clinic.position);
   const radio = obj('radio');
-  placeAtSlot(sim,a,radio);
+  placeAtSlot(sim, a, radio);
   a.action = 'broadcast';
   a.target = radio.id;
   d = await show('Broadcast', null, radio.position);

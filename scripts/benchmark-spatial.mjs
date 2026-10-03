@@ -3,8 +3,8 @@ import { walkable, spatialProfile } from '../core/spatial.mjs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
-const performanceRuns=[];
-const benchmarkStart=performance.now();
+const performanceRuns = [];
+const benchmarkStart = performance.now();
 const golden = process.argv.includes('--update'),
   report = {
     version: '1.7.0',
@@ -47,8 +47,9 @@ for (const [name, start] of [
     assert.ok(s.world.spatial.metrics.stuckEvents < 100, 'Excess stuck seed ' + seed);
     assert.ok(s.world.spatial.metrics.replans < 2000, 'Replan storm seed ' + seed);
     assert.equal(s.status, 'finished');
-    performanceRuns.push({seed,simulationSeconds:s.elapsed,...spatialProfile(s)});
-    if ((seed-start+1)%10===0) console.log('PASS spatial seeds',name,seed-start+1,'/ 50');
+    performanceRuns.push({ seed, simulationSeconds: s.elapsed, ...spatialProfile(s) });
+    if ((seed - start + 1) % 10 === 0)
+      console.log('PASS spatial seeds', name, seed - start + 1, '/ 50');
     const counts = s.stats().counts;
     runs.push({
       seed,
@@ -117,4 +118,17 @@ else
     'v1.7 deterministic spatial golden changed: review gameplay before updating',
   );
 
-await writeFile('docs/qa/spatial-v1.7-performance.json',JSON.stringify({date:new Date().toISOString(),wallSeconds:(performance.now()-benchmarkStart)/1000,method:'Timing excluded from deterministic golden; path calls include utility reachability queries',runs:performanceRuns},null,2)+'\n');
+await writeFile(
+  'docs/qa/spatial-v1.7-performance.json',
+  JSON.stringify(
+    {
+      date: new Date().toISOString(),
+      wallSeconds: (performance.now() - benchmarkStart) / 1000,
+      method:
+        'Timing excluded from deterministic golden; path calls include utility reachability queries',
+      runs: performanceRuns,
+    },
+    null,
+    2,
+  ) + '\n',
+);

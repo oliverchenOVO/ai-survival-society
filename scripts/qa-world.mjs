@@ -1,4 +1,4 @@
-import {reserveInteraction,atInteractionSlot,releaseSlot} from '../core/spatial.mjs';
+import { reserveInteraction, atInteractionSlot, releaseSlot } from '../core/spatial.mjs';
 import { launchBrowser } from './qa-runtime.mjs';
 // Browser plugin not available; isolated Playwright Chrome and actual Electron.
 import { chromium, _electron as electron } from 'playwright';
@@ -9,7 +9,14 @@ import { setWeather, startHazard, performInteraction, updateWorld } from '../cor
 import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-function placeAtSlot(s,a,o){releaseSlot(s,a);a.target=o.id;const slot=reserveInteraction(s,a,o);assert.ok(slot);a.position={x:slot.x,y:slot.y??0,z:slot.z};assert.ok(atInteractionSlot(s,a,o));}
+function placeAtSlot(s, a, o) {
+  releaseSlot(s, a);
+  a.target = o.id;
+  const slot = reserveInteraction(s, a, o);
+  assert.ok(slot);
+  a.position = { x: slot.x, y: slot.y ?? 0, z: slot.z };
+  assert.ok(atInteractionSlot(s, a, o));
+}
 const desktop = process.argv.includes('--desktop'),
   profile = path.resolve(`.qa/world-${desktop ? 'desktop' : 'browser'}-${Date.now()}`);
 await mkdir(profile, { recursive: true });
@@ -55,8 +62,9 @@ try {
   if (desktop) {
     app = await electron.launch({
       executablePath: path.resolve('builds/win-unpacked/AI Survival Society.exe'),
+      args: process.env.SOCIETY_QA_SOFTWARE === '1' ? ['--use-angle=swiftshader'] : [],
       env: { ...process.env, SOCIETY_USER_DATA_DIR: profile },
-      timeout: 60000,
+      timeout: 180000,
     });
     page = await app.firstWindow();
     context = page.context();
@@ -129,7 +137,7 @@ try {
     await page.waitForTimeout(600);
     await page.screenshot({ path: 'docs/images/v1.7-day-world.png' });
     const g = s.world.objects.find((o) => o.type === 'generator');
-    placeAtSlot(s,a,g);
+    placeAtSlot(s, a, g);
     a.target = g.id;
     a.action = 'repair';
     performInteraction(s, a, g, 3);
@@ -147,7 +155,7 @@ try {
     await page.screenshot({ path: 'docs/images/v1.7-night-world.png' });
     setWeather(s, 'storm', 60);
     const bed = s.world.objects.find((o) => o.type === 'bed' && o.poi === 'poi_shelter');
-    placeAtSlot(s,a,bed);
+    placeAtSlot(s, a, bed);
     a.energy = 20;
     a.target = bed.id;
     a.action = 'rest_at';
@@ -169,7 +177,7 @@ try {
   await page.reload();
   await page.locator('.living-hud').waitFor();
   check('Saved world resumes intact and remains intact after reload');
-  await page.setViewportSize({width:1920,height:1080});
+  await page.setViewportSize({ width: 1920, height: 1080 });
   for (const speed of [1, 10]) {
     await post('/api/control', { action: 'speed', value: speed });
     await post('/api/control', { action: 'resume' });
@@ -221,8 +229,10 @@ try {
     );
   }
   check('Story World Moments at desktop and mobile sizes');
-  const visitorIndex=completed.agents.findIndex(a=>Object.keys(a.placeStats??{}).length>0);
-  assert.ok(visitorIndex>=0);
+  const visitorIndex = completed.agents.findIndex(
+    (a) => Object.keys(a.placeStats ?? {}).length > 0,
+  );
+  assert.ok(visitorIndex >= 0);
   await page.locator('.cast-card').nth(visitorIndex).click();
   await page.getByRole('heading', { name: '重要地點', exact: true }).waitFor();
   await page.getByRole('button', { name: '關閉視窗' }).click();

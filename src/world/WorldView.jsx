@@ -314,9 +314,14 @@ export default function WorldView({
         lastGraph = 0,
         lastCinematic = 0;
       const clock = new THREE.Clock();
-      const render = () => {
+      let lastRendered = -Infinity;
+      const render = (now = performance.now()) => {
         if (disposed) return;
         frame = requestAnimationFrame(render);
+        // Leave room for UI input and other observers; physics still ticks on the server.
+        const interval = latest.current.state.status === 'paused' ? 1000 / 15 : 1000 / 30;
+        if (now - lastRendered < interval) return;
+        lastRendered = now;
         const delta = Math.min(clock.getDelta(), 0.1),
           time = clock.elapsedTime,
           {
