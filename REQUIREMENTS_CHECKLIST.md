@@ -305,6 +305,8 @@
 - [x] docs/images/v1.5-day-world.png、v1.5-night-world.png、v1.5-clinic-control.png、v1.5-storm-shelter.png、v1.5-fire-event.png 實際執行截图；影片可選。
 - [x] docs/V1.5_REPORT.md 18 項：Goal/Architecture/Interactables/POI/Utility/Territory/Weather/Hazards/Perception/Navigation/Persistence/Replay/Story/Determinism/Benchmark/Performance/QA/Limitations。
 - [x] README Living World、操作、screenshots 更新；package/Electron/UI/README/release v1.5.0 一致。
-- [ ] 合理分 commit、push 原 private repo、Git clean。
-- [ ] 全部驗收後 tag v1.5.0、private GitHub Release、Windows portable、繁體中文 notes，保留舊 release。
-- [ ] 最終逐項驗收；任何未完成不得寫 COMPLETE；stretch 不犧牲核心品質。
+- [x] 合理分 commit、push 原 private repo、Git clean。
+- [x] 全部驗收後 tag v1.5.0、private GitHub Release、Windows portable、繁體中文 notes，保留舊 release。
+- [x] 最終逐項驗收；任何未完成不得寫 COMPLETE；stretch 不犧牲核心品質。
+
+最終驗收：27/27 與 100-seed golden、Browser／Electron／portable 全部通過；私人 Release v1.5.0 已發布，GitHub asset digest 與本機一致。應用程式 revision b118945，Release tag 725ffde，發布後驗收紀錄另提交至 main。

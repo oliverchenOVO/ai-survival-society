@@ -1,0 +1,18 @@
+{
+  "version": "1.5.0",
+  "releaseTagRevision": "725ffdee13cc762946a0fc3b5c9c6598a29b36d1",
+  "applicationRevision": "b118945",
+  "url": "https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0",
+  "repositoryPrivate": true,
+  "latestRelease": "v1.5.0",
+  "draft": false,
+  "asset": {
+    "name": "AI-Survival-Society-1.5.0.exe",
+    "bytes": 102594371,
+    "digest": "sha256:8672793108fd2ab3bd0cc32967a4897fff0098f659d9e02169d26b927d28def0"
+  },
+  "oldReleasesPreserved": true,
+  "service": "http://localhost:4310/",
+  "autoRestart": true,
+  "verification": "GitHub digest and bytes match local artifact; repository clean before publication verification commit"
+}

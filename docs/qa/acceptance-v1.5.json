@@ -57,5 +57,15 @@
       "rendererErrors": []
     }
   },
-  "release": "pending publication"
+  "release": {
+    "url": "https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0",
+    "draft": false,
+    "repositoryPrivate": true,
+    "asset": {
+      "name": "AI-Survival-Society-1.5.0.exe",
+      "bytes": 102594371,
+      "digest": "sha256:8672793108fd2ab3bd0cc32967a4897fff0098f659d9e02169d26b927d28def0"
+    },
+    "verifiedAt": "2026-10-03T08:52:44.831818+00:00"
+  }
 }
