@@ -13,14 +13,16 @@ export async function closeElectron(app) {
     }),
   ]);
   clearTimeout(timeout);
-  if (!closed && owned.pid) {
-    try {
-      execFileSync('taskkill', ['/PID', String(owned.pid), '/T', '/F'], {
-        windowsHide: true,
-        timeout: 10000,
-        stdio: 'ignore',
-      });
-    } catch {}
+  if (!closed) {
+    if (owned.pid && owned.exitCode === null) {
+      try {
+        execFileSync('taskkill', ['/PID', String(owned.pid), '/T', '/F'], {
+          windowsHide: true,
+          timeout: 10000,
+          stdio: 'ignore',
+        });
+      } catch {}
+    }
     // Release this QA's launcher pipes if Windows retains an exited child.
     owned.stdin?.destroy();
     owned.stdout?.destroy();
