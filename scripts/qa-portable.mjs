@@ -10,12 +10,14 @@ await new Promise((resolve) => probe.listen(0, 'localhost', resolve));
 const debugPort = probe.address().port;
 await new Promise((resolve) => probe.close(resolve));
 const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.7.0.exe');
+const profile = path.resolve(`.qa/portable-locale-${Date.now()}`);
+const env = { ...process.env, SOCIETY_USER_DATA_DIR: profile };
 const processHandle = spawn(exe, [`--remote-debugging-port=${debugPort}`], {
   stdio: 'ignore',
   windowsHide: true,
-  env: { ...process.env, SOCIETY_USER_DATA_DIR: path.resolve(`.qa/portable-locale-${Date.now()}`) },
+  env,
 });
-let browser, page;
+let browser, page, repeatedLaunch;
 try {
   // NSIS must decompress the complete Electron runtime on a cold launch.
   // On a loaded host this can exceed two minutes before Chromium exists.
@@ -61,6 +63,28 @@ try {
   assert.equal(await page.locator('canvas').count(), 1);
   assert.equal(await page.evaluate(() => typeof window.require), 'undefined');
   assert.deepEqual(errors, []);
+  const origin = new URL(page.url()).origin;
+  await page.request.post(origin + '/api/control', { data: { action: 'pause' } });
+  const beforeRepeat = await page.request.get(origin + '/api/state').then((r) => r.json());
+  repeatedLaunch = spawn(exe, [], { stdio: 'ignore', windowsHide: true, env });
+  const repeatDeadline = Date.now() + 300000;
+  while (repeatedLaunch.exitCode === null && Date.now() < repeatDeadline)
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  assert.equal(
+    repeatedLaunch.exitCode,
+    0,
+    'Repeated launch must exit through the single-instance lock',
+  );
+  const afterRepeat = await page.request.get(origin + '/api/state').then((r) => r.json());
+  assert.equal(afterRepeat.matchId, beforeRepeat.matchId);
+  assert.equal(afterRepeat.elapsed, beforeRepeat.elapsed);
+  await page.reload();
+  await page.locator('canvas').waitFor();
+  assert.equal(await page.locator('html').getAttribute('lang'), 'zh-TW');
+  assert.deepEqual(errors, []);
+  console.log(
+    'PASS repeat launch preserves the running instance, snapshot and extracted renderer files',
+  );
   await page.screenshot({ path: 'docs/images/v1.7-zh-TW-portable-build.png' });
   await writeFile(
     'docs/qa/portable-results-v1.7.json',
@@ -71,6 +95,7 @@ try {
         locale: 'zh-TW',
         canvas: 'PASS',
         pauseResumeRestartSelection: 'PASS',
+        repeatedLaunchPreservesFirstInstance: 'PASS',
         rendererNodeAccess: 'unavailable',
         rendererErrors: errors,
         verificationMethod:
@@ -98,9 +123,10 @@ try {
     }),
   ]);
   clearTimeout(cleanupTimeout);
-  if (processHandle.exitCode === null)
-    await promisify(execFile)('taskkill', ['/PID', String(processHandle.pid), '/T', '/F'], {
-      windowsHide: true,
-      timeout: 10000,
-    }).catch(() => {});
+  for (const ownedProcess of [repeatedLaunch, processHandle])
+    if (ownedProcess && ownedProcess.exitCode === null)
+      await promisify(execFile)('taskkill', ['/PID', String(ownedProcess.pid), '/T', '/F'], {
+        windowsHide: true,
+        timeout: 10000,
+      }).catch(() => {});
 }
