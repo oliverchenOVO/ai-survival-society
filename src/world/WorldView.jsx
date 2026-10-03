@@ -12,6 +12,7 @@ import { createIsland, createOcean, createSky } from './island.mjs';
 import { terrainHeight } from '../../core/world.mjs';
 import { createLivingScene } from './living-scene.mjs';
 import { animateRobot } from './robot-motion.mjs';
+import { assembleRobot } from './robot-kit.mjs';
 import { eventPriority, zoomTier } from './visual-state.mjs';
 const tmp = new THREE.Vector3();
 export default function WorldView({
@@ -177,6 +178,7 @@ export default function WorldView({
             const model = gltf.scene;
             model.scale.setScalar(0.75);
             model.rotation.y = Math.PI;
+            assembleRobot(model);
             model.traverse((o) => {
               if (o.isMesh) {
                 o.castShadow = true;
