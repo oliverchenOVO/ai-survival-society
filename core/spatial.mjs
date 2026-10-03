@@ -392,8 +392,12 @@ export function findPath(sim, from, to, { smooth = true } = {}) {
   return finish(path);
 }
 export function pathDistance(sim, a, target) {
-  const path = findPath(sim, a.position, target);
-  return path ? path.reduce((s, p, i) => s + dist(i ? path[i - 1] : a.position, p), 0) : Infinity;
+  const vertical = (target.y ?? 0) > 0.2 && geometry.verticalRoutes.find(r => dist(r.nodes.at(-1), target) < 0.3);
+  const departure = (a.position.y ?? 0) > 0.2 && geometry.verticalRoutes.find(r => r.id === a.spatial?.verticalRouteId);
+  const path = findPath(sim, departure ? departure.nodes[0] : a.position, vertical ? vertical.nodes[0] : target);
+  if (!path) return Infinity;
+  const nodes = [...(departure ? departure.nodes.slice().reverse().filter(n => n.y < (a.position.y ?? 0) + .05) : []), ...path, ...(vertical ? vertical.nodes.slice(1) : [])];
+  return nodes.reduce((sum, p, i) => { const previous = i ? nodes[i - 1] : a.position; return sum + Math.hypot(p.x-previous.x, p.z-previous.z, (p.y ?? 0)-(previous.y ?? 0)); }, 0);
 }
 export function initializeSpatial(sim, { migration = false } = {}) {
   caches.delete(sim);
@@ -431,6 +435,7 @@ export function initializeSpatial(sim, { migration = false } = {}) {
     o.capacity = geometry.interactionSlots.filter((s) => s.objectId === o.id).length || o.capacity;
     if (o.poi === 'poi_lake' && o.type === 'container') o.position = { x: -14, z: -8.8 };
     if (o.id === 'ruins_container_1') o.position = { x: 11, z: -10, y: 1.6 };
+    if (o.id === 'depot_radio_1') o.position = {x:.8,z:0};
   }
   for (const a of sim.agents) {
     a.collisionRadius = AGENT_RADIUS;
@@ -556,6 +561,7 @@ export function atInteractionSlot(sim, a, o) {
     return false;
   if (!lineClear(sim, a.position, o.position, 0, { hazards: false, ignoreObject: o.id }))
     return false;
+  a.spatial.stuckTimer=0;
   slot.state = 'occupied';
   slot.expiresAt = sim.elapsed + 5;
   a.spatial.facing = slot.facing;
@@ -617,20 +623,15 @@ export function moveSpatial(sim, a, destination, dt, speed) {
     s.signature !== c.signature ||
     (!s.path.length && dist(a.position, destination) > 0.2 && sim.elapsed >= (s.retryAt ?? 0))
   ) {
-    const departure =
-      (a.position.y ?? 0) > 0.2 &&
-      !vertical &&
-      geometry.verticalRoutes.find((r) => dist(a.position, r.nodes.at(-1)) < 0.5);
-    s.path = departure
-      ? [
-          ...departure.nodes.slice().reverse().slice(1),
-          ...(findPath(sim, departure.nodes[0], baseTarget) ?? []),
-        ]
-      : (findPath(sim, a.position, baseTarget) ?? []);
+    const departure = (a.position.y??0)>.2 && (!vertical || vertical.id!==s.verticalRouteId) && geometry.verticalRoutes.find(r=>r.id===s.verticalRouteId || r.nodes.some((n,i)=>i&&segmentDistance(r.nodes[i-1],n,a.position)<.7));
+    const descend=departure?departure.nodes.slice().reverse().filter(n=>n.y<(a.position.y??0)+.05):[];
+    s.path=departure?[...descend,...(findPath(sim,departure.nodes[0],baseTarget)??[])]:findPath(sim,a.position,baseTarget)??[];
+    if(vertical)s.verticalRouteId=vertical.id;
     if (vertical && s.path.length) s.path.push(...vertical.nodes.slice(1));
     s.target = { ...destination };
     s.signature = c.signature;
     s.retryAt = sim.elapsed + 2;
+    s.completionCounted = false;
     m.replans++;
     if (!s.path.length) {
       m.unreachableTargets++;
@@ -639,6 +640,7 @@ export function moveSpatial(sim, a, destination, dt, speed) {
         releaseSlot(sim, a);
         a.nextDecision = sim.elapsed;
         s.failedTarget = { ...destination, until: sim.elapsed + 8 };
+        s.blockedActions=[...(s.blockedActions??[]).filter(b=>b.until>sim.elapsed),{action:a.action,target:a.target,until:sim.elapsed+15}].slice(-8);
         s.target = null;
         s.retries = 0;
       }
@@ -652,8 +654,11 @@ export function moveSpatial(sim, a, destination, dt, speed) {
   }
   while (s.path.length && dist(a.position, s.path[0]) < 0.08) s.path.shift();
   if (!s.path.length) {
-    m.completedPaths++;
-    m.averagePathEfficiency = m.plannedDistance ? m.directDistance / m.plannedDistance : 1;
+    if (!s.completionCounted && dist(a.position, destination) < 0.2) {
+      m.completedPaths++;
+      s.completionCounted = true;
+    }
+    m.averagePathEfficiency = m.plannedDistance ? Math.min(1, m.directDistance / m.plannedDistance) : 1;
     return dist(a.position, destination) < 0.2;
   }
   const target = s.path[0],
@@ -747,6 +752,8 @@ export function moveSpatial(sim, a, destination, dt, speed) {
     s.signature = null;
     s.retryAt = sim.elapsed + 0.5;
     if (s.retries >= 3) {
+      s.blockedActions=[...(s.blockedActions??[]).filter(b=>b.until>sim.elapsed),{action:a.action,target:a.target,until:sim.elapsed+15}].slice(-8);
+      s.retries=0;
       releaseSlot(sim, a);
       s.path = [];
       s.target = null;

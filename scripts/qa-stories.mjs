@@ -86,16 +86,16 @@ try {
     layouts.push({ width, height, overflow });
   }
   await page.setViewportSize({ width: 1366, height: 768 });
-  await page.screenshot({ path: 'docs/images/v1.6-story-hero.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.7-story-hero.png', scale: 'css' });
   check(
     'Story routes, winner, 12 portraits, bilingual UI, collapsed timeline and three viewport sizes',
   );
   await page.locator('#moments').evaluate((el) => el.scrollIntoView({ block: 'start' }));
-  await page.screenshot({ path: 'docs/images/v1.6-major-moments.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.7-major-moments.png', scale: 'css' });
   await page.locator('.cast-card').first().click();
   await page.getByRole('dialog').waitFor();
   assert.equal(await page.locator('.life-traits meter').count(), 8);
-  await page.screenshot({ path: 'docs/images/v1.6-agent-story.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.7-agent-story.png', scale: 'css' });
   await page.getByRole('button', { name: '關閉視窗' }).click();
   await page.locator('.story-edge').first().press('Enter');
   await page.getByRole('dialog').waitFor();
@@ -137,7 +137,7 @@ try {
   });
   await page.getByRole('button', { name: '產生分享卡', exact: true }).click();
   await page.locator('.story-card-preview').waitFor();
-  await page.screenshot({ path: 'docs/images/v1.6-share-card.png', scale: 'css' });
+  await page.screenshot({ path: 'docs/images/v1.7-share-card.png', scale: 'css' });
   // Electron's download dialog is handled without an interactive save prompt.
   if (desktop)
     await app.evaluate(({ BrowserWindow }, profile) => {
@@ -255,7 +255,7 @@ try {
   assert.deepEqual(errors, []);
   check('No renderer exceptions');
   await writeFile(
-    `docs/qa/stories-${desktop ? 'desktop' : 'browser'}-v1.6.json`,
+    `docs/qa/stories-${desktop ? 'desktop' : 'browser'}-v1.7.json`,
     JSON.stringify(
       {
         date: new Date().toISOString(),

@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 export async function launchBrowser(options = {}) {
   const server = await chromium.launchServer({
     ...options,
-    args: [...(options.args ?? []), '--no-proxy-server'],
+    args: [...(options.args ?? []), '--no-proxy-server', ...(process.env.SOCIETY_QA_SOFTWARE === '1' ? ['--use-angle=swiftshader'] : [])],
     timeout: 60000,
   });
   const browser = await chromium.connect(server.wsEndpoint());

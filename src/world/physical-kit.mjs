@@ -84,7 +84,8 @@ export function createPhysicalKit(scene) {
       if (!meshes.length) continue;
       const copies = meshes.map((m) => {
         m.updateMatrix();
-        return m.geometry.clone().applyMatrix4(m.matrix);
+        const source = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+        return source.applyMatrix4(m.matrix);
       });
       const merged = mergeGeometries(copies);
       copies.forEach((g) => g.dispose());
@@ -151,8 +152,8 @@ export function createPhysicalKit(scene) {
                 world.spatial && dx > 0 ? 0.5 : 2,
                 'metal',
               );
-            for (const dz of [1, 2])
-              piece('crate', x + dx, y + 0.9, z + dz, 0.55, 0.6, 0.6, 'wood');
+            for (const dz of world.spatial && dx > 0 ? [2.4] : [1, 2])
+              piece('crate', x + dx, y + 0.9, z + dz, 0.55, 0.6, world.spatial && dx > 0 ? 0.45 : 0.6, 'wood');
           }
           piece('platform', x, y + 0.08, z - 4, 4, 0.15, 1.5, 'industrial');
           for (const dx of [-3.8, 3.8])
@@ -200,7 +201,7 @@ export function createPhysicalKit(scene) {
         for (let i = 0; i < 5; i++) {
           const dx = Math.cos(i * 1.3) * 3,
             dz = Math.sin(i * 1.3) * 3;
-          piece('wall', x + dx, y + 0.65, z + dz, 1.2, 1.3, 0.4, 'concrete', i);
+          if (!world.spatial) piece('wall', x + dx, y + 0.65, z + dz, 1.2, 1.3, 0.4, 'concrete', i);
           piece('pipe', x + dx, y + 1.6, z + dz, 0.45, 1.9, 0.45, 'concrete');
         }
         for (let i = 0; i < 10; i++)

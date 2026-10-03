@@ -56,7 +56,7 @@ try {
       await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
       false,
     );
-    await page.screenshot({ path: `docs/images/v1.6-zh-TW-desktop-${width}.png`, scale: 'css' });
+    await page.screenshot({ path: `docs/images/v1.7-zh-TW-desktop-${width}.png`, scale: 'css' });
   }
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('DOM.enable');
@@ -105,7 +105,7 @@ try {
   assert.equal(security.sandbox, true);
   assert.deepEqual(errors, []);
   await writeFile(
-    'docs/qa/desktop-results-v1.6.json',
+    'docs/qa/desktop-results-v1.7.json',
     JSON.stringify(
       {
         executablePath,

@@ -1,3 +1,4 @@
+import {reserveInteraction,atInteractionSlot,releaseSlot} from '../core/spatial.mjs';
 import { launchBrowser } from './qa-runtime.mjs';
 // Browser plugin not available; isolated Playwright Chrome and actual Electron.
 import { chromium, _electron as electron } from 'playwright';
@@ -8,6 +9,7 @@ import { setWeather, startHazard, performInteraction, updateWorld } from '../cor
 import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+function placeAtSlot(s,a,o){releaseSlot(s,a);a.target=o.id;const slot=reserveInteraction(s,a,o);assert.ok(slot);a.position={x:slot.x,y:slot.y??0,z:slot.z};assert.ok(atInteractionSlot(s,a,o));}
 const desktop = process.argv.includes('--desktop'),
   profile = path.resolve(`.qa/world-${desktop ? 'desktop' : 'browser'}-${Date.now()}`);
 await mkdir(profile, { recursive: true });
@@ -125,9 +127,9 @@ try {
     updateWorld(s, 0.25);
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'docs/images/v1.6-day-world.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-day-world.png' });
     const g = s.world.objects.find((o) => o.type === 'generator');
-    a.position = { ...g.position };
+    placeAtSlot(s,a,g);
     a.target = g.id;
     a.action = 'repair';
     performInteraction(s, a, g, 3);
@@ -138,24 +140,24 @@ try {
     updateWorld(s, 11);
     assert.equal(clinic.controller, a.id);
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'docs/images/v1.6-clinic-control.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-clinic-control.png' });
     s.elapsed = 100;
     s.world.timeOfDay = 'night';
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'docs/images/v1.6-night-world.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-night-world.png' });
     setWeather(s, 'storm', 60);
     const bed = s.world.objects.find((o) => o.type === 'bed' && o.poi === 'poi_shelter');
-    a.position = { ...bed.position };
+    placeAtSlot(s,a,bed);
     a.energy = 20;
     a.target = bed.id;
     a.action = 'rest_at';
     performInteraction(s, a, bed, 1);
     await page.waitForTimeout(500);
     assert.ok((await page.locator('.living-hud').innerText()).includes('暴風雨'));
-    await page.screenshot({ path: 'docs/images/v1.6-storm-shelter.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-storm-shelter.png' });
     startHazard(s, 'fire', 'poi_village');
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'docs/images/v1.6-fire-event.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-fire-event.png' });
     check(
       'Authority fixtures: day/night, generator restoration, clinic control, storm shelter and fire rendered',
     );
@@ -219,7 +221,9 @@ try {
     );
   }
   check('Story World Moments at desktop and mobile sizes');
-  await page.locator('.cast-card').first().click();
+  const visitorIndex=completed.agents.findIndex(a=>Object.keys(a.placeStats??{}).length>0);
+  assert.ok(visitorIndex>=0);
+  await page.locator('.cast-card').nth(visitorIndex).click();
   await page.getByRole('heading', { name: '重要地點', exact: true }).waitFor();
   await page.getByRole('button', { name: '關閉視窗' }).click();
   check('Life Story displays recorded important places');
@@ -233,7 +237,7 @@ try {
   assert.deepEqual(errors, []);
   check('No renderer/console errors');
   await writeFile(
-    `docs/qa/world-${desktop ? 'desktop' : 'browser'}-v1.6.json`,
+    `docs/qa/world-${desktop ? 'desktop' : 'browser'}-v1.7.json`,
     JSON.stringify(
       {
         date: new Date().toISOString(),

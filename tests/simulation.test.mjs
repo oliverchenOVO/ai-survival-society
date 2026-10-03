@@ -47,7 +47,7 @@ test('complete runs contain autonomous survival, alliances, trade, conflict, mem
     }
   }
   const s = run(7);
-  assert.ok([7,42,99,123,2048].some(seed=>run(seed).stats().betrayals>0));
+  assert.ok([7, 42, 99, 123, 2048].some((seed) => run(seed).stats().betrayals > 0));
   assert.ok(s.stats().cooperation > 0);
   assert.ok(s.stats().counts.THEFT > 0);
   assert.ok([7, 42, 2048].some((seed) => run(seed).stats().counts.DECEPTION > 0));
@@ -73,8 +73,8 @@ test('simultaneous exposure produces extinction independently of agent array ord
 test('events include required structured fields and important memories affect social relationships', () => {
   const s = new Simulation();
   const [a, b] = s.agents;
-  a.position = { x: 0, z: 0 };
-  b.position = { x: 1, z: 0 };
+  a.position = { x: 18, z: 2 };
+  b.position = { x: 19, z: 2 };
   a.action = 'attack';
   a.target = b.id;
   s.elapsed = 10;
@@ -146,8 +146,8 @@ test('pause is inert and repeated independent runs do not share state', () => {
 test('nearby allies improve recovery; mutual aid transfers resources rather than creating them', () => {
   const s = new Simulation({ agentCount: 2 });
   const [a, b] = s.agents;
-  a.position = { x: 0, z: 0 };
-  b.position = { x: 1, z: 0 };
+  a.position = { x: 18, z: 2 };
+  b.position = { x: 19, z: 2 };
   a.hp = 50;
   a.energy = 50;
   a.action = 'rest';

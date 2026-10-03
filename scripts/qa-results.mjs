@@ -11,11 +11,13 @@ const runtime = await startServer({
     autoRestart: false,
     seed: 7,
     matchDuration: 4,
-    speed: 32,
+    speed: 1,
     restartDelaySeconds: 2,
     agentCount: 2,
   },
 });
+// Finish the first isolated fixture without a wall-clock race on a loaded host.
+while(runtime.getSimulation().status==='running')runtime.getSimulation().tick();
 const browser = await launchBrowser({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const errors = [];
@@ -50,7 +52,7 @@ try {
   if (baseline) {
     assert.ok(after.includes('No survivors'));
     await writeFile(
-      'docs/qa/results-fixture-v1.6.json',
+      'docs/qa/results-fixture-v1.7.json',
       JSON.stringify({ old, after, completedMatch: completed.matchId, errors }, null, 2),
     );
     console.log('REPRODUCED: old result reads new live run and displays No survivors');
@@ -65,7 +67,7 @@ try {
     assert.equal(exported.matchId, completed.matchId);
     assert.equal(exported.elapsed, completed.elapsed);
     assert.deepEqual(exported.stats, completed.stats);
-    await page.screenshot({ path: 'docs/images/v1.6-result.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-result.png' });
     await dialog.getByRole('button', { name: 'Close dialog' }).click();
     await page.request.post(base + '/api/control', {
       data: { action: 'auto_restart', value: false },
@@ -88,13 +90,13 @@ try {
     assert.equal(extinction.matchId, sim.matchId);
     assert.equal(extinction.winner, null);
     assert.equal(extinction.outcome.kind, 'extinction');
-    await page.screenshot({ path: 'docs/images/v1.6-extinction.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-extinction.png' });
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.screenshot({ path: 'docs/images/v1.6-extinction-mobile.png' });
+    await page.screenshot({ path: 'docs/images/v1.7-extinction-mobile.png' });
     assert.ok(await dialog.isVisible());
     assert.deepEqual(errors, []);
     await writeFile(
-      'docs/qa/results-v1.6.json',
+      'docs/qa/results-v1.7.json',
       JSON.stringify(
         {
           browser: 'Playwright Chrome; Browser plugin not available',

@@ -24,9 +24,9 @@
     "test:story": "node scripts/qa-stories.mjs",
     "test:story:desktop": "node scripts/qa-stories.mjs --desktop",
     "test:visual": "node scripts/qa-physical-world.mjs",
-    "test:spatial": "node --test tests/spatial.test.mjs",
-    "test:navigation": "node --test tests/spatial.test.mjs",
-    "test:collision": "node --test tests/spatial.test.mjs"
+    "test:spatial": "node --test tests/spatial.test.mjs tests/vertical.test.mjs",
+    "test:navigation": "node --test tests/spatial.test.mjs tests/vertical.test.mjs",
+    "test:collision": "node --test tests/spatial.test.mjs tests/vertical.test.mjs"
   },
   "dependencies": {
     "delaunator": "^5.1.0",

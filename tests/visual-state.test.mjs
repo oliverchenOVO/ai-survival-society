@@ -1,3 +1,4 @@
+import { reserveInteraction, atInteractionSlot } from '../core/spatial.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createLivingWorld } from '../core/living-world.mjs';
@@ -97,6 +98,9 @@ test('contextual facing, shutdown, LOD and camera priority remain visual only', 
     g = sim.world.objects.find((o) => o.type === 'generator');
   a.target = g.id;
   a.action = 'repair';
+  const slot = reserveInteraction(sim, a, g);
+  a.position = { x: slot.x, z: slot.z, y: slot.y };
+  atInteractionSlot(sim, a, g);
   assert.deepEqual(agentPose(a, sim).target, g.position);
   a.target = sim.agents[1].id;
   a.action = 'attack';
@@ -168,6 +172,9 @@ test('robot scene limbs move, face interaction targets, flash on impact and reta
   a.action = 'repair';
   const gen = sim.world.objects.find((o) => o.type === 'generator');
   a.target = gen.id;
+  const slot = reserveInteraction(sim, a, gen);
+  a.position = { x: slot.x, z: slot.z, y: slot.y };
+  atInteractionSlot(sim, a, gen);
   const before = JSON.stringify(sim.export());
   animateRobot(wrapper, a, sim.snapshot(), 2, 0.1, true);
   const angle = model.children[0].rotation.x;

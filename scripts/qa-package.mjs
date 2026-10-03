@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 // Check the actual unpacked payload, not only the package version label.
 const version = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
-const files = ['desktop/main.cjs', 'dist/index.html'];
+const files = ['desktop/main.cjs', 'dist/index.html', 'public/assets/world-collision.json'];
 for (const dir of ['core', 'server', 'src/i18n', 'src/story', 'config', 'dist/assets']) {
   const extension = dir.startsWith('src/') ? /\.mjs$/ : /\.(mjs|json|js|css|glb)$/;
   for (const name of fs.readdirSync(dir)) if (extension.test(name)) files.push(dir + '/' + name);

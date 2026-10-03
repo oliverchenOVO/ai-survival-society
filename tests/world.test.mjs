@@ -17,6 +17,12 @@ import {
 } from '../core/living-world.mjs';
 import { validateDecision } from '../server/llm.mjs';
 import { buildFacts, publicStory, majorMoments } from '../src/story/facts.mjs';
+import {
+  reserveInteraction,
+  releaseSlot,
+  nearestLegal,
+  revalidateSpatial,
+} from '../core/spatial.mjs';
 function fixture() {
   const s = new Simulation({ seed: 7 }),
     a = s.agents[0];
@@ -24,9 +30,12 @@ function fixture() {
   return { s, a, object: (type) => s.world.objects.find((o) => o.type === type) };
 }
 function act(s, a, o, action, dt = 0.25) {
-  a.position = { ...o.position };
+  releaseSlot(s, a);
   a.action = action;
   a.target = o.id;
+  const slot = reserveInteraction(s, a, o);
+  assert.ok(slot, 'World rule fixture needs a free approach slot');
+  a.position = { x: slot.x, z: slot.z, y: slot.y };
   o.cooldown = 0;
   return performInteraction(s, a, o, dt);
 }
@@ -91,7 +100,7 @@ test('power, medical charges, tower vision, broadcast events and legal LLM fallb
 });
 test('weather, visibility blockers, knowledge stale, shelter utility and rerouting hazards', () => {
   const { s, a, object } = fixture();
-  a.position = { x: 0, z: 0 };
+  a.position = nearestLegal(s, { x: 0, z: 0 });
   const day = perceptionRadius(s, a);
   s.world.timeOfDay = 'night';
   assert.ok(perceptionRadius(s, a) < day);
@@ -116,9 +125,11 @@ test('weather, visibility blockers, knowledge stale, shelter utility and rerouti
   startHazard(s, 'fire', 'poi_ruins');
   assert.equal(s.world.hazards.length, 2);
   for (let i = 0; i < 120; i++) {
+    s.elapsed += 0.25;
+    revalidateSpatial(s);
     moveAgent(s, a, { x: 6, z: 2 }, 0.25);
     assert.ok(
-      !(Math.abs(a.position.x - 3) < 1.6 && Math.abs(a.position.z - 2) < 1.6),
+      Math.hypot(a.position.x - h.position.x, a.position.z - h.position.z) >= h.radius + 0.35,
       'Agent crossed flooded bridge',
     );
   }
@@ -171,6 +182,9 @@ test('world events enter public replay, place facts and story ranking with legac
   d.story = buildFacts(d, { simulationId: d.simulation_id, simulationVersion: '1.5.0' });
   const pub = publicStory(d);
   assert.ok(pub.world.objects.some((o) => o.state === 'online'));
+  assert.equal(pub.world.spatial.collisionSchemaVersion,1);
+  assert.deepEqual(pub.world.spatial.slots.map(s=>[s.id,s.state,s.agentId]),d.world.spatial.slots.map(s=>[s.id,s.state,s.agentId??'']));
+  assert.equal('path' in pub.world.spatial,false);
   assert.ok(pub.events.some((e) => e.event === 'GENERATOR_REPAIRED' && e.data.poi));
   assert.ok(
     majorMoments(d, 20).some(

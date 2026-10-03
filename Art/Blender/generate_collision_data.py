@@ -24,6 +24,7 @@ for name,x,z,types in layouts:
     region(name,x,z,7,6)
     for i,kind in enumerate(types):
         ox=x if kind=='door' else x+((i%3)-1)*1.8
+        if name=='depot' and kind=='radio': ox=x+.8
         oz=(9 if name=='village' else -12 if name=='ruins' else z-2) if kind=='door' else z+(i//3)*1.8
         oid=f'{name}_{kind}_{i}'
         if kind=='door':
@@ -75,7 +76,7 @@ for name,x,z,types in layouts:
         for j in range(5):
             dx=math.cos(j*1.3)*3;dz=math.sin(j*1.3)*3
             box('ruin_column'+str(j),x+dx,z+dz,.45,.45,'column',name)
-        marker('NAV_',dict(id='ruins_upper',x=x,z=z,objectId='ruins_container_1',width=1.2,nodes=[dict(x=x-1,z=z+2,y=0),dict(x=x-1,z=z,y=1),dict(x=x+1,z=z-1,y=1.6)]),'verticalRoutes')
+        marker('NAV_',dict(id='ruins_upper',x=x,z=z,objectId='ruins_container_1',width=1.2,nodes=[dict(x=x-1,z=z+2,y=0),dict(x=x-1,z=z,y=1),dict(x=x-1,z=z-1,y=1.3),dict(x=x+1,z=z-1,y=1.6)]),'verticalRoutes')
         for slot in data['interactionSlots']:
             if slot['objectId']=='ruins_container_1':slot.update(x=x+1,z=z-1,y=1.6,facing={'x':x+1,'z':z})
         for collider in data['colliders']:

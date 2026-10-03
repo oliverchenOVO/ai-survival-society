@@ -14,6 +14,7 @@ export function objectVisual(o, world, agents = []) {
     (a) =>
       a.alive &&
       a.target === o.id &&
+      (!world.spatial || world.spatial.slots.some(slot => slot.objectId === o.id && slot.agentId === a.id && slot.state === 'occupied')) &&
       Math.hypot(a.position.x - o.position.x, a.position.z - o.position.z) < 2.5,
   );
   return {

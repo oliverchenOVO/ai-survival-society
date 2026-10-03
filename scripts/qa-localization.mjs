@@ -150,7 +150,7 @@ try {
   ]) {
     await page.setViewportSize(size);
     await audit(`world ${size.width}`);
-    await page.screenshot({ path: `docs/images/v1.6-zh-TW-world-${size.width}.png` });
+    await page.screenshot({ path: `docs/images/v1.7-zh-TW-world-${size.width}.png` });
     for (const [nav, title] of [
       ['角色', '十二個心智'],
       ['紀錄', '世界事件紀錄'],
@@ -164,7 +164,7 @@ try {
       await page.waitForTimeout(200);
       await audit(`${nav} ${size.width}`);
       if (nav === '設定')
-        await page.screenshot({ path: `docs/images/v1.6-zh-TW-settings-${size.width}.png` });
+        await page.screenshot({ path: `docs/images/v1.7-zh-TW-settings-${size.width}.png` });
       await close();
     }
     await page.getByRole('button', { name: '操作與作品說明' }).click();
@@ -213,7 +213,7 @@ try {
   await page.getByRole('dialog', { name: '島嶼記得一切' }).waitFor();
   await page.getByText('最終生還者', { exact: true }).waitFor();
   await audit('winner historian');
-  await page.screenshot({ path: 'docs/images/v1.6-zh-TW-result.png' });
+  await page.screenshot({ path: 'docs/images/v1.7-zh-TW-result.png' });
   await close();
   await post('/api/control', { action: 'restart', value: 9 });
   const extinction = runtime.getSimulation();
@@ -226,7 +226,7 @@ try {
   await page.getByRole('dialog', { name: '島嶼記得一切' }).waitFor();
   await page.getByText('全滅事件', { exact: true }).waitFor();
   await audit('extinction historian');
-  await page.screenshot({ path: 'docs/images/v1.6-zh-TW-extinction.png' });
+  await page.screenshot({ path: 'docs/images/v1.7-zh-TW-extinction.png' });
   await close();
   check('Winner, extinction and templated Historian contain no untranslated fixed prose');
   await page.getByRole('button', { name: '模擬檔案庫', exact: true }).click();
@@ -266,7 +266,7 @@ try {
   await offline.close();
   assert.deepEqual(errors, []);
   await writeFile(
-    'docs/qa/localization-browser-v1.6.json',
+    'docs/qa/localization-browser-v1.7.json',
     JSON.stringify(
       {
         browser: 'Playwright Chrome (Browser plugin unavailable)',

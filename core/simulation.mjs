@@ -64,6 +64,7 @@ export class Simulation {
     );
   }
   event(type, a, b, result, data = {}, importance = 0.5, relationship_change = {}) {
+    if(['ATTACK','BETRAYAL'].includes(type)&&b){releaseSlot(this,b);b.nextDecision=this.elapsed;}
     const location = a || b ? poiAt(this.world, (b ?? a).position) : null;
     data = { ...data, poi: data.poi ?? location?.id ?? null };
     const e = this.bus.emit({
@@ -220,6 +221,8 @@ export class Simulation {
           alive: a.alive,
           hp: +a.hp.toFixed(1),
           action: a.action,
+          target: a.target,
+          spatial: { facing: a.spatial?.facing ? { ...a.spatial.facing } : null, slotId: a.spatial?.slotId ?? null },
         })),
       });
       this.nextSnapshot = this.elapsed + 5;

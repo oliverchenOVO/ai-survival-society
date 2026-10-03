@@ -9,7 +9,7 @@ const probe = net.createServer();
 await new Promise((resolve) => probe.listen(0, 'localhost', resolve));
 const debugPort = probe.address().port;
 await new Promise((resolve) => probe.close(resolve));
-const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.6.0.exe');
+const exe = path.resolve(process.argv[2] ?? 'builds/AI-Survival-Society-1.7.0.exe');
 const processHandle = spawn(exe, [`--remote-debugging-port=${debugPort}`], {
   stdio: 'ignore',
   windowsHide: true,
@@ -57,9 +57,9 @@ try {
   assert.equal(await page.locator('canvas').count(), 1);
   assert.equal(await page.evaluate(() => typeof window.require), 'undefined');
   assert.deepEqual(errors, []);
-  await page.screenshot({ path: 'docs/images/v1.6-zh-TW-portable-build.png' });
+  await page.screenshot({ path: 'docs/images/v1.7-zh-TW-portable-build.png' });
   await writeFile(
-    'docs/qa/portable-results-v1.6.json',
+    'docs/qa/portable-results-v1.7.json',
     JSON.stringify(
       {
         executablePath: exe,

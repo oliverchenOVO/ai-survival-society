@@ -1,8 +1,10 @@
+import {reserveInteraction,atInteractionSlot,releaseSlot} from '../core/spatial.mjs';
 import { startServer } from '../server/index.mjs';
 import { launchBrowser } from './qa-runtime.mjs';
 import { setWeather, startHazard, worldEvent } from '../core/living-world.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+function placeAtSlot(s,a,o){releaseSlot(s,a);a.target=o.id;const slot=reserveInteraction(s,a,o);assert.ok(slot);a.position={x:slot.x,y:slot.y??0,z:slot.z};assert.ok(atInteractionSlot(s,a,o));}
 const runtime = await startServer({
   port: 0,
   dataDir: `.qa/physical-${Date.now()}`,
@@ -112,7 +114,7 @@ try {
   const obj = (kind) => sim.world.objects.find((o) => o.type === kind),
     poi = (kind) => sim.world.pois.find((p) => p.type === kind),
     a = sim.agents[0];
-  let d = await show('Day Village', 'v1.6-village.png', poi('village').position);
+  let d = await show('Day Village', 'v1.7-village.png', poi('village').position);
   assert.equal(d.pois, 8);
   sim.elapsed = 95;
   sim.world.timeOfDay = 'night';
@@ -121,19 +123,19 @@ try {
   d = await show('Generator Offline', null, gen.position);
   assert.ok(!d.objects.find((o) => o.id === gen.id).state.online);
   gen.state = 'damaged';
-  a.position = { ...gen.position };
+  placeAtSlot(sim,a,gen);
   a.target = gen.id;
   a.action = 'repair';
   gen.metadata.repairProgress = 1.5;
-  d = await show('Agent Repair', 'v1.6-generator-repair.png', gen.position);
+  d = await show('Agent Repair', 'v1.7-generator-repair.png', gen.position);
   assert.ok(d.objects.find((o) => o.id === gen.id).state.repairing);
   gen.state = 'online';
   worldEvent(sim, 'GENERATOR_REPAIRED', a, poi('village'), gen);
   d = await show('Generator Repaired', null, gen.position);
   assert.ok(d.objects.find((o) => o.id === gen.id).state.online);
-  await show('Night Clinic', 'v1.6-clinic-night.png', poi('clinic').position);
+  await show('Night Clinic', 'v1.7-clinic-night.png', poi('clinic').position);
   const med = obj('medical_station');
-  a.position = { ...med.position };
+  placeAtSlot(sim,a,med);
   a.action = 'heal_at';
   a.target = med.id;
   d = await show('Agent Heal', null, med.position);
@@ -146,7 +148,7 @@ try {
   worldEvent(sim, 'CONTAINER_SEARCHED', a, poi('village'), cache);
   a.action = 'search';
   a.target = cache.id;
-  a.position = { ...cache.position };
+  placeAtSlot(sim,a,cache);
   d = await show('Supply Cache Empty', null, cache.position);
   assert.ok(!d.objects.find((o) => o.id === cache.id).state.contents);
   const door = obj('door');
@@ -164,25 +166,25 @@ try {
   setWeather(sim, 'storm', 60);
   a.action = 'rest_at';
   const bed = sim.world.objects.find((o) => o.type === 'bed' && o.poi === 'poi_shelter');
-  a.position = { ...bed.position };
+  placeAtSlot(sim,a,bed);
   a.target = bed.id;
-  await show('Storm Shelter', 'v1.6-storm.png', poi('shelter').position);
+  await show('Storm Shelter', 'v1.7-storm.png', poi('shelter').position);
   startHazard(sim, 'flood', 'poi_bridge');
   d = await show('Flooded Bridge', null, poi('bridge').position);
   assert.equal(d.hazards, 1);
   startHazard(sim, 'fire', 'poi_village');
-  d = await show('Fire', 'v1.6-fire.png', poi('village').position);
+  d = await show('Fire', 'v1.7-fire.png', poi('village').position);
   assert.equal(d.hazards, 2);
   const clinic = poi('clinic');
   clinic.controller = a.id;
   clinic.controllers = [a.id];
   worldEvent(sim, 'POI_CONTROLLED', a, clinic, null);
-  await show('POI Capture', 'v1.6-poi-control.png', clinic.position);
+  await show('POI Capture', 'v1.7-poi-control.png', clinic.position);
   clinic.access = 'contested';
   worldEvent(sim, 'POI_CONTESTED', a, clinic, null);
   await show('Contested POI', null, clinic.position);
   const radio = obj('radio');
-  a.position = { ...radio.position };
+  placeAtSlot(sim,a,radio);
   a.action = 'broadcast';
   a.target = radio.id;
   d = await show('Broadcast', null, radio.position);
@@ -193,7 +195,7 @@ try {
   a.position = { x: 0, z: 0 };
   b.position = { x: 1, z: 0 };
   sim.event('ATTACK', a, b, 'ATTACK', { damage: 12 });
-  d = await show('Combat', 'v1.6-combat.png', { x: 0, z: 0 });
+  d = await show('Combat', 'v1.7-combat.png', { x: 0, z: 0 });
   assert.equal(d.poses.find((o) => o.id === a.id).pose.action, 'attack');
   b.alive = false;
   sim.event('DEATH', a, b, `${a.name} eliminated ${b.name}.`, { cause: 'combat', victim: b.id });
@@ -208,7 +210,7 @@ try {
     });
   await page.waitForTimeout(600);
   assert.ok(await page.locator('.cinematic-hud').isVisible());
-  await page.screenshot({ path: 'docs/images/v1.6-cinematic.png' });
+  await page.screenshot({ path: 'docs/images/v1.7-cinematic.png' });
   checks.push('Cinematic HUD and expanded world');
   for (const [width, height] of [
     [1920, 1080],
@@ -320,7 +322,7 @@ try {
   checks.push('Actual 1x and 10x storm/fire progression and frame-rate samples');
   assert.deepEqual(errors, []);
   await writeFile(
-    'docs/qa/physical-browser-v1.6.json',
+    'docs/qa/physical-browser-v1.7.json',
     JSON.stringify(
       { checks, metrics, errors, browser: 'Playwright Chrome; Browser plugin not available' },
       null,
