@@ -1,5 +1,9 @@
 # AI Survival Society
 
+本倉庫現已公開，供個人作品展示、研讀與學術審查；保留完整 commit history、既有 tags 與 Releases。**公開原始碼不代表開源授權**：自有程式與素材採權利保留，未授予一般改作、散布或重新發佈授權，詳見 [LICENSE](LICENSE)。GitHub 平台允許的查看／fork、法律例外與第三方授權仍適用。
+
+開發使用 Codex 等生成式 AI 協助程式、文案與驗證，作品以 AI 輔助工程呈現。驗收資料及已知限制見各版本報告；歷史報告中的「Private」描述保留當時發佈狀態。
+
 **v1.7.0 — Spatial Intelligence & Physical Interaction。** 世界現在真正限制行為：角色繞過實體牆、家具與深水，從門口進入診所、避讓迎面角色，在有限的互動槽位前等待，沿樓梯登塔與走上遺跡。碰撞、視線、戰鬥與尋路均由 core/server 計算；Browser／Electron 只顯示狀態。
 
 設定中的「開發者空間診斷」可個別顯示碰撞體、可行走區域、入口、路徑、互動槽位、預約與避讓半徑，預設全部關閉。點角色可查看目標、區域、路線、入口、預約與受阻時間。正常介面保持原有冷色觀測站風格，繁體中文／English 設定可持久保存。
@@ -9,7 +13,7 @@
 ![實體碰撞診斷](docs/images/v1.7-collision-debug.png)
 ![角色在入口避讓](docs/images/v1.7-crowd-avoidance.png)
 
-Windows portable：[私人 v1.7.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.7.0)。舊版 Release 與存檔仍保留。
+Windows portable：[v1.7.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.7.0)。舊版 Release 與存檔仍保留。
 
 ### Spatial Intelligence
 
@@ -34,7 +38,7 @@ A* 以 0.5m 格點規劃、視線平滑路徑，門／災害變動時重新驗�
 ![發電機維修](docs/images/v1.6-generator-repair.png)
 ![電影式觀察](docs/images/v1.6-cinematic.png)
 
-Windows portable：[私人 v1.6.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.6.0)。既有 Living World、Story、i18n 與舊版 Release 均保留。
+Windows portable：[v1.6.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.6.0)。既有 Living World、Story、i18n 與舊版 Release 均保留。
 
 **v1.5.0 — Living World Update。** 角色現在會搜索有限補給箱、開門或破門、使用休息處與營火、修復發電機、使用醫療站、登塔與廣播。八種據點可被控制、爭奪與放棄；夜晚、雨、暴風雨、火災與北橋洪水會影響視野、風險與路線。世界認知有時效，角色不再知道全島即時補給。
 
@@ -45,7 +49,7 @@ Windows portable：[私人 v1.6.0 Release](https://github.com/oliverchenOVO/ai-s
 ![Living World 白晝](docs/images/v1.5-day-world.png)
 ![診所控制](docs/images/v1.5-clinic-control.png)
 
-歷史 Windows portable：[私人 v1.5.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0)。需要有倉庫存取權；公開網站部署仍須 Node backend 與持久化 DATA_DIR。
+歷史 Windows portable：[v1.5.0 Release](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.5.0)。公開網站部署仍須 Node backend 與持久化 DATA_DIR。
 
 **Twelve minds. A smaller tomorrow.** A living 3D island where autonomous robots build trust, exchange supplies, form alliances and sometimes betray each other to survive.
 
@@ -63,7 +67,7 @@ Windows 上直接雙擊 **`Start-Society.cmd`**，瀏覽器會開啟 `http://loc
 
 已建好的桌面版位於 `builds/win-unpacked/AI Survival Society.exe`。整個 `win-unpacked` 資料夾須一起保留。若有 portable release，也可使用單一 `.exe`。桌面版不需要 Node、Unity、Blender 或模型服務即可使用。
 
-最新單檔桌面版：[私人 Release v1.7.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.7.0)，下載 `AI-Survival-Society-1.7.0.exe` 即可執行。舊版 Release 保留。
+最新單檔桌面版：[Release v1.7.0](https://github.com/oliverchenOVO/ai-survival-society/releases/tag/v1.7.0)，下載 `AI-Survival-Society-1.7.0.exe` 即可執行。舊版 Release 保留。
 
 遊戲啟動後自動運行。上方可暫停／繼續／重新開始、設定速度。設定可切換語言、改 Seed、開關連續模式與 LLM。預設使用 Utility AI，**沒有模型也能完整跑完**。
 
