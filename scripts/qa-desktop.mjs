@@ -1,3 +1,4 @@
+import { SIMULATION_VERSION } from '../server/version.mjs';
 import { _electron as electron } from 'playwright';
 import assert from 'node:assert/strict';
 import { writeFile } from 'node:fs/promises';
@@ -23,7 +24,17 @@ async function launch() {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.getByRole('heading', { name: 'AI SURVIVAL SOCIETY', exact: true }).waitFor();
   await page.locator('canvas').waitFor();
+  await page
+    .locator('.living-hud')
+    .filter({ hasText: `v${SIMULATION_VERSION} ·` })
+    .waitFor();
   await page.waitForTimeout(700);
+  const health = await page.request.get(new URL('/api/health', page.url()).href);
+  assert.equal(
+    (await health.json()).version,
+    SIMULATION_VERSION,
+    'QA must launch the current packaged version',
+  );
   ports.push(new URL(page.url()).port);
   return page;
 }
@@ -62,7 +73,10 @@ try {
       await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
       false,
     );
-    await page.screenshot({ path: `docs/images/v1.7-zh-TW-desktop-${width}.png`, scale: 'css' });
+    await page.screenshot({
+      path: `docs/images/v${SIMULATION_VERSION}-zh-TW-desktop-${width}.png`,
+      scale: 'css',
+    });
   }
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('DOM.enable');
@@ -83,7 +97,7 @@ try {
   await page.waitForFunction(
     async () => (await fetch('/api/preferences').then((r) => r.json())).language === 'en',
   );
-  await app.close();
+  await closeElectron(app);
   app = null;
   page = await launch();
   await page.getByRole('button', { name: 'Settings', exact: true }).waitFor();
@@ -96,7 +110,7 @@ try {
   await page.waitForFunction(
     async () => (await fetch('/api/preferences').then((r) => r.json())).language === 'zh-TW',
   );
-  await app.close();
+  await closeElectron(app);
   app = null;
   page = await launch();
   await page.getByRole('button', { name: '設定', exact: true }).waitFor();
@@ -111,7 +125,7 @@ try {
   assert.equal(security.sandbox, true);
   assert.deepEqual(errors, []);
   await writeFile(
-    'docs/qa/desktop-results-v1.7.json',
+    `docs/qa/desktop-results-v${SIMULATION_VERSION}.json`,
     JSON.stringify(
       {
         executablePath,

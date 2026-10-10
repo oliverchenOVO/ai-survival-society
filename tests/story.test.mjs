@@ -1,3 +1,4 @@
+import { SIMULATION_VERSION } from '../server/version.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, writeFile, rm, readdir } from 'node:fs/promises';
@@ -47,7 +48,8 @@ test('story facts preserve determinism, consistent counters, chronological ranke
   assert.ok(d.story.majorMoments.length >= 8 && d.story.majorMoments.length <= 15);
   const momentEvents = d.story.majorMoments.map((m) => d.events.find((e) => e.id === m.eventId));
   assert.ok(momentEvents.some((e) => e.event === 'MATCH_ENDED'));
-  if(d.events.some(e=>e.event==='BETRAYAL'))assert.ok(momentEvents.some((e) => e.event === 'BETRAYAL'));
+  if (d.events.some((e) => e.event === 'BETRAYAL'))
+    assert.ok(momentEvents.some((e) => e.event === 'BETRAYAL'));
   assert.deepEqual(
     momentEvents.map((e) => e.timestamp),
     momentEvents.map((e) => e.timestamp).sort((a, b) => a - b),
@@ -245,4 +247,12 @@ test('authoritative Story APIs, export formats, old snapshot after restart, erro
     if (runtime) await runtime.close();
     await rm(dir, { recursive: true, force: true });
   }
+});
+
+test('new story identities use the running application version, not a stale literal', () => {
+  const persistence = new Persistence('.qa/version-test');
+  const sim = new Simulation({ seed: 7 });
+  const identity = persistence.identity(sim);
+  assert.equal(identity.simulationVersion, SIMULATION_VERSION);
+  assert.strictEqual(persistence.identity(sim), identity);
 });

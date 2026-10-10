@@ -1,3 +1,4 @@
+import packageInfo from '../../package.json' with { type: 'json' };
 import * as THREE from 'three';
 import { createPhysicalKit } from './physical-kit.mjs';
 import { buildStatefulObject } from './stateful-objects.mjs';
@@ -62,7 +63,7 @@ export function createLivingScene(scene, host) {
     labelHost.hidden = !w;
     hud.hidden = !w;
     if (!w) return;
-    hud.textContent = `v1.7.0 · ${t('world.title')} · ${t('weather.' + w.timeOfDay)} · ${t('weather.' + w.weather)}`;
+    hud.textContent = `v${packageInfo.version} · ${t('world.title')} · ${t('weather.' + w.timeOfDay)} · ${t('weather.' + w.weather)}`;
     if (lastElapsed > s.elapsed || (lastWorld && lastWorld !== s.matchId)) eventCache.clear();
     lastElapsed = s.elapsed;
     for (const e of s.visualEvents ?? s.events ?? [])

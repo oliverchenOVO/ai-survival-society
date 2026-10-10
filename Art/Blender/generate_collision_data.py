@@ -88,6 +88,12 @@ for name,x,z,types in layouts:
         # Shore cache must be usable from land, not at the original underwater position.
         for slot in data['interactionSlots']:
             if slot['objectId'].startswith('lake_'):slot.update(x=x,z=z-4.7,facing={'x':x,'z':z-3.8})
+# Exact approach slots need full actor-radius clearance, not a projected nearby point.
+# The original south generator approaches intersected the village supply container.
+for slot in data['interactionSlots']:
+    if slot['objectId'] == 'village_generator_4': slot['z'] = 14.83
+    if slot['id'] == 'clinic_door_0_north': slot['z'] = 3.4
+    if slot['objectId'] == 'ruins_campfire_2': slot['z'] = -11.05
 for i,(x,z,r) in enumerate([(-20,8,1.1),(17,-5,.9),(7,18,1)]):
     marker('COLLIDER_',dict(id='large_rock'+str(i),type='circle',x=x,z=z,radius=r,height=2,kind='rock',region='outdoor'),'colliders')
 for name,x,z,r,cost in [('road',0,4,3,.9),('grass',0,0,28,1),('forest',-18,-10,6,1.15),('rocky',15,-12,5,1.25),('shallow_water',-14,-5,3.7,1.4)]:

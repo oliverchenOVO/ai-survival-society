@@ -1,3 +1,4 @@
+import { SIMULATION_VERSION } from '../server/version.mjs';
 import { Simulation } from '../core/simulation.mjs';
 import { walkable, spatialProfile } from '../core/spatial.mjs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -7,11 +8,15 @@ const performanceRuns = [];
 const benchmarkStart = performance.now();
 const golden = process.argv.includes('--update'),
   report = {
-    version: '1.7.0',
+    version: SIMULATION_VERSION,
     method:
       'Utility-only, no Director, primary 1–50 + holdout 1001–1050; hash verifies events, agents, world and ending',
     cohorts: [],
   };
+const file = `docs/qa/spatial-v${SIMULATION_VERSION}-golden.json`;
+// Fail before running 100 worlds when the current version has no reviewed baseline.
+const expected = golden ? null : JSON.parse(await readFile(file, 'utf8'));
+if (expected) assert.equal(expected.version, SIMULATION_VERSION);
 for (const [name, start] of [
   ['primary', 1],
   ['holdout', 1001],
@@ -113,18 +118,19 @@ for (const [name, start] of [
     `wall ${((performance.now() - started) / 1000).toFixed(1)}s`,
   );
 }
-const file = 'docs/qa/spatial-v1.7-golden.json';
 if (golden) await writeFile(file, JSON.stringify(report, null, 2) + '\n');
 else
   assert.deepEqual(
     report,
-    JSON.parse(await readFile(file, 'utf8')),
-    'v1.7 deterministic spatial golden changed: review gameplay before updating',
+    expected,
+    `${SIMULATION_VERSION} deterministic spatial golden changed: review gameplay before updating`,
   );
 
 await mkdir('.qa', { recursive: true });
 await writeFile(
-  golden ? 'docs/qa/spatial-v1.7-performance.json' : '.qa/spatial-v1.7-performance-last.json',
+  golden
+    ? `docs/qa/spatial-v${SIMULATION_VERSION}-performance.json`
+    : `.qa/spatial-v${SIMULATION_VERSION}-performance-last.json`,
   JSON.stringify(
     {
       date: new Date().toISOString(),

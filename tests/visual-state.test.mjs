@@ -21,6 +21,8 @@ test('instant completed slot interactions remain briefly visible without showing
     o = s.world.objects.find((o) => o.type === 'medical_station');
   a.action = 'heal_at';
   a.target = o.id;
+  const approach = s.world.spatial.slots.find((slot) => slot.objectId === o.id);
+  a.position = { x: approach.x, z: approach.z, y: approach.y };
   const slot = reserveInteraction(s, a, o);
   a.position = { x: slot.x, z: slot.z, y: slot.y ?? 0 };
   const view = s.snapshot();

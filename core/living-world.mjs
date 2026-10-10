@@ -1,7 +1,14 @@
 import { clamp, distance, randomGenerator } from './random.mjs';
 import { relation } from './agents.mjs';
 import { remember } from './events.mjs';
-import { lineClear, pathDistance, atInteractionSlot, releaseSlot, findPath } from './spatial.mjs';
+import {
+  lineClear,
+  pathDistance,
+  interactionApproach,
+  atInteractionSlot,
+  releaseSlot,
+  findPath,
+} from './spatial.mjs';
 
 export const WORLD_ACTIONS = [
   'interact',
@@ -412,14 +419,8 @@ export function canInteract(sim, a, o, action = a.action, requireRange = true) {
   return true;
 }
 export function getUtility(sim, a, o, p) {
-  const approaches = sim.world.spatial?.slots.filter(
-    (s) => s.objectId === o.id && (!s.agentId || s.agentId === a.id),
-  );
-  const approach = approaches?.sort((x, y) => distance(a.position, x) - distance(a.position, y))[0];
   const d = sim.world.spatial
-      ? approach
-        ? pathDistance(sim, a, approach)
-        : Infinity
+      ? (interactionApproach(sim, a, o)?.distance ?? Infinity)
       : distance(a.position, o.position),
     danger =
       (p?.danger ?? 0) * 0.6 +

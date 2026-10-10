@@ -1,3 +1,4 @@
+import { SIMULATION_VERSION } from './version.mjs';
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import http from 'node:http';
@@ -73,7 +74,7 @@ export async function startServer(options = {}) {
     return snapshot();
   };
   app.get('/api/health', (_, res) =>
-    res.json({ ok: true, app: 'AI Survival Society', version: '1.7.0' }),
+    res.json({ ok: true, app: 'AI Survival Society', version: SIMULATION_VERSION }),
   );
   app.get('/api/state', (_, res) => res.json(snapshot()));
   app.post('/api/load', async (req, res) => {
@@ -88,7 +89,7 @@ export async function startServer(options = {}) {
       store.identities.set(sim, {
         simulationId: data.simulation_id,
         startedAt: data.startedAt,
-        simulationVersion: '1.7.0',
+        simulationVersion: SIMULATION_VERSION,
         finishedAt: null,
       });
       finishedAt = null;

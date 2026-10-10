@@ -1,6 +1,6 @@
 {
   "name": "ai-survival-society",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "private": true,
   "description": "A living 3D society of autonomous agents, with utility AI and optional local language models.",
   "type": "module",

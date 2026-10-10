@@ -468,6 +468,21 @@ export function initializeSpatial(sim, { migration = false } = {}) {
     ),
     migrations: [],
   };
+  // Restore older checkpoints against corrected authored approaches; never move actors.
+  if (existing) {
+    for (const slot of existing.slots) {
+      const authored = geometry.interactionSlots.find((s) => s.id === slot.id);
+      if (!authored || ['x', 'y', 'z'].every((k) => (slot[k] ?? 0) === (authored[k] ?? 0)))
+        continue;
+      existing.migrations ??= [];
+      existing.migrations.push({
+        reason: 'Corrected authored interaction approach',
+        slotId: slot.id,
+        at: sim.elapsed,
+      });
+      Object.assign(slot, authored, { state: 'free', agentId: null, expiresAt: 0 });
+    }
+  }
   for (const o of sim.world.objects) {
     o.capacity = geometry.interactionSlots.filter((s) => s.objectId === o.id).length || o.capacity;
     if (o.poi === 'poi_lake' && o.type === 'container') o.position = { x: -14, z: -8.8 };
@@ -532,7 +547,12 @@ export function revalidateSpatial(sim) {
   if (!s) return;
   for (const slot of s.slots) {
     const a = sim.agents.find((a) => a.id === slot.agentId);
-    if (!a?.alive || a.target !== slot.objectId || slot.expiresAt <= sim.elapsed) {
+    if (
+      !a?.alive ||
+      a.target !== slot.objectId ||
+      slot.expiresAt <= sim.elapsed ||
+      !walkable(sim, slot)
+    ) {
       slot.state = 'free';
       slot.agentId = null;
       slot.expiresAt = 0;
@@ -561,19 +581,27 @@ export function revalidateSpatial(sim) {
       a.spatial.signature = null;
   }
 }
+// Interaction requires the exact slot, unlike abstract movement goals that may be projected.
+export function interactionApproach(sim, a, o) {
+  const slots = sim.world.spatial?.slots
+    .filter((s) => s.objectId === o.id && (!s.agentId || s.agentId === a.id))
+    .sort((x, y) => dist(a.position, x) - dist(a.position, y) || x.id.localeCompare(y.id));
+  for (const slot of slots ?? []) {
+    if (!walkable(sim, slot)) continue;
+    // A closed door must be approached from the actor's current side.
+    if (o.type === 'door' && (slot.z - o.position.z) * (a.position.z - o.position.z) < 0) continue;
+    const distance = pathDistance(sim, a, slot);
+    if (Number.isFinite(distance)) return { slot, distance };
+  }
+  return null;
+}
 export function reserveInteraction(sim, a, o, dt = 0) {
   const state = sim.world.spatial;
   if (!state) return o.position;
   let slot = state.slots.find((s) => s.agentId === a.id && s.objectId === o.id);
   if (!slot) {
     releaseSlot(sim, a);
-    const available = state.slots
-      .filter((s) => s.objectId === o.id && s.state === 'free')
-      .sort((x, y) => dist(a.position, x) - dist(a.position, y) || x.id.localeCompare(y.id));
-    // Only reserve a door approach on the current side of its solid leaf.
-    slot = available.find(
-      (s) => o.type !== 'door' || (s.z - o.position.z) * (a.position.z - o.position.z) >= 0,
-    );
+    slot = interactionApproach(sim, a, o)?.slot;
     if (!slot) {
       state.metrics.slotWaitTime += dt;
       a.spatial.waitingFor = o.id;

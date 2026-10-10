@@ -983,7 +983,7 @@
       "objectId": "village_generator_4",
       "x": -10.48,
       "y": 0,
-      "z": 12.77
+      "z": 14.83
     },
     {
       "capacity": 1,
@@ -995,7 +995,7 @@
       "objectId": "village_generator_4",
       "x": -9.52,
       "y": 0,
-      "z": 12.77
+      "z": 14.83
     },
     {
       "capacity": 1,
@@ -1019,7 +1019,7 @@
       "objectId": "clinic_door_0",
       "x": -3,
       "y": 0,
-      "z": 3.0
+      "z": 3.4
     },
     {
       "capacity": 1,
@@ -1127,7 +1127,7 @@
       "objectId": "ruins_campfire_2",
       "x": 11.8,
       "y": 0,
-      "z": -10.780000000000001
+      "z": -11.05
     },
     {
       "capacity": 1,

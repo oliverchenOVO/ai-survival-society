@@ -14,8 +14,9 @@ import {
   initializeSpatial,
   nearestLegal,
   terrainCost,
+  interactionApproach,
 } from '../core/spatial.mjs';
-import { performInteraction } from '../core/living-world.mjs';
+import { performInteraction, getUtility } from '../core/living-world.mjs';
 const fixture = () => {
   const s = new Simulation({ seed: 7 });
   s.world.hazards = [];
@@ -182,7 +183,10 @@ test('interaction requires reserved exact approach, facing and LOS; ownership re
 test('five clinic patients cannot reserve one slot; queues resolve by expiry or retarget', () => {
   const s = fixture(),
     o = s.world.objects.find((o) => o.type === 'medical_station');
-  const agents = Array.from({ length: 5 }, (_, i) => activate(s, i, { x: -3 + i * 0.8, z: 1 }));
+  s.world.objects.find((o) => o.id === 'clinic_door_0').state = 'open';
+  const agents = Array.from({ length: 5 }, (_, i) =>
+    activate(s, i, nearestLegal(s, { x: -3 + i * 0.8, z: 3.4 })),
+  );
   for (const a of agents) {
     a.action = 'heal_at';
     a.target = o.id;
@@ -342,4 +346,115 @@ test('opposing clinic doorway traffic yields, separates and releases short reser
   s.elapsed += 2;
   revalidateSpatial(s);
   assert.ok(s.world.spatial.portals.every((p) => p.reservations.length === 0));
+});
+
+test('every authored approach is legal and has unobstructed interaction LOS', () => {
+  const s = fixture();
+  for (const slot of s.world.spatial.slots) {
+    const object = s.world.objects.find((o) => o.id === slot.objectId);
+    assert.ok(walkable(s, slot), slot.id);
+    assert.ok(
+      lineClear(s, slot, object.position, 0, { hazards: false, ignoreObject: object.id }),
+      slot.id,
+    );
+  }
+});
+
+test('blocked generator approach falls back to reachable slot and physically completes repair', () => {
+  const s = fixture(),
+    o = s.world.objects.find((o) => o.type === 'generator');
+  const slots = s.world.spatial.slots.filter((x) => x.objectId === o.id);
+  const a = activate(s, 0, { x: slots[0].x - 2, z: slots[0].z });
+  a.action = 'repair';
+  a.target = o.id;
+  s.world.hazards = [
+    {
+      id: 'slot_fire',
+      type: 'fire',
+      position: { x: slots[0].x, z: slots[0].z },
+      radius: 0.1,
+      until: 100,
+    },
+  ];
+  assert.equal(walkable(s, slots[0]), false);
+  assert.equal(walkable(s, slots[1]), true);
+  assert.equal(interactionApproach(s, a, o).slot.id, slots[1].id);
+  assert.ok(Number.isFinite(getUtility(s, a, o).score));
+  assert.equal(reserveInteraction(s, a, o).id, slots[1].id);
+  for (let i = 0; i < 160 && o.state !== 'online'; i++) {
+    s.elapsed += 0.25;
+    revalidateSpatial(s);
+    executeAction(s, a, 0.25);
+    assert.ok(walkable(s, a.position));
+  }
+  assert.equal(o.state, 'online', 'walk to the slot and repair without teleporting');
+});
+
+test('new hazards release unusable reservations; fully blocked equipment recovers after hazard ends', () => {
+  const s = fixture(),
+    o = s.world.objects.find((o) => o.type === 'generator');
+  const a = activate(s, 0, { x: -10, z: 16 });
+  a.action = 'repair';
+  a.target = o.id;
+  const slot = reserveInteraction(s, a, o);
+  assert.ok(slot);
+  s.world.hazards = [
+    {
+      id: 'equipment_fire',
+      type: 'fire',
+      position: { x: o.position.x, z: 14.83 },
+      radius: 1,
+      until: 100,
+    },
+  ];
+  revalidateSpatial(s);
+  assert.equal(slot.agentId, null);
+  assert.equal(a.spatial.slotId, null);
+  assert.equal(interactionApproach(s, a, o), null);
+  assert.equal(getUtility(s, a, o).score, -Infinity);
+  assert.equal(reserveInteraction(s, a, o), null);
+  const before = { ...a.position };
+  for (let i = 0; i < 24; i++) {
+    s.elapsed += 0.25;
+    revalidateSpatial(s);
+    executeAction(s, a, 0.25);
+  }
+  assert.deepEqual(a.position, before);
+  assert.ok(a.nextDecision <= s.elapsed, 'waiting requests a fresh decision');
+  s.world.hazards = [];
+  revalidateSpatial(s);
+  assert.ok(Number.isFinite(getUtility(s, a, o).score));
+  assert.ok(reserveInteraction(s, a, o));
+});
+
+test('equipment behind a closed door is unreachable until the door opens', () => {
+  const s = fixture(),
+    o = s.world.objects.find((o) => o.type === 'medical_station');
+  const a = activate(s, 0, { x: -3, z: 3.4 });
+  a.action = 'heal_at';
+  a.target = o.id;
+  assert.equal(interactionApproach(s, a, o), null);
+  assert.equal(reserveInteraction(s, a, o), null);
+  s.world.objects.find((o) => o.id === 'clinic_door_0').state = 'open';
+  assert.ok(interactionApproach(s, a, o));
+  assert.ok(reserveInteraction(s, a, o));
+});
+
+test('older checkpoints receive corrected approaches without moving agents or repeating migration', () => {
+  const s = fixture(),
+    o = s.world.objects.find((o) => o.type === 'generator');
+  const a = activate(s, 0, { x: -10, z: 16 });
+  a.target = o.id;
+  a.action = 'repair';
+  const slot = reserveInteraction(s, a, o);
+  slot.z = 12.77;
+  const restored = Simulation.fromSave(s.export());
+  assert.deepEqual(restored.agents[0].position, a.position);
+  const corrected = restored.world.spatial.slots.find((x) => x.id === slot.id);
+  assert.equal(corrected.z, 14.83);
+  assert.equal(corrected.agentId, null);
+  assert.equal(restored.agents[0].spatial.slotId, null);
+  assert.ok(restored.world.spatial.migrations.some((m) => m.slotId === slot.id));
+  const again = Simulation.fromSave(restored.export());
+  assert.deepEqual(again.world.spatial.migrations, restored.world.spatial.migrations);
 });

@@ -1,3 +1,4 @@
+import { SIMULATION_VERSION } from './version.mjs';
 import { mkdir, writeFile, rename, readdir, readFile, unlink, stat } from 'node:fs/promises';
 import { randomBytes, createHash } from 'node:crypto';
 import path from 'node:path';
@@ -77,7 +78,7 @@ export class Persistence {
       this.identities.set(sim, {
         simulationId: newStoryId(),
         startedAt: new Date().toISOString(),
-        simulationVersion: '1.5.0',
+        simulationVersion: SIMULATION_VERSION,
         finishedAt: null,
       });
     return this.identities.get(sim);

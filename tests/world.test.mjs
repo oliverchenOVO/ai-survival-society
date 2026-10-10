@@ -33,6 +33,10 @@ function act(s, a, o, action, dt = 0.25) {
   releaseSlot(s, a);
   a.action = action;
   a.target = o.id;
+  // These fixtures test object rules; navigation is exercised in spatial.test.mjs.
+  const approach = s.world.spatial.slots.find((slot) => slot.objectId === o.id && !slot.agentId);
+  assert.ok(approach);
+  a.position = { x: approach.x, z: approach.z, y: approach.y };
   const slot = reserveInteraction(s, a, o);
   assert.ok(slot, 'World rule fixture needs a free approach slot');
   a.position = { x: slot.x, z: slot.z, y: slot.y };
@@ -182,9 +186,12 @@ test('world events enter public replay, place facts and story ranking with legac
   d.story = buildFacts(d, { simulationId: d.simulation_id, simulationVersion: '1.5.0' });
   const pub = publicStory(d);
   assert.ok(pub.world.objects.some((o) => o.state === 'online'));
-  assert.equal(pub.world.spatial.collisionSchemaVersion,1);
-  assert.deepEqual(pub.world.spatial.slots.map(s=>[s.id,s.state,s.agentId]),d.world.spatial.slots.map(s=>[s.id,s.state,s.agentId??'']));
-  assert.equal('path' in pub.world.spatial,false);
+  assert.equal(pub.world.spatial.collisionSchemaVersion, 1);
+  assert.deepEqual(
+    pub.world.spatial.slots.map((s) => [s.id, s.state, s.agentId]),
+    d.world.spatial.slots.map((s) => [s.id, s.state, s.agentId ?? '']),
+  );
+  assert.equal('path' in pub.world.spatial, false);
   assert.ok(pub.events.some((e) => e.event === 'GENERATOR_REPAIRED' && e.data.poi));
   assert.ok(
     majorMoments(d, 20).some(
